@@ -1,0 +1,7 @@
+name: Spirits
+author: Pride
+api-version: 1.19
+version: ${project.version}
+main: me.pride.spirits.Spirits
+description: Spirits but better
+depend: [ProjectKorra]
