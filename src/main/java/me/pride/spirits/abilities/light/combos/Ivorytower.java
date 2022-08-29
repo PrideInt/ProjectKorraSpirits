@@ -118,6 +118,11 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 	public void stop() { }
 	
 	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Light.Combos.Ivorytower.Enabled", true);
+	}
+	
+	@Override
 	public String getAuthor() {
 		return Spirits.getAuthor(this.getElement());
 	}

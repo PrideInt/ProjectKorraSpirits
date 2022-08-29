@@ -186,6 +186,11 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	public void stop() { }
 	
 	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Dark.Abilities.Commandeer.Enabled", true);
+	}
+	
+	@Override
 	public String getAuthor() {
 		return Spirits.getAuthor(this.getElement());
 	}

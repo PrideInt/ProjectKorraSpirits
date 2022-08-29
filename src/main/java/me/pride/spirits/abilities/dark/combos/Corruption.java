@@ -154,7 +154,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(blocks.get(i).getLocation(), 1.25)) {
 					if (entity instanceof LivingEntity) {
 						if (Filter.filterEntityFromAbility(entity, player, this) && Filter.filterEntityLight(entity)) {
-							spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).canReplace(true).replaceWithSpirit(SpiritType.DARK).replaceWithEntity(EntityType.SPIDER).build());
+							spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(true).build());
 						}
 					}
 				}
@@ -167,7 +167,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			spawnSpiritSpeed += spawn_speed;
 			
 			if (spawnSpiritSpeed > 1) {
-				spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).replaceWithSpirit(SpiritType.DARK).replaceWithEntity(EntityType.SPIDER).build());
+				spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).build());
 				spawnSpiritSpeed = 0;
 			}
 		}

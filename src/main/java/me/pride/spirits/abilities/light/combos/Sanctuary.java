@@ -172,7 +172,7 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 	
 	@Override
 	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean(path + "Enabled", true);
+		return Spirits.instance.getConfig().getBoolean("Light.Combos.Sanctuary.Enabled", true);
 	}
 	
 	@Override

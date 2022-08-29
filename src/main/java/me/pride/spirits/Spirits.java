@@ -22,14 +22,14 @@ public class Spirits extends JavaPlugin {
 
     private static final String AUTHOR = "Prride/prideyy", VERSION = "VERSION 1";
 
-    private Config config;
+    private FileConfiguration config;
     private Listener listener;
 
     @Override
     public void onEnable() {
         instance = this;
         listener = new SpiritsListener();
-        config = new Config(new File("prides_spirits.yml"));
+        config = this.getConfig();
 
         config();
         if (getConfig().getBoolean("Spirecite.Enabled")) {
@@ -60,11 +60,8 @@ public class Spirits extends JavaPlugin {
     public static String getVersion(Element element) {
         return Tools.getOppositeColor(element) + "" + ChatColor.UNDERLINE + VERSION;
     }
-    public Config configuration() {
+    public FileConfiguration configuration() {
         return this.config;
-    }
-    public FileConfiguration getConfig() {
-        return this.config.get();
     }
     
     public void config() {

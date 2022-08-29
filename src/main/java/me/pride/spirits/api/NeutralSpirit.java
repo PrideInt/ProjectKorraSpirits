@@ -52,20 +52,6 @@ public class NeutralSpirit extends Spirit implements Replaceable {
 		this(world, location, name, SpiritType.SPIRIT.entityType(), revertTime);
 	}
 	
-	public void replaceWith(EntityType entityType, SpiritType spiritType) {
-		replaceWithEntity(entityType);
-		replaceWithSpirit(spiritType);
-		
-		String name = this.name;
-		if (name.equalsIgnoreCase(SpiritType.SPIRIT.name())) {
-			name = spiritType.name();
-		}
-		long time = (startTime() + this.revertTime) - startTime();
-		
-		EntitySpiritReplaceEvent replaceEvent = new EntitySpiritReplaceEvent(this, new NeutralSpirit(this.world(), this.entity(), name, entityType, time));
-		Bukkit.getServer().getPluginManager().callEvent(replaceEvent);
-	}
-	
 	@Override
 	public SpiritType type() { return SpiritType.SPIRIT; }
 	@Override
@@ -74,6 +60,13 @@ public class NeutralSpirit extends Spirit implements Replaceable {
 	public String spiritName() { return this.name; }
 	@Override
 	public long revertTime() { return this.revertTime; }
+	@Override
+	protected void override(SpiritType type, EntityType entityType, String spiritName, long revertTime) {
+		this.spiritType = type;
+		this.entityType = entityType;
+		this.name = spiritName;
+		this.revertTime = revertTime;
+	}
 	
 	@Override
 	public void replaceWithEntity(EntityType entityType) {

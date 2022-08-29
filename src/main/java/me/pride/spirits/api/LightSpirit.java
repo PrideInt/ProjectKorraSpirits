@@ -23,7 +23,6 @@ public class LightSpirit extends Spirit implements Replaceable {
 		this.spiritType = SpiritType.LIGHT;
 		this.revertTime = revertTime;
 	}
-	
 	public LightSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
 		super(world, entity);
 		this.name = name;
@@ -31,23 +30,18 @@ public class LightSpirit extends Spirit implements Replaceable {
 		this.spiritType = SpiritType.LIGHT;
 		this.revertTime = revertTime;
 	}
-	
 	public LightSpirit(World world, Location location) {
 		this(world, location, SpiritType.LIGHT.name(), SpiritType.LIGHT.entityType(), 0);
 	}
-	
 	public LightSpirit(World world, Location location, EntityType entityType) {
 		this(world, location, SpiritType.LIGHT.name(), entityType, 0);
 	}
-	
 	public LightSpirit(World world, Location location, long revertTime) {
 		this(world, location, SpiritType.LIGHT.name(), SpiritType.LIGHT.entityType(), revertTime);
 	}
-	
 	public LightSpirit(World world, Location location, String name, EntityType entityType) {
 		this(world, location, name, entityType, 0);
 	}
-	
 	public LightSpirit(World world, Location location, String name, long revertTime) {
 		this(world, location, name, SpiritType.LIGHT.entityType(), revertTime);
 	}
@@ -74,6 +68,13 @@ public class LightSpirit extends Spirit implements Replaceable {
 	public String spiritName() { return this.name; }
 	@Override
 	public long revertTime() { return this.revertTime; }
+	@Override
+	protected void override(SpiritType type, EntityType entityType, String spiritName, long revertTime) {
+		this.spiritType = type;
+		this.entityType = entityType;
+		this.name = spiritName;
+		this.revertTime = revertTime;
+	}
 	
 	@Override
 	public void replaceWithEntity(EntityType entityType) {

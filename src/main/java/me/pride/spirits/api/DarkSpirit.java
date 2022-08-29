@@ -24,7 +24,6 @@ public class DarkSpirit extends Spirit implements Replaceable {
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
 	}
-	
 	public DarkSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
 		super(world, entity);
 		this.name = name;
@@ -32,39 +31,20 @@ public class DarkSpirit extends Spirit implements Replaceable {
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
 	}
-	
 	public DarkSpirit(World world, Location location) {
 		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), 0);
 	}
-	
 	public DarkSpirit(World world, Location location, EntityType entityType) {
 		this(world, location, SpiritType.DARK.name(), entityType, 0);
 	}
-	
 	public DarkSpirit(World world, Location location, long revertTime) {
 		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), revertTime);
 	}
-	
 	public DarkSpirit(World world, Location location, String name, EntityType entityType) {
 		this(world, location, name, entityType, 0);
 	}
-	
 	public DarkSpirit(World world, Location location, String name, long revertTime) {
 		this(world, location, name, SpiritType.DARK.entityType(), revertTime);
-	}
-	
-	public void replaceWith(EntityType entityType, SpiritType spiritType) {
-		replaceWithEntity(entityType);
-		replaceWithSpirit(spiritType);
-		
-		String name = this.name;
-		if (name.equalsIgnoreCase(SpiritType.DARK.name())) {
-			name = spiritType.name();
-		}
-		long time = (startTime() + this.revertTime) - startTime();
-		
-		EntitySpiritReplaceEvent replaceEvent = new EntitySpiritReplaceEvent(this, new DarkSpirit(this.world(), this.entity(), name, entityType, time));
-		Bukkit.getServer().getPluginManager().callEvent(replaceEvent);
 	}
 	
 	@Override
@@ -75,6 +55,13 @@ public class DarkSpirit extends Spirit implements Replaceable {
 	public String spiritName() { return this.name; }
 	@Override
 	public long revertTime() { return this.revertTime; }
+	@Override
+	protected void override(SpiritType type, EntityType entityType, String spiritName, long revertTime) {
+		this.spiritType = type;
+		this.entityType = entityType;
+		this.name = spiritName;
+		this.revertTime = revertTime;
+	}
 	
 	@Override
 	public void replaceWithEntity(EntityType entityType) {

@@ -1,7 +1,9 @@
 package me.pride.spirits.api;
 
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.event.EntityReplacedBySpiritEvent;
 import me.pride.spirits.api.event.EntitySpiritDestroyEvent;
+import me.pride.spirits.api.event.EntitySpiritReplaceEvent;
 import me.pride.spirits.api.event.EntitySpiritSpawnEvent;
 import me.pride.spirits.game.SpiritElement;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
@@ -15,6 +17,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 
 import java.util.*;
 
@@ -33,6 +36,7 @@ public abstract class Spirit {
 	public abstract EntityType entityType();
 	public abstract String spiritName();
 	public abstract long revertTime();
+	protected abstract void override(SpiritType type, EntityType entityType, String spiritName, long revertTime);
 	
 	private World world;
 	private Location location;
@@ -62,6 +66,12 @@ public abstract class Spirit {
 		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 			((CraftPlayer) player).getHandle().b.a(packet);
 		}
+		Event event = new EntityReplacedBySpiritEvent(entity, this);
+		if (exists(entity)) {
+			Spirit spirit = of(entity).get();
+			if (spirit instanceof Replaceable) event = new EntitySpiritReplaceEvent(spirit, this);
+		}
+		Bukkit.getServer().getPluginManager().callEvent(event);
 	}
 	
 	public World world() {
@@ -79,8 +89,14 @@ public abstract class Spirit {
 	public long endTime() {
 		return this.end;
 	}
+	public long timeLeft(long time) {
+		return (this.start + time) - this.start;
+	}
 	public boolean timesUp() {
 		return System.currentTimeMillis() > this.end;
+	}
+	protected void setSpiritType(SpiritType spiritType) {
+	
 	}
 	private static void showEntity(Spirit spirit) {
 		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
@@ -101,6 +117,12 @@ public abstract class Spirit {
 			return SPIRIT_CACHE.remove(k);
 		});
 	}
+	public static Optional<Spirit> of(Entity entity) {
+		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findFirst();
+	}
+	public static boolean exists(Entity entity) {
+		return Spirit.of(entity).isPresent();
+	}
 	public static boolean destroy(Spirit spirit) {
 		showEntity(spirit);
 		Pair<Entity, Integer> cache = SPIRIT_CACHE.get(spirit);
@@ -110,7 +132,7 @@ public abstract class Spirit {
 		Spirit spirit = RECOLLECTION.peek();
 		
 		if (spirit != null) {
-			if (spirit.timesUp()) {
+			if (spirit.timesUp() && spirit.revertTime() >= 0) {
 				showEntity(spirit);
 				RECOLLECTION.pop();
 			}
@@ -125,8 +147,8 @@ public abstract class Spirit {
 	}
 	public static void cleanup() {
 		// concurrency issues might arise
-		SPIRIT_CACHE.entrySet().forEach(entry -> {
-			showEntity(entry.getKey());
+		SPIRIT_CACHE.keySet().forEach(spirit -> {
+			showEntity(spirit);
 		});
 		SPIRIT_CACHE.clear();
 		RECOLLECTION.clear();

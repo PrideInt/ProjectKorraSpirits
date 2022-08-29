@@ -2,8 +2,10 @@ package me.pride.spirits.api;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class SpiritBuilder {
@@ -13,7 +15,9 @@ public class SpiritBuilder {
 	private String name;
 	private EntityType entityType;
 	private long revertTime;
-	private boolean canReplace;
+	
+	private boolean replace;
+	private Entity replacedEntity;
 	private EntityType replaceWithEntity;
 	private SpiritType replaceWithSpirit;
 	
@@ -26,12 +30,6 @@ public class SpiritBuilder {
 		this(spiritType);
 		this.world = world;
 		this.location = location;
-	}
-	public SpiritBuilder(SpiritType spiritType, String name, EntityType entityType, long revertTime) {
-		this.spiritType = spiritType;
-		this.name = name;
-		this.entityType = entityType;
-		this.revertTime = revertTime;
 	}
 	public static SpiritBuilder builder(SpiritType spiritType) {
 		return new SpiritBuilder(spiritType);
@@ -69,53 +67,25 @@ public class SpiritBuilder {
 		this.revertTime = revertTime;
 		return this;
 	}
-	public SpiritBuilder canReplace(boolean canReplace) {
-		this.canReplace = canReplace;
-		return this;
-	}
-	public SpiritBuilder replaceWithEntity(EntityType replaceWithEntity) {
-		this.replaceWithEntity = replaceWithEntity;
-		return this;
-	}
-	public SpiritBuilder replaceWithSpirit(SpiritType replaceWithSpirit) {
-		this.replaceWithSpirit = replaceWithSpirit;
+	public SpiritBuilder replace(boolean replace) {
+		this.replace = replace;
 		return this;
 	}
 	public Spirit build() {
 		switch (this.spiritType) {
 			case LIGHT -> {
-				LightSpirit lightSpirit = new LightSpirit(this.world, this.location, this.name, this.entityType, this.revertTime);
-				if (this.canReplace) {
-					lightSpirit.replaceWith(this.replaceWithEntity, this.replaceWithSpirit);
-				}
-				return lightSpirit;
+				return replace ? new LightSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime);
 			}
 			case DARK -> {
-				DarkSpirit darkSpirit = new DarkSpirit(this.world, this.location, this.name, this.entityType, this.revertTime);
-				if (this.canReplace) {
-					darkSpirit.replaceWith(this.replaceWithEntity, this.replaceWithSpirit);
-				}
-				return darkSpirit;
+				return replace ? new DarkSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime);
 			}
 			case SPIRIT -> {
-				NeutralSpirit neutralSpirit = new NeutralSpirit(this.world, this.location, this.name, this.entityType, this.revertTime);
-				if (this.canReplace) {
-					neutralSpirit.replaceWith(this.replaceWithEntity, this.replaceWithSpirit);
-				}
-				return neutralSpirit;
+				return replace ? new NeutralSpirit(world, location, name, entityType, revertTime) : new NeutralSpirit(world, replacedEntity, name, entityType, revertTime);
 			}
 		}
-		return new Spirit(this.world, this.location) {
-			@Override
-			public SpiritType type() { return spiritType; }
-			@Override
-			public EntityType entityType() { return entityType; }
-			@Override
-			public String spiritName() { return name; }
-			@Override
-			public long revertTime() { return revertTime; }
-		};
+		return null;
 	}
-	public <T extends Spirit> void build(T spirit) {
+	public <T extends Spirit> void build(Supplier<T> supplier) {
+		supplier.get().override(spiritType, entityType, name, revertTime);
 	}
 }
