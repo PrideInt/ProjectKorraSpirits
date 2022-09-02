@@ -1,4 +1,4 @@
-name: Spirits
+name: ProjectKorraSpirits
 author: Pride
 api-version: 1.19
 version: ${project.version}

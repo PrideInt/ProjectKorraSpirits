@@ -2,8 +2,8 @@ package me.pride.spirits;
 
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
-import com.projectkorra.projectkorra.configuration.Config;
 import me.pride.spirits.api.Spirit;
+import me.pride.spirits.config.Config;
 import me.pride.spirits.game.SpiritElement;
 import me.pride.spirits.items.Spirecite;
 import me.pride.spirits.items.Station;
@@ -31,7 +31,7 @@ public class Spirits extends JavaPlugin {
         listener = new SpiritsListener();
         config = this.getConfig();
 
-        config();
+        Config.setup();
         if (getConfig().getBoolean("Spirecite.Enabled")) {
             Spirecite.setup();
             Station.setup();
@@ -62,9 +62,5 @@ public class Spirits extends JavaPlugin {
     }
     public FileConfiguration configuration() {
         return this.config;
-    }
-    
-    public void config() {
-    
     }
 }

@@ -95,9 +95,6 @@ public abstract class Spirit {
 	public boolean timesUp() {
 		return System.currentTimeMillis() > this.end;
 	}
-	protected void setSpiritType(SpiritType spiritType) {
-	
-	}
 	private static void showEntity(Spirit spirit) {
 		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
 			EntitySpiritDestroyEvent destroyEvent = new EntitySpiritDestroyEvent(k);

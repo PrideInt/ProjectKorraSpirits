@@ -9,16 +9,15 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.game.DarkSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.Optional;
 
 public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
@@ -94,16 +93,13 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	
 	private double health(boolean add, double health, LivingEntity entity) {
 		double change = add ? entity.getHealth() + health : entity.getHealth() - health;
+		double value = entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
 		
-		if (change > entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue()) {
-			change = entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
-		}
-		return change;
+		return value > entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() ? value : change;
 	}
 	
 	private void stealHealth() {
 		Location location = player.getLocation().add(0, 1, 0), dest = target.getLocation().add(0, 1, 0);
-		
 		double posHealth = health(true, health, player), negHealth = health(false, health, target);
 		
 		player.setHealth(posHealth); target.setHealth(negHealth);
@@ -115,10 +111,8 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 				if (active.getType().equals(type)) {
 					int duration = active.getDuration(), amp = active.getAmplifier();
 					
-					if (target.hasPotionEffect(type)) {
-						new TempPotionEffect(player, new PotionEffect(type, duration, amp));
-						target.removePotionEffect(type);
-					}
+					new TempPotionEffect(player, new PotionEffect(type, duration, amp));
+					target.removePotionEffect(type);
 				}
 			}
 		}
@@ -141,6 +135,31 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		player.getWorld().spawnParticle(Particle.SPELL_WITCH, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
 		player.getWorld().spawnParticle(Particle.SPELL_WITCH, GeneralMethods.getRightSide(target.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
 	}
+	
+	public Optional<LivingEntity> take() {
+		return Optional.of((LivingEntity) GeneralMethods.getTargetedEntity(player, select_range));
+	}
+	public static void take(Player player) { getAbility(player, Commandeer.class).take(); }
+	
+	public void switchMode() {
+		if (bPlayer.isOnCooldown("CommandeerMode")) return;
+		switch (mode) {
+			case HEALTH:
+				mode = CommandeerMode.EFFECTS;
+				break;
+			case EFFECTS:
+				mode = CommandeerMode.ITEM;
+				break;
+			case ITEM:
+				mode = CommandeerMode.HEALTH;
+				break;
+			default:
+				break;
+		}
+		player.playSound(player.getLocation(), Sound.BLOCK_BEACON_AMBIENT, 0.9F, 1F);
+		bPlayer.addCooldown("CommandeerMode", 500);
+	}
+	public static void switchMode(Player player) { getAbility(player, Commandeer.class).switchMode(); }
 	
 	@Override
 	public boolean isSneakAbility() {
