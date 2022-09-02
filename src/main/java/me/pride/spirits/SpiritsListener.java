@@ -207,29 +207,30 @@ class MainListener implements Listener {
 		
 		ItemMeta meta = item.getItemMeta();
 		
-		Predicate<Player> condition = p -> {
-			if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
-				StructureSearchResult result = p.getWorld().locateNearestStructure(p.getLocation(), Structure.ANCIENT_CITY, 2, false);
-				
-				if (result != null) {
-					int count = 0;
-					for (Block spirecite : GeneralMethods.getBlocksAroundPoint(p.getLocation(), 5)) {
-						if (spirecite.hasMetadata("spirecite_block")) {
-							count++;
-						}
-					}
-					return count >= 3;
-				}
-			}
-			return false;
-		};
 		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING)) {
+			Predicate<Player> condition = p -> {
+				if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
+					StructureSearchResult result = p.getWorld().locateNearestStructure(p.getLocation(), Structure.ANCIENT_CITY, 2, false);
+					
+					if (result != null) {
+						int count = 0;
+						for (Block spirecite : GeneralMethods.getBlocksAroundPoint(p.getLocation(), 5)) {
+							if (spirecite.hasMetadata("spirecite_block")) {
+								count++;
+							}
+						}
+						return count >= 3;
+					}
+				}
+				return false;
+			};
 			if (condition.test(player)) {
 				// do database stuff
 			} else {
-				player.sendMessage(ChatColor.of("e8204c") + "Conditions have not been met to be able to effectively place down the station.");
-				event.setCancelled(true);
+				player.sendMessage(ChatColor.of("#e8204c") + "Conditions have not been met to be able to effectively place down the station.");
 				event.setBuild(false);
+				event.setCancelled(true);
+				return;
 			}
 		}
 	}

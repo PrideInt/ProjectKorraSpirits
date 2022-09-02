@@ -2,7 +2,6 @@ package me.pride.spirits.api;
 
 import me.pride.spirits.game.SpiritElement;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
@@ -17,7 +16,7 @@ public enum SpiritType {
 	private Pair<String, NamespacedKey> keys;
 	private String name;
 	
-	private SpiritType(Particle particle, EntityType entityType, Pair<String, NamespacedKey> keys, String name) {
+	SpiritType(Particle particle, EntityType entityType, Pair<String, NamespacedKey> keys, String name) {
 		this.particle = particle;
 		this.entityType = entityType;
 		this.name = name;

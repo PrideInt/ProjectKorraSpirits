@@ -8,6 +8,7 @@ public class Config {
 		FileConfiguration config = Spirits.instance.getConfig();
 		
 		config.addDefault("Spirecite.Enabled", true);
+		config.addDefault("Spirecite.WardenDrops", true);
 		config.addDefault("Spirecite.Chance", 0.05);
 		
 		/*
@@ -30,23 +31,9 @@ public class Config {
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Enabled", true);
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Speed", 0.05);
 		
-		/* Alliance */
-		config.addDefault("Dark.Passives.Alliance.Enabled", true);
-		
 		/*
 		 *   	- Light -
 		 */
-		/* Blessing */
-		config.addDefault("Light.Abilities.Blessing.Enabled", true);
-		config.addDefault("Light.Abilities.Blessing.Shield.Cooldown", 1500);
-		config.addDefault("Light.Abilities.Blessing.Shield.MaxSize", 1.2);
-		config.addDefault("Light.Abilities.Blessing.Shield.SizeIncrement", 0.2);
-		config.addDefault("Light.Abilities.Blessing.Shield.Range", 3);
-		config.addDefault("Light.Abilities.Blessing.Area.Cooldown", 4500);
-		config.addDefault("Light.Abilities.Blessing.Area.MaxRadius", 8);
-		config.addDefault("Light.Abilities.Blessing.Area.RadiusIncrement", 0.5);
-		config.addDefault("Light.Abilities.Blessing.Area.Duration", 5000);
-		
 		/* Sanctuary */
 		config.addDefault("Light.Combos.Sanctuary.Enabled", true);
 		config.addDefault("Light.Combos.Sanctuary.Cooldown", 8000);
@@ -77,6 +64,7 @@ public class Config {
 		config.addDefault("Spirit.Combos.Skyrocket.SlamRadius", 2.5);
 		config.addDefault("Spirit.Combos.Skyrocket.RevertTime", 4500);
 		
-		Spirits.instance.saveDefaultConfig();
+		Spirits.instance.getConfig().options().copyDefaults(true);
+		Spirits.instance.saveConfig();
 	}
 }

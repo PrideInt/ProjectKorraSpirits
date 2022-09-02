@@ -8,7 +8,7 @@ import me.pride.spirits.game.SpiritElement;
 import me.pride.spirits.items.Spirecite;
 import me.pride.spirits.items.Station;
 import me.pride.spirits.util.Tools;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

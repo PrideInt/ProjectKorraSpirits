@@ -5,7 +5,7 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.game.SpiritElement;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Tools {
-	
 	public enum Path { ABILITIES("Abilities"), COMBOS("Combos"), PASSIVES("Passives");
 		private String path;
 		
@@ -94,17 +93,19 @@ public class Tools {
 	}
 	
 	public static PotionEffectType[] getPositiveEffects() {
-		PotionEffectType[] effects = { PotionEffectType.ABSORPTION, PotionEffectType.CONDUIT_POWER, PotionEffectType.DAMAGE_RESISTANCE,
+		return new PotionEffectType[] {
+				PotionEffectType.ABSORPTION, PotionEffectType.CONDUIT_POWER, PotionEffectType.DAMAGE_RESISTANCE,
 				PotionEffectType.DOLPHINS_GRACE, PotionEffectType.FAST_DIGGING, PotionEffectType.FIRE_RESISTANCE, PotionEffectType.HEALTH_BOOST,
 				PotionEffectType.HERO_OF_THE_VILLAGE, PotionEffectType.INVISIBILITY, PotionEffectType.INCREASE_DAMAGE, PotionEffectType.JUMP,
-				PotionEffectType.LUCK, PotionEffectType.NIGHT_VISION, PotionEffectType.REGENERATION, PotionEffectType.SPEED, PotionEffectType.WATER_BREATHING };
-		return effects;
+				PotionEffectType.LUCK, PotionEffectType.NIGHT_VISION, PotionEffectType.REGENERATION, PotionEffectType.SPEED, PotionEffectType.WATER_BREATHING
+		};
 	}
 	
 	public static PotionEffectType[] getNegativeEffects() {
-		PotionEffectType[] effects = { PotionEffectType.BAD_OMEN, PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HUNGER,
+		return new PotionEffectType[] {
+				PotionEffectType.BAD_OMEN, PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HUNGER,
 				PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS,
-				PotionEffectType.WITHER };
-		return effects;
+				PotionEffectType.WITHER
+		};
 	}
 }

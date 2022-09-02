@@ -18,8 +18,10 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public abstract class Spirit {
 	public static final NamespacedKey LIGHT_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "lightspirit");
@@ -51,10 +53,12 @@ public abstract class Spirit {
 		this.entity.setCustomName(spiritName());
 		this.entity.setCustomNameVisible(true);
 		
+		this.entity.getPersistentDataContainer().set(type().keys().getRight(), PersistentDataType.STRING, type().keys().getLeft() + "-" + this.entity.getUniqueId());
+		
 		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
 		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
 		
-		RECOLLECTION.add(this);
+		if (revertTime() >= 0) RECOLLECTION.add(this);
 	}
 	// Used if we're replacing an entity
 	public Spirit(World world, Entity entity) {
@@ -73,7 +77,21 @@ public abstract class Spirit {
 		}
 		Bukkit.getServer().getPluginManager().callEvent(event);
 	}
-	
+	// If people want to do whatever with the spawned entity
+	/*
+	public Spirit(World world, Location location, Consumer<Entity> consumer) {
+		this.entity = world.spawnEntity(location, entityType());
+		this.start = System.currentTimeMillis();
+		this.end = System.currentTimeMillis() + revertTime();
+		
+		consumer.accept(this.entity);
+		
+		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
+		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
+		
+		if (revertTime() >= 0) RECOLLECTION.add(this);
+	}
+	 */
 	public World world() {
 		return this.world;
 	}
@@ -115,7 +133,7 @@ public abstract class Spirit {
 		});
 	}
 	public static Optional<Spirit> of(Entity entity) {
-		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findFirst();
+		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findAny();
 	}
 	public static boolean exists(Entity entity) {
 		return Spirit.of(entity).isPresent();
@@ -126,21 +144,23 @@ public abstract class Spirit {
 		return RECOLLECTION.remove(spirit) && (SPIRIT_CACHE.get(spirit) == null ? true : SPIRIT_CACHE.remove(spirit, cache));
 	}
 	public static void handle() {
-		Spirit spirit = RECOLLECTION.peek();
-		
-		if (spirit != null) {
-			if (spirit.timesUp() && spirit.revertTime() >= 0) {
-				showEntity(spirit);
-				RECOLLECTION.pop();
+		if (!RECOLLECTION.isEmpty()) {
+			Spirit spirit = RECOLLECTION.peek();
+			
+			if (spirit != null) {
+				if (spirit.timesUp()) {
+					showEntity(spirit);
+					RECOLLECTION.pop();
+				}
 			}
+			RECOLLECTION.removeIf(s -> {
+				boolean condition = s.entity().isDead() || !s.entity().isValid();
+				if (condition) {
+					showEntity(s);
+				}
+				return condition;
+			});
 		}
-		RECOLLECTION.removeIf(s -> {
-			boolean condition = s.entity().isDead() || !s.entity().isValid();
-			if (condition) {
-				showEntity(s);
-			}
-			return condition;
-		});
 	}
 	public static void cleanup() {
 		// concurrency issues might arise

@@ -12,7 +12,7 @@ import me.pride.spirits.game.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
@@ -33,7 +33,6 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempPotionEffect;
 
 public class Sanctuary extends LightSpiritAbility implements AddonAbility, ComboAbility {
-	
 	private final String path = Tools.path(this, Path.COMBOS);
 	
 	@Attribute(Attribute.COOLDOWN)
@@ -209,5 +208,4 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 		info.add(new AbilityInformation("Alleviate", ClickType.SHIFT_DOWN));
 		return info;
 	}
-	
 }
