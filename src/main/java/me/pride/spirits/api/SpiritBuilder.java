@@ -67,25 +67,29 @@ public class SpiritBuilder {
 		this.revertTime = revertTime;
 		return this;
 	}
-	public SpiritBuilder replace(boolean replace) {
-		this.replace = replace;
+	public SpiritBuilder replace(Entity replacedEntity) {
+		this.replace = true;
+		this.replacedEntity = replacedEntity;
 		return this;
 	}
-	public Spirit build() {
+	public <T extends Spirit> T build() {
 		switch (this.spiritType) {
 			case LIGHT -> {
-				return replace ? new LightSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime);
+				return (T) (replace ? new LightSpirit(world, location, name, entityType, revertTime) : new LightSpirit(world, replacedEntity, name, entityType, revertTime));
 			}
 			case DARK -> {
-				return replace ? new DarkSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime);
+				return (T) (replace ? new DarkSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime));
 			}
 			case SPIRIT -> {
-				return replace ? new NeutralSpirit(world, location, name, entityType, revertTime) : new NeutralSpirit(world, replacedEntity, name, entityType, revertTime);
+				return (T) (replace ? new NeutralSpirit(world, location, name, entityType, revertTime) : new NeutralSpirit(world, replacedEntity, name, entityType, revertTime));
 			}
 		}
 		return null;
 	}
-	public <T extends Spirit> void build(Supplier<T> supplier) {
-		supplier.get().override(spiritType, entityType, name, revertTime);
+	public <T extends Spirit> T build(Supplier<T> supplier) {
+		return (T) (replace ? supplier.get().replaceEntity(world, replacedEntity, entityType, spiritType, revertTime, e -> {
+					e.setCustomName(name);
+					e.setCustomNameVisible(true);
+				}) : supplier.get().spawnEntity(world, location, entityType, spiritType, revertTime, e -> {}));
 	}
 }

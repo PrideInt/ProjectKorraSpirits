@@ -167,7 +167,8 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			spawnSpiritSpeed += spawn_speed;
 			
 			if (spawnSpiritSpeed > 1) {
-				spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).build());
+				SpiritBuilder.dark().revertTime(3000).spawn(player.getWorld(), location).build();
+				// spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).build());
 				spawnSpiritSpeed = 0;
 			}
 		}
@@ -263,13 +264,10 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	@Override
 	public ArrayList<AbilityInformation> getCombination() {
 		ArrayList<AbilityInformation> info = new ArrayList<>();
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_DOWN));
-		info.add(new AbilityInformation("Intoxicate", ClickType.LEFT_CLICK));
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_UP));
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_DOWN));
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_UP));
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_DOWN));
-		info.add(new AbilityInformation("Intoxicate", ClickType.SHIFT_UP));
+		info.add(new AbilityInformation("Obelisk", ClickType.SHIFT_UP));
+		info.add(new AbilityInformation("Obelisk", ClickType.SHIFT_DOWN));
+		info.add(new AbilityInformation("Obelisk", ClickType.SHIFT_UP));
+		info.add(new AbilityInformation("Obelisk", ClickType.SHIFT_DOWN));
 		return info;
 	}
 	

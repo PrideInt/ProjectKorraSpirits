@@ -17,7 +17,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 
 public class Spirits extends JavaPlugin {
-
     public static Spirits instance;
 
     private static final String AUTHOR = "Prride/prideyy", VERSION = "VERSION 1";
@@ -38,7 +37,7 @@ public class Spirits extends JavaPlugin {
         }
         CoreAbility.registerPluginAbilities(this, "me.pride.spirits.abilities");
 
-        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.0.0");
+        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.0.7");
         getServer().getPluginManager().registerEvents(listener, this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);
     }

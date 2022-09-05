@@ -7,8 +7,6 @@ import org.bukkit.entity.EntityType;
 import java.util.function.Supplier;
 
 public interface Replaceable {
-	void replaceWithEntity(EntityType entityType);
-	void replaceWithSpirit(SpiritType spiritType);
 	EntityType replacedEntity();
 	SpiritType replacedSpirit();
 }

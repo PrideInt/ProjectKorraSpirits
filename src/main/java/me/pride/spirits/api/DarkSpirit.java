@@ -8,14 +8,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
-public class DarkSpirit extends Spirit implements Replaceable {
+public class DarkSpirit extends Spirit {
 	private String name;
 	private EntityType entityType;
 	private SpiritType spiritType;
 	private long revertTime;
-	
-	private EntityType replacedEntity;
-	private SpiritType replacedSpiritType;
 	
 	public DarkSpirit(World world, Location location, String name, EntityType entityType, long revertTime) {
 		super(world, location);
@@ -23,13 +20,15 @@ public class DarkSpirit extends Spirit implements Replaceable {
 		this.entityType = entityType;
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
+		spawnEntity();
 	}
 	public DarkSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
-		super(world, entity);
+		super(world, entity.getLocation());
 		this.name = name;
 		this.entityType = entityType;
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
+		replaceEntity(entity);
 	}
 	public DarkSpirit(World world, Location location) {
 		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), 0);
@@ -55,24 +54,4 @@ public class DarkSpirit extends Spirit implements Replaceable {
 	public String spiritName() { return this.name; }
 	@Override
 	public long revertTime() { return this.revertTime; }
-	@Override
-	protected void override(SpiritType type, EntityType entityType, String spiritName, long revertTime) {
-		this.spiritType = type;
-		this.entityType = entityType;
-		this.name = spiritName;
-		this.revertTime = revertTime;
-	}
-	
-	@Override
-	public void replaceWithEntity(EntityType entityType) {
-		this.entityType = entityType; this.replacedEntity = entityType;
-	}
-	@Override
-	public void replaceWithSpirit(SpiritType spiritType) {
-		this.spiritType = spiritType; this.replacedSpiritType = spiritType;
-	}
-	@Override
-	public EntityType replacedEntity() { return this.replacedEntity; }
-	@Override
-	public SpiritType replacedSpirit() { return this.replacedSpiritType; }
 }

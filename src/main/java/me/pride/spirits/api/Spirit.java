@@ -38,60 +38,18 @@ public abstract class Spirit {
 	public abstract EntityType entityType();
 	public abstract String spiritName();
 	public abstract long revertTime();
-	protected abstract void override(SpiritType type, EntityType entityType, String spiritName, long revertTime);
 	
 	private World world;
 	private Location location;
 	private Entity entity;
 	private long start, end;
 	
+	public Spirit() { }
 	public Spirit(World world, Location location) {
-		this.entity = world.spawnEntity(location, entityType());
-		this.start = System.currentTimeMillis();
-		this.end = System.currentTimeMillis() + revertTime();
-		
-		this.entity.setCustomName(spiritName());
-		this.entity.setCustomNameVisible(true);
-		
-		this.entity.getPersistentDataContainer().set(type().keys().getRight(), PersistentDataType.STRING, type().keys().getLeft() + "-" + this.entity.getUniqueId());
-		
-		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
-		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
-		
-		if (revertTime() >= 0) RECOLLECTION.add(this);
+		this.world = world;
+		this.location = location.clone();
 	}
-	// Used if we're replacing an entity
-	public Spirit(World world, Entity entity) {
-		this(world, entity.getLocation());
-		
-		SPIRIT_CACHE.put(this, Pair.of(entity, entity.getEntityId()));
-		// Do packets stuff to hide and unhide original entity
-		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entity.getEntityId());
-		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			((CraftPlayer) player).getHandle().b.a(packet);
-		}
-		Event event = new EntityReplacedBySpiritEvent(entity, this);
-		if (exists(entity)) {
-			Spirit spirit = of(entity).get();
-			if (spirit instanceof Replaceable) event = new EntitySpiritReplaceEvent(spirit, this);
-		}
-		Bukkit.getServer().getPluginManager().callEvent(event);
-	}
-	// If people want to do whatever with the spawned entity
-	/*
-	public Spirit(World world, Location location, Consumer<Entity> consumer) {
-		this.entity = world.spawnEntity(location, entityType());
-		this.start = System.currentTimeMillis();
-		this.end = System.currentTimeMillis() + revertTime();
-		
-		consumer.accept(this.entity);
-		
-		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
-		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
-		
-		if (revertTime() >= 0) RECOLLECTION.add(this);
-	}
-	 */
+	
 	public World world() {
 		return this.world;
 	}
@@ -113,6 +71,116 @@ public abstract class Spirit {
 	public boolean timesUp() {
 		return System.currentTimeMillis() > this.end;
 	}
+	
+	public void spawnEntity() {
+		spawnEntity(world(), location());
+	}
+	
+	/**
+	 * @param world - World to spawn spirit
+	 * @param location - Location to spawn spirit
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit spawnEntity(World world, Location location) {
+		spawnEntity(world, location, entityType(), type(), revertTime(), e -> {
+			e.setCustomName(spiritName());
+			e.setCustomNameVisible(true);
+		});
+		return this;
+	}
+	
+	/**
+	 * @param world - World to spawn spirit
+	 * @param location - Location to spawn spirit
+	 * @param consumer - Returns spawned entity, allows developers to perform whatever action to alter entity
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit spawnEntity(World world, Location location, Consumer<Entity> consumer) {
+		spawnEntity(world, location, entityType(), type(), revertTime(), consumer);
+		return this;
+	}
+	
+	/**
+	 * @param world - World to spawn spirit
+	 * @param location - Location to spawn spirit
+	 * @param entityType - Type of entity to spawn
+	 * @param spiritType - type of the Spirit
+	 * @param revertTime - Sets revert time of spirit; -1 does not revert
+	 * @param consumer - Returns spawned entity, allows developers to perform whatever action to alter entity
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit spawnEntity(World world, Location location, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
+		this.entity = world.spawnEntity(location, entityType);
+		this.start = System.currentTimeMillis();
+		this.end = System.currentTimeMillis() + revertTime;
+		
+		consumer.andThen(e -> e.getPersistentDataContainer().set(spiritType.keys().getRight(), PersistentDataType.STRING, spiritType.keys().getLeft() + "-" + this.entity.getUniqueId())).accept(this.entity);
+		
+		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
+		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
+		
+		if (revertTime >= 0) RECOLLECTION.add(this);
+		return this;
+	}
+	
+	/**
+	 *
+	 * @param entity - Entity to be replaced
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit replaceEntity(Entity entity) {
+		replaceEntity(world(), entity);
+		return this;
+	}
+	
+	/**
+	 * @param world - World to spawn spirit that replaces the old spirit
+	 * @param entity - Entity to be replaced
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit replaceEntity(World world, Entity entity) {
+		replaceEntity(world, entity, entityType(), type(), revertTime(), e -> {
+			e.setCustomName(spiritName());
+			e.setCustomNameVisible(true);
+		});
+		return this;
+	}
+	
+	/**
+	 * @param world - World to spawn spirit that replaces the old spirit
+	 * @param entity - Entity to be replaced
+	 * @param entityType - Type of entity to spawn
+	 * @param spiritType - type of the Spirit
+	 * @param revertTime - Sets revert time of spirit; -1 does not revert
+	 * @param consumer - Returns spawned entity, allows developers to perform whatever action to alter entity
+	 *
+	 * @return this Spirit
+	 */
+	public Spirit replaceEntity(World world, Entity entity, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
+		spawnEntity(world, entity.getLocation(), entityType, spiritType, revertTime, consumer);
+		
+		SPIRIT_CACHE.put(this, Pair.of(entity, entity.getEntityId()));
+		// Do packets stuff to hide and unhide original entity
+		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entity.getEntityId());
+		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+			((CraftPlayer) player).getHandle().b.a(packet);
+		}
+		Event event = new EntityReplacedBySpiritEvent(entity, this);
+		if (exists(entity)) {
+			Spirit spirit = of(entity).get();
+			if (spirit instanceof Replaceable) event = new EntitySpiritReplaceEvent(spirit, this);
+		}
+		Bukkit.getServer().getPluginManager().callEvent(event);
+		return this;
+	}
+	
+	/* Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
+	 */
 	private static void showEntity(Spirit spirit) {
 		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
 			EntitySpiritDestroyEvent destroyEvent = new EntitySpiritDestroyEvent(k);
@@ -132,6 +200,11 @@ public abstract class Spirit {
 			return SPIRIT_CACHE.remove(k);
 		});
 	}
+	
+	/**
+	 * @param entity - Entity mapped to find spirit associated with the entity
+	 * @return an Optional of the Spirit that is found, if any
+	 */
 	public static Optional<Spirit> of(Entity entity) {
 		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findAny();
 	}
