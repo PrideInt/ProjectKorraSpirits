@@ -1,5 +1,6 @@
 package me.pride.spirits.api;
 
+import me.pride.spirits.api.exception.InvalidSpiritTypeException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -25,6 +26,7 @@ public class SpiritBuilder {
 		this.spiritType = spiritType;
 		this.name = spiritType.spiritName();
 		this.entityType = spiritType.entityType();
+		this.revertTime = -1;
 	}
 	public SpiritBuilder(SpiritType spiritType, World world, Location location) {
 		this(spiritType);
@@ -73,15 +75,15 @@ public class SpiritBuilder {
 		return this;
 	}
 	public <T extends Spirit> T build() {
-		switch (this.spiritType) {
+		switch (spiritType) {
 			case LIGHT -> {
-				return (T) (replace ? new LightSpirit(world, location, name, entityType, revertTime) : new LightSpirit(world, replacedEntity, name, entityType, revertTime));
+				return (T) (replace ? new LightSpirit(world, replacedEntity, name, entityType, revertTime) : new LightSpirit(world, location, name, entityType, revertTime));
 			}
 			case DARK -> {
-				return (T) (replace ? new DarkSpirit(world, location, name, entityType, revertTime) : new DarkSpirit(world, replacedEntity, name, entityType, revertTime));
+				return (T) (replace ? new DarkSpirit(world, replacedEntity, name, entityType, revertTime) : new DarkSpirit(world, location, name, entityType, revertTime));
 			}
 			case SPIRIT -> {
-				return (T) (replace ? new NeutralSpirit(world, location, name, entityType, revertTime) : new NeutralSpirit(world, replacedEntity, name, entityType, revertTime));
+				return (T) (replace ? new NeutralSpirit(world, replacedEntity, name, entityType, revertTime) : new NeutralSpirit(world, location, name, entityType, revertTime));
 			}
 		}
 		return null;

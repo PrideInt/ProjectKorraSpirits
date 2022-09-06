@@ -31,16 +31,16 @@ public class DarkSpirit extends Spirit {
 		replaceEntity(entity);
 	}
 	public DarkSpirit(World world, Location location) {
-		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), 0);
+		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), -1);
 	}
 	public DarkSpirit(World world, Location location, EntityType entityType) {
-		this(world, location, SpiritType.DARK.name(), entityType, 0);
+		this(world, location, SpiritType.DARK.name(), entityType, -1);
 	}
 	public DarkSpirit(World world, Location location, long revertTime) {
 		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), revertTime);
 	}
 	public DarkSpirit(World world, Location location, String name, EntityType entityType) {
-		this(world, location, name, entityType, 0);
+		this(world, location, name, entityType, -1);
 	}
 	public DarkSpirit(World world, Location location, String name, long revertTime) {
 		this(world, location, name, SpiritType.DARK.entityType(), revertTime);

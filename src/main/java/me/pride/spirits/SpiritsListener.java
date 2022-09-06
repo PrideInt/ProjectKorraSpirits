@@ -7,6 +7,7 @@ import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.spirit.Disappear;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.game.DarkSpiritAbility;
 import me.pride.spirits.game.LightSpiritAbility;
 import me.pride.spirits.game.SpiritAbility;
@@ -14,6 +15,7 @@ import me.pride.spirits.game.SpiritElement;
 import me.pride.spirits.items.Spirecite;
 import me.pride.spirits.items.Station;
 import net.md_5.bungee.api.ChatColor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,6 +25,7 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -48,6 +52,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
@@ -134,6 +139,24 @@ public class SpiritsListener implements Listener {
 					}
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onSpiritDamage(final EntityDamageEvent event) {
+		Entity entity = event.getEntity();
+		Optional<Spirit> ofSpirit = Spirit.of(entity);
+		
+		if (ofSpirit.isPresent()) {
+			Spirit spirit = ofSpirit.get();
+			
+			Spirit.SPIRIT_CACHE.computeIfPresent(spirit, (s, entityPair) -> {
+				if (entityPair.getLeft() instanceof LivingEntity) {
+					LivingEntity oldEntity = (LivingEntity) entityPair.getLeft();
+					oldEntity.damage(event.getDamage());
+				}
+				return entityPair;
+			});
 		}
 	}
 }

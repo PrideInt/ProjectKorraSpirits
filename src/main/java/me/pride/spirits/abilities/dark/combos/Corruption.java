@@ -138,7 +138,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 						block.removeMetadata(METADATA_VALUE.getLeft(), Spirits.instance);
 					}
 				});
-				spawnDarkSpirit(block.getLocation().clone().add(0.5, 0.5, 0.5));
+				spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 				player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				
 				block.setMetadata(METADATA_VALUE.getLeft(), METADATA_VALUE.getRight());
@@ -154,7 +154,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(blocks.get(i).getLocation(), 1.25)) {
 					if (entity instanceof LivingEntity) {
 						if (Filter.filterEntityFromAbility(entity, player, this) && Filter.filterEntityLight(entity)) {
-							spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(true).build());
+							spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(entity).build());
 						}
 					}
 				}
@@ -167,8 +167,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			spawnSpiritSpeed += spawn_speed;
 			
 			if (spawnSpiritSpeed > 1) {
-				SpiritBuilder.dark().revertTime(3000).spawn(player.getWorld(), location).build();
-				// spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).build());
+				spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).revertTime(2100).build());
 				spawnSpiritSpeed = 0;
 			}
 		}

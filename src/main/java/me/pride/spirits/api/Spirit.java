@@ -1,10 +1,7 @@
 package me.pride.spirits.api;
 
 import me.pride.spirits.Spirits;
-import me.pride.spirits.api.event.EntityReplacedBySpiritEvent;
-import me.pride.spirits.api.event.EntitySpiritDestroyEvent;
-import me.pride.spirits.api.event.EntitySpiritReplaceEvent;
-import me.pride.spirits.api.event.EntitySpiritSpawnEvent;
+import me.pride.spirits.api.event.*;
 import me.pride.spirits.game.SpiritElement;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
@@ -171,9 +168,11 @@ public abstract class Spirit {
 			((CraftPlayer) player).getHandle().b.a(packet);
 		}
 		Event event = new EntityReplacedBySpiritEvent(entity, this);
-		if (exists(entity)) {
-			Spirit spirit = of(entity).get();
-			if (spirit instanceof Replaceable) event = new EntitySpiritReplaceEvent(spirit, this);
+		
+		Optional<Spirit> ofSpirit = of(entity);
+		if (ofSpirit.isPresent()) {
+			Spirit spirit = ofSpirit.get();
+			event = new EntitySpiritReplaceEvent(spirit, this);
 		}
 		Bukkit.getServer().getPluginManager().callEvent(event);
 		return this;
@@ -209,11 +208,13 @@ public abstract class Spirit {
 		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findAny();
 	}
 	public static boolean exists(Entity entity) {
-		return Spirit.of(entity).isPresent();
+		return of(entity).isPresent();
 	}
 	public static boolean destroy(Spirit spirit) {
 		showEntity(spirit);
 		Pair<Entity, Integer> cache = SPIRIT_CACHE.get(spirit);
+		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
+		spirit.entity().remove();
 		return RECOLLECTION.remove(spirit) && (SPIRIT_CACHE.get(spirit) == null ? true : SPIRIT_CACHE.remove(spirit, cache));
 	}
 	public static void handle() {
@@ -222,21 +223,24 @@ public abstract class Spirit {
 			
 			if (spirit != null) {
 				if (spirit.timesUp()) {
-					showEntity(spirit);
+					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritRevertEvent(spirit, System.currentTimeMillis()));
+					destroy(spirit);
 					RECOLLECTION.pop();
 				}
 			}
+			// TODO: concurrency issues
 			RECOLLECTION.removeIf(s -> {
 				boolean condition = s.entity().isDead() || !s.entity().isValid();
 				if (condition) {
 					showEntity(s);
 				}
+				destroy(s);
+				
 				return condition;
 			});
 		}
 	}
 	public static void cleanup() {
-		// concurrency issues might arise
 		SPIRIT_CACHE.keySet().forEach(spirit -> {
 			showEntity(spirit);
 		});
