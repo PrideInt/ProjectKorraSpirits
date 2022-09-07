@@ -3,17 +3,17 @@ package me.pride.spirits.api;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.*;
 import me.pride.spirits.game.SpiritElement;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import net.minecraft.world.entity.EntityLiving;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -24,12 +24,13 @@ public abstract class Spirit {
 	public static final NamespacedKey LIGHT_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "lightspirit");
 	public static final NamespacedKey DARK_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "darkspirit");
 	public static final NamespacedKey SPIRIT_KEY = new NamespacedKey(Spirits.instance, "spirit");
+	public static final NamespacedKey REPLACED_KEY = new NamespacedKey(Spirits.instance, "replacedentity");
 	public static final String LIGHT_SPIRIT_NAME = SpiritElement.LIGHT_SPIRIT.getColor() + "" + ChatColor.BOLD + "Light spirit";
 	public static final String DARK_SPIRIT_NAME = SpiritElement.DARK_SPIRIT.getColor() + "" + ChatColor.BOLD + "Dark spirit";
 	public static final String SPIRIT_NAME = SpiritElement.SPIRIT.getColor() + "" + ChatColor.BOLD + "Spirit";
 	
 	public static final Map<Spirit, Pair<Entity, Integer>> SPIRIT_CACHE = new HashMap<>();
-	public static final Stack<Spirit> RECOLLECTION = new Stack<>();
+	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 	
 	public abstract SpiritType type();
 	public abstract EntityType entityType();
@@ -41,36 +42,105 @@ public abstract class Spirit {
 	private Entity entity;
 	private long start, end;
 	
-	public Spirit() { }
+	private boolean replaced;
+	private boolean invulnerable;
+	
+	public Spirit() { SPIRIT_CACHE.put(this, null); }
+	
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
+		SPIRIT_CACHE.put(this, null);
 	}
+	private boolean wasInvulnerable() { return this.invulnerable; }
 	
+	/**
+	 * @return World that this spirit was spawned in
+	 */
 	public World world() {
 		return this.world;
 	}
+	
+	/**
+	 * @return Location that this spirit was spawned at
+	 */
 	public Location location() {
 		return this.location;
 	}
+	
+	/**
+	 * @return The entity spawned that represents this Spirit object
+	 */
 	public Entity entity() {
 		return this.entity;
 	}
+	
+	/**
+	 * @return Whether an entity/spirit was replaced by this spirit
+	 */
+	public boolean replaced() {
+		return this.replaced;
+	}
+	
+	/**
+	 * @return The current location of the spirit
+	 */
+	public Location currentLocation() {
+		return this.entity.getLocation();
+	}
+	
+	/**
+	 * @return System time when this spirit was created
+	 */
 	public long startTime() {
 		return this.start;
 	}
+	
+	/**
+	 * @return Applicable only to spirits that revert; system time when this spirit will revert
+	 */
 	public long endTime() {
 		return this.end;
 	}
+	
+	/**
+	 * @param time - provided system time
+	 * @return Applicable only to spirits that revert; time that will be left before this spirit reverts
+	 */
 	public long timeLeft(long time) {
 		return (this.start + time) - this.start;
 	}
+	
+	/**
+	 * @return Applicable only to spirits that revert; true if the current system time reaches the time in which this spirit will revert
+	 */
 	public boolean timesUp() {
 		return System.currentTimeMillis() > this.end;
 	}
 	
-	public void spawnEntity() {
+	/**
+	 * Removes this spirit from the cache
+	 */
+	public void removeFromCache() {
+		RECOLLECTION.remove(this);
+		SPIRIT_CACHE.remove(this);
+	}
+	
+	/**
+	 * Removes this spirit from the cache, as well as the entity representing the spirit
+	 */
+	public void remove() {
+		removeFromCache();
+		this.entity.remove();
+	}
+	
+	/**
+	 * Spawns an entity with world and location provided beforehand prior to calling this method
+	 * @return this Spirit
+	 */
+	public Spirit spawnEntity() {
 		spawnEntity(world(), location());
+		return this;
 	}
 	
 	/**
@@ -161,6 +231,12 @@ public abstract class Spirit {
 	public Spirit replaceEntity(World world, Entity entity, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
 		spawnEntity(world, entity.getLocation(), entityType, spiritType, revertTime, consumer);
 		
+		this.replaced = true;
+		this.invulnerable = entity.isInvulnerable();
+		
+		entity.setInvulnerable(true);
+		entity.getPersistentDataContainer().set(REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
+		
 		SPIRIT_CACHE.put(this, Pair.of(entity, entity.getEntityId()));
 		// Do packets stuff to hide and unhide original entity
 		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entity.getEntityId());
@@ -169,10 +245,9 @@ public abstract class Spirit {
 		}
 		Event event = new EntityReplacedBySpiritEvent(entity, this);
 		
-		Optional<Spirit> ofSpirit = of(entity);
-		if (ofSpirit.isPresent()) {
-			Spirit spirit = ofSpirit.get();
-			event = new EntitySpiritReplaceEvent(spirit, this);
+		Optional<Spirit> spiritOf = of(entity);
+		if (spiritOf.isPresent()) {
+			event = new EntitySpiritReplaceEvent(spiritOf.get(), this);
 		}
 		Bukkit.getServer().getPluginManager().callEvent(event);
 		return this;
@@ -182,21 +257,24 @@ public abstract class Spirit {
 	 */
 	private static void showEntity(Spirit spirit) {
 		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
-			EntitySpiritDestroyEvent destroyEvent = new EntitySpiritDestroyEvent(k);
-			Bukkit.getServer().getPluginManager().callEvent(destroyEvent);
-			
-			Entity original = SPIRIT_CACHE.get(k).getLeft();
-			original.teleport(k.location());
-			
-			if (original instanceof LivingEntity) {
-				((LivingEntity) original).getLocation().setPitch(k.location().getPitch());
-				((LivingEntity) original).getLocation().setYaw(k.location().getYaw());
+			// TODO: teleporting weird, show metadata
+			if (v != null) {
+				Entity original = v.getLeft();
+				PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(((CraftEntity) original).getHandle(), SPIRIT_CACHE.get(k).getRight());
+				
+				for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+					((CraftPlayer) player).getHandle().b.a(packet);
+				}
+				original.teleport(k.currentLocation());
+				original.setInvulnerable(k.wasInvulnerable());
+				
+				if (v.getLeft() instanceof LivingEntity) {
+					original.getLocation().setPitch(k.location().getPitch());
+					original.getLocation().setYaw(k.location().getYaw());
+				}
+				original.getPersistentDataContainer().remove(REPLACED_KEY);
 			}
-			PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity((net.minecraft.world.entity.Entity) original, SPIRIT_CACHE.get(k).getRight());
-			for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-				((CraftPlayer) player).getHandle().b.a(packet);
-			}
-			return SPIRIT_CACHE.remove(k);
+			return v;
 		});
 	}
 	
@@ -211,11 +289,13 @@ public abstract class Spirit {
 		return of(entity).isPresent();
 	}
 	public static boolean destroy(Spirit spirit) {
+		if (spirit == null) return false;
+		
 		showEntity(spirit);
 		Pair<Entity, Integer> cache = SPIRIT_CACHE.get(spirit);
 		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 		spirit.entity().remove();
-		return RECOLLECTION.remove(spirit) && (SPIRIT_CACHE.get(spirit) == null ? true : SPIRIT_CACHE.remove(spirit, cache));
+		return RECOLLECTION.remove(spirit) || (SPIRIT_CACHE.get(spirit) == null ? SPIRIT_CACHE.keySet().remove(spirit) : SPIRIT_CACHE.remove(spirit, cache));
 	}
 	public static void handle() {
 		if (!RECOLLECTION.isEmpty()) {
@@ -223,19 +303,20 @@ public abstract class Spirit {
 			
 			if (spirit != null) {
 				if (spirit.timesUp()) {
+					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritRevertEvent(spirit, System.currentTimeMillis()));
-					destroy(spirit);
-					RECOLLECTION.pop();
+					
+					spirit.entity().remove();
+					RECOLLECTION.poll();
 				}
 			}
-			// TODO: concurrency issues
 			RECOLLECTION.removeIf(s -> {
-				boolean condition = s.entity().isDead() || !s.entity().isValid();
+				boolean condition = !s.entity().isDead() && !s.entity().isValid();
 				if (condition) {
+					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(s));
 					showEntity(s);
+					s.entity().remove();
 				}
-				destroy(s);
-				
 				return condition;
 			});
 		}

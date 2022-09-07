@@ -4,11 +4,13 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.game.SpiritElement;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.function.Consumer;
@@ -81,6 +83,10 @@ public class Tools {
 				tetra.accept(e, lightAccept, darkAccept, neutralAccept);
 			}
 		}
+	}
+	
+	public static boolean isReplacedEntity(Entity entity) {
+		return entity.getPersistentDataContainer().has(Spirit.REPLACED_KEY, PersistentDataType.STRING);
 	}
 	
 	public static void createCircle(Location location, double size, int points, Consumer<Location> consumer) {

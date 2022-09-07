@@ -20,7 +20,7 @@ public class DarkSpirit extends Spirit {
 		this.entityType = entityType;
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
-		spawnEntity();
+		super.spawnEntity();
 	}
 	public DarkSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
 		super(world, entity.getLocation());
@@ -28,7 +28,7 @@ public class DarkSpirit extends Spirit {
 		this.entityType = entityType;
 		this.spiritType = SpiritType.DARK;
 		this.revertTime = revertTime;
-		replaceEntity(entity);
+		super.replaceEntity(entity);
 	}
 	public DarkSpirit(World world, Location location) {
 		this(world, location, SpiritType.DARK.name(), SpiritType.DARK.entityType(), -1);

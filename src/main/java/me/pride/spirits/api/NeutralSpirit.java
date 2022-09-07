@@ -20,7 +20,7 @@ public class NeutralSpirit extends Spirit {
 		this.entityType = entityType;
 		this.spiritType = SpiritType.SPIRIT;
 		this.revertTime = revertTime;
-		spawnEntity();
+		super.spawnEntity();
 	}
 	public NeutralSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
 		super(world, entity.getLocation());
@@ -28,7 +28,7 @@ public class NeutralSpirit extends Spirit {
 		this.entityType = entityType;
 		this.spiritType = SpiritType.SPIRIT;
 		this.revertTime = revertTime;
-		replaceEntity(entity);
+		super.replaceEntity(entity);
 	}
 	public NeutralSpirit(World world, Location location) {
 		this(world, location, SpiritType.SPIRIT.name(), SpiritType.SPIRIT.entityType(), -1);

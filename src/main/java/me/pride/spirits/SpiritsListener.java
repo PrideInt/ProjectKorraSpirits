@@ -20,6 +20,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -145,19 +146,38 @@ public class SpiritsListener implements Listener {
 	@EventHandler
 	public void onSpiritDamage(final EntityDamageEvent event) {
 		Entity entity = event.getEntity();
-		Optional<Spirit> ofSpirit = Spirit.of(entity);
-		
-		if (ofSpirit.isPresent()) {
-			Spirit spirit = ofSpirit.get();
-			
+		if (event.getEntity() instanceof LivingEntity) {
+			if (((LivingEntity) event.getEntity()).getHealth() <= 0) return;
+		}
+		Spirit.of(entity).ifPresent(spirit -> {
 			Spirit.SPIRIT_CACHE.computeIfPresent(spirit, (s, entityPair) -> {
-				if (entityPair.getLeft() instanceof LivingEntity) {
-					LivingEntity oldEntity = (LivingEntity) entityPair.getLeft();
-					oldEntity.damage(event.getDamage());
+				if (entityPair != null) {
+					if (entityPair.getLeft() instanceof LivingEntity && entity instanceof LivingEntity) {
+						LivingEntity oldEntity = (LivingEntity) entityPair.getLeft(), newEntity = (LivingEntity) entity;
+						
+						double newMaxHealth = newEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+						double oldMaxHealth = oldEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+						
+						double ratio = newEntity.getHealth() / newMaxHealth;
+						
+						oldEntity.setHealth(oldMaxHealth * ratio);
+					}
 				}
 				return entityPair;
 			});
-		}
+		});
+	}
+	
+	@EventHandler
+	public void onSpiritDeath(final EntityDeathEvent event) {
+		Entity entity = event.getEntity();
+		
+		Spirit.of(entity).ifPresent(spirit -> {
+			if (Spirit.SPIRIT_CACHE.get(spirit) != null) {
+				Spirit.SPIRIT_CACHE.get(spirit).getLeft().remove();
+			}
+			spirit.removeFromCache();
+		});
 	}
 }
 
