@@ -154,7 +154,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(blocks.get(i).getLocation(), 1.25)) {
 					if (entity instanceof LivingEntity) {
 						if (Filter.filterEntityFromAbility(entity, player, this) && Filter.filterEntityLight(entity)) {
-							if (!Tools.isReplacedEntity(entity)) {
+							if (!Spirit.isReplacedEntity(entity)) {
 								spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(entity).build());
 							}
 						}

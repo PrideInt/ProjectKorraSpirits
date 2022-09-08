@@ -283,10 +283,17 @@ public abstract class Spirit {
 	 * @return an Optional of the Spirit that is found, if any
 	 */
 	public static Optional<Spirit> of(Entity entity) {
-		return RECOLLECTION.stream().filter(s -> s.entity().getUniqueId() == entity.getUniqueId()).findAny();
+		// TODO: gonna need a better way to search
+		return SPIRIT_CACHE.keySet().stream().filter(spirit -> spirit.entity().getUniqueId() == entity.getUniqueId()).findAny();
 	}
 	public static boolean exists(Entity entity) {
 		return of(entity).isPresent();
+	}
+	public static boolean cacheHas(Spirit spirit) {
+		return SPIRIT_CACHE.containsKey(spirit);
+	}
+	public static boolean isReplacedEntity(Entity entity) {
+		return entity.getPersistentDataContainer().has(REPLACED_KEY, PersistentDataType.STRING);
 	}
 	public static boolean destroy(Spirit spirit) {
 		if (spirit == null) return false;

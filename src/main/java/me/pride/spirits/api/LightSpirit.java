@@ -1,6 +1,7 @@
 package me.pride.spirits.api;
 
 import me.pride.spirits.api.event.EntitySpiritReplaceEvent;
+import me.pride.spirits.api.record.SpiritRecord;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -9,25 +10,20 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 public class LightSpirit extends Spirit {
-	private String name;
-	private EntityType entityType;
-	private SpiritType spiritType;
-	private long revertTime;
+	private SpiritRecord record;
 	
 	public LightSpirit(World world, Location location, String name, EntityType entityType, long revertTime) {
 		super(world, location);
-		this.name = name;
-		this.entityType = entityType;
-		this.spiritType = SpiritType.LIGHT;
-		this.revertTime = revertTime;
+		this.record = new SpiritRecord(name, entityType, SpiritType.LIGHT, revertTime);
 		super.spawnEntity();
 	}
 	public LightSpirit(World world, Entity entity, String name, EntityType entityType, long revertTime) {
 		super(world, entity.getLocation());
-		this.name = name;
-		this.entityType = entityType;
-		this.spiritType = SpiritType.LIGHT;
-		this.revertTime = revertTime;
+		if (isReplacedEntity(entity)) {
+			super.removeFromCache();
+			return;
+		}
+		this.record = new SpiritRecord(name, entityType, SpiritType.LIGHT, revertTime);
 		super.replaceEntity(entity);
 	}
 	public LightSpirit(World world, Location location) {
@@ -47,11 +43,11 @@ public class LightSpirit extends Spirit {
 	}
 	
 	@Override
-	public SpiritType type() { return this.spiritType; }
+	public SpiritType type() { return SpiritType.LIGHT; }
 	@Override
-	public EntityType entityType() { return this.entityType; }
+	public EntityType entityType() { return this.record.entityType(); }
 	@Override
-	public String spiritName() { return this.name; }
+	public String spiritName() { return this.record.spiritName(); }
 	@Override
-	public long revertTime() { return this.revertTime; }
+	public long revertTime() { return this.record.revertTime(); }
 }

@@ -85,10 +85,6 @@ public class Tools {
 		}
 	}
 	
-	public static boolean isReplacedEntity(Entity entity) {
-		return entity.getPersistentDataContainer().has(Spirit.REPLACED_KEY, PersistentDataType.STRING);
-	}
-	
 	public static void createCircle(Location location, double size, int points, Consumer<Location> consumer) {
 		for (int angle = 180; angle >= 0; angle -= 5) {
 			double x = size * Math.cos(Math.toRadians(angle - points) * 2);

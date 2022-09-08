@@ -250,7 +250,7 @@ class MainListener implements Listener {
 		
 		ItemMeta meta = item.getItemMeta();
 		
-		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING)) {
+		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING) && block.getType() == Material.CRAFTING_TABLE) {
 			Predicate<Player> condition = p -> {
 				if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
 					StructureSearchResult result = p.getWorld().locateNearestStructure(p.getLocation(), Structure.ANCIENT_CITY, 2, false);
@@ -263,6 +263,7 @@ class MainListener implements Listener {
 							}
 						}
 						return count >= 3;
+						
 					}
 				}
 				return false;
@@ -270,7 +271,7 @@ class MainListener implements Listener {
 			if (condition.test(player)) {
 				// do database stuff
 			} else {
-				player.sendMessage(ChatColor.of("#e8204c") + "Conditions have not been met to be able to effectively place down the station.");
+				player.sendMessage(ChatColor.of("#e8204c") + "Conditions have not been met to be able to use the station.");
 				event.setBuild(false);
 				event.setCancelled(true);
 				return;
