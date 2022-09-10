@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.SpiritAbility;
+import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;

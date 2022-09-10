@@ -2,7 +2,7 @@ package me.pride.spirits.abilities.spirit;
 
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.SpiritAbility;
+import me.pride.spirits.api.ability.SpiritAbility;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 

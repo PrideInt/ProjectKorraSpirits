@@ -3,7 +3,7 @@ package me.pride.spirits.abilities.dark.passives;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.PassiveAbility;
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.DarkSpiritAbility;
+import me.pride.spirits.api.ability.DarkSpiritAbility;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 

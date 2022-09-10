@@ -3,19 +3,19 @@ package me.pride.spirits;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.api.Spirit;
-import me.pride.spirits.game.DarkSpiritAbility;
-import me.pride.spirits.game.LightSpiritAbility;
-import me.pride.spirits.game.SpiritAbility;
-import me.pride.spirits.game.SpiritElement;
-import me.pride.spirits.items.Spirecite;
-import me.pride.spirits.items.Station;
+import me.pride.spirits.api.ability.DarkSpiritAbility;
+import me.pride.spirits.api.ability.LightSpiritAbility;
+import me.pride.spirits.api.ability.SpiritAbility;
+import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.game.Spirecite;
+import me.pride.spirits.game.Station;
 import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -53,7 +53,6 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
@@ -239,18 +238,20 @@ class MainListener implements Listener {
 				
 				block.getWorld().dropItem(center.clone().add(x / 2.0, 0, z / 2.0).add(new Vector(0, 0.25, 0).multiply(0.1)), Spirecite.SPIRECITE_FRAGMENTS);
 			}
+		} else if (block.getType() == Material.CRAFTING_TABLE && block.hasMetadata("station:ancient")) {
+		
 		}
 	}
 	
 	@EventHandler
 	public void onBlockPlace(final BlockPlaceEvent event) {
-		Block block = event.getBlockPlaced();
 		ItemStack item = event.getItemInHand();
-		Player player = event.getPlayer();
-		
 		ItemMeta meta = item.getItemMeta();
 		
-		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING) && block.getType() == Material.CRAFTING_TABLE) {
+		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING)) {
+			Block block = event.getBlockPlaced();
+			Player player = event.getPlayer();
+			
 			Predicate<Player> condition = p -> {
 				if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
 					StructureSearchResult result = p.getWorld().locateNearestStructure(p.getLocation(), Structure.ANCIENT_CITY, 2, false);
@@ -258,12 +259,11 @@ class MainListener implements Listener {
 					if (result != null) {
 						int count = 0;
 						for (Block spirecite : GeneralMethods.getBlocksAroundPoint(p.getLocation(), 5)) {
-							if (spirecite.hasMetadata("spirecite_block")) {
+							if (spirecite.hasMetadata("spirecite:block")) {
 								count++;
 							}
 						}
 						return count >= 3;
-						
 					}
 				}
 				return false;
@@ -271,7 +271,7 @@ class MainListener implements Listener {
 			if (condition.test(player)) {
 				// do database stuff
 			} else {
-				player.sendMessage(ChatColor.of("#e8204c") + "Conditions have not been met to be able to use the station.");
+				ActionBar.sendActionBar(ChatColor.of("#e8204c") + "Not enough spiritual energy to construct a station.", player);
 				event.setBuild(false);
 				event.setCancelled(true);
 				return;
@@ -281,15 +281,26 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDeath(final EntityDeathEvent event) {
-		Entity entity = event.getEntity();
-		Player killer = event.getEntity().getKiller();
-		
-		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled") && Spirits.instance.getConfig().getBoolean("Spirecite.WardenDrops")) {
-			if (entity.getType() == EntityType.WARDEN) {
+		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
+			Entity entity = event.getEntity();
+			Player killer = event.getEntity().getKiller();
+			
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(Spirecite.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
 				ItemStack spirecite = Spirecite.SPIRECITE.clone();
 				spirecite.setAmount(ThreadLocalRandom.current().nextInt(0, 2));
 				
 				event.getDrops().add(spirecite);
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onEntityDamage(final EntityDamageEvent event) {
+		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
+			Entity entity = event.getEntity();
+			
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(Spirecite.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+				event.setDamage(Math.min(event.getDamage(), 5));
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package me.pride.spirits.items;
+package me.pride.spirits.game;
 
 import me.pride.spirits.Spirits;
 import org.bukkit.Bukkit;

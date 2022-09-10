@@ -4,7 +4,7 @@ import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ComboAbility;
 import com.projectkorra.projectkorra.ability.util.ComboManager;
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.DarkSpiritAbility;
+import me.pride.spirits.api.ability.DarkSpiritAbility;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 

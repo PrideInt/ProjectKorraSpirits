@@ -1,4 +1,4 @@
-package me.pride.spirits.items;
+package me.pride.spirits.game;
 
 import me.pride.spirits.Spirits;
 import org.bukkit.Bukkit;
@@ -21,6 +21,8 @@ public class Spirecite {
 	public static final NamespacedKey SPIRECITE_CROWN_KEY = new NamespacedKey(Spirits.instance, "spirecite_crown");
 	public static final NamespacedKey SPIRECITE_CLUB_KEY = new NamespacedKey(Spirits.instance, "spirecite_club");
 	public static final NamespacedKey SPIRECITE_MEDALLION_KEY = new NamespacedKey(Spirits.instance, "spirecite_armor");
+	
+	public static final NamespacedKey ANCIENT_SOULWEAVER_KEY = new NamespacedKey(Spirits.instance, "ancient_soulweaver");
 	
 	public static final NamespacedKey[] KEYS = { SPIRECITE_KEY, FRAGMENTS_KEY, SPIRECITE_CROWN_KEY, SPIRECITE_CLUB_KEY, SPIRECITE_MEDALLION_KEY };
 	

@@ -6,7 +6,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.util.TempPotionEffect;
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.SpiritAbility;
+import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;

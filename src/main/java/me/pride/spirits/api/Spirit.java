@@ -2,13 +2,9 @@ package me.pride.spirits.api;
 
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.*;
-import me.pride.spirits.game.SpiritElement;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.protocol.Packet;
+import me.pride.spirits.api.ability.SpiritElement;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
-import net.minecraft.world.entity.EntityLiving;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
@@ -21,14 +17,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public abstract class Spirit {
-	public static final NamespacedKey LIGHT_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "lightspirit");
-	public static final NamespacedKey DARK_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "darkspirit");
-	public static final NamespacedKey SPIRIT_KEY = new NamespacedKey(Spirits.instance, "spirit");
-	public static final NamespacedKey REPLACED_KEY = new NamespacedKey(Spirits.instance, "replacedentity");
-	public static final String LIGHT_SPIRIT_NAME = SpiritElement.LIGHT_SPIRIT.getColor() + "" + ChatColor.BOLD + "Light spirit";
-	public static final String DARK_SPIRIT_NAME = SpiritElement.DARK_SPIRIT.getColor() + "" + ChatColor.BOLD + "Dark spirit";
-	public static final String SPIRIT_NAME = SpiritElement.SPIRIT.getColor() + "" + ChatColor.BOLD + "Spirit";
-	
 	public static final Map<Spirit, Pair<Entity, Integer>> SPIRIT_CACHE = new HashMap<>();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 	
@@ -65,7 +53,7 @@ public abstract class Spirit {
 	/**
 	 * @return Location that this spirit was spawned at
 	 */
-	public Location location() {
+	public Location spawnLocation() {
 		return this.location;
 	}
 	
@@ -86,7 +74,7 @@ public abstract class Spirit {
 	/**
 	 * @return The current location of the spirit
 	 */
-	public Location currentLocation() {
+	public Location location() {
 		return this.entity.getLocation();
 	}
 	
@@ -141,7 +129,7 @@ public abstract class Spirit {
 	 * @return this Spirit
 	 */
 	public Spirit spawnEntity() {
-		spawnEntity(world(), location());
+		spawnEntity(world(), spawnLocation());
 		return this;
 	}
 	
@@ -264,7 +252,7 @@ public abstract class Spirit {
 				Entity replaced = v.getLeft();
 				
 				net.minecraft.world.entity.Entity spawn = ((CraftEntity) replaced).getHandle();
-				spawn.a(k.currentLocation().getX(), k.currentLocation().getY(), k.currentLocation().getZ());
+				spawn.a(k.location().getX(), k.location().getY(), k.location().getZ());
 				
 				PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(spawn, SPIRIT_CACHE.get(k).getRight());
 				
@@ -276,8 +264,8 @@ public abstract class Spirit {
 				entity.setCustomNameVisible(true);
 				
 				if (replaced instanceof LivingEntity) {
-					entity.getLocation().setPitch(k.currentLocation().getPitch());
-					entity.getLocation().setYaw(k.currentLocation().getYaw());
+					entity.getLocation().setPitch(k.location().getPitch());
+					entity.getLocation().setYaw(k.location().getYaw());
 				}
 				entity.getPersistentDataContainer().remove(REPLACED_KEY);
 				v = null;
@@ -340,8 +328,16 @@ public abstract class Spirit {
 	public static void cleanup() {
 		SPIRIT_CACHE.keySet().forEach(spirit -> {
 			showEntity(spirit);
+			spirit.remove();
 		});
 		SPIRIT_CACHE.clear();
 		RECOLLECTION.clear();
 	}
+	public static final NamespacedKey LIGHT_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "lightspirit");
+	public static final NamespacedKey DARK_SPIRIT_KEY = new NamespacedKey(Spirits.instance, "darkspirit");
+	public static final NamespacedKey SPIRIT_KEY = new NamespacedKey(Spirits.instance, "spirit");
+	public static final NamespacedKey REPLACED_KEY = new NamespacedKey(Spirits.instance, "replacedentity");
+	public static final String LIGHT_SPIRIT_NAME = SpiritElement.LIGHT_SPIRIT.getColor() + "" + ChatColor.BOLD + "Light spirit";
+	public static final String DARK_SPIRIT_NAME = SpiritElement.DARK_SPIRIT.getColor() + "" + ChatColor.BOLD + "Dark spirit";
+	public static final String SPIRIT_NAME = SpiritElement.SPIRIT.getColor() + "" + ChatColor.BOLD + "Spirit";
 }

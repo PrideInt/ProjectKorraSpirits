@@ -4,17 +4,14 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.config.Config;
-import me.pride.spirits.game.SpiritElement;
-import me.pride.spirits.items.Spirecite;
-import me.pride.spirits.items.Station;
+import me.pride.spirits.game.Spirecite;
+import me.pride.spirits.game.Station;
 import me.pride.spirits.util.Tools;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
 
 public class Spirits extends JavaPlugin {
     public static Spirits instance;

@@ -6,7 +6,7 @@ import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.TempPotionEffect;
 import me.pride.spirits.Spirits;
-import me.pride.spirits.game.DarkSpiritAbility;
+import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import net.md_5.bungee.api.ChatColor;

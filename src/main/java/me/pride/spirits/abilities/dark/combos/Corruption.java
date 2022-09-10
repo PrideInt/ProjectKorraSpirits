@@ -9,9 +9,8 @@ import java.util.stream.Collectors;
 
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
-import me.pride.spirits.api.SpiritBuilder;
-import me.pride.spirits.api.SpiritType;
-import me.pride.spirits.game.DarkSpiritAbility;
+import me.pride.spirits.api.builder.SpiritBuilder;
+import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
@@ -23,7 +22,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -33,7 +31,6 @@ import com.projectkorra.projectkorra.ability.ComboAbility;
 import com.projectkorra.projectkorra.ability.util.ComboManager.AbilityInformation;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.util.ClickType;
-import com.projectkorra.projectkorra.util.ParticleEffect;
 import com.projectkorra.projectkorra.util.TempBlock;
 import com.projectkorra.projectkorra.util.TempBlock.RevertTask;
 import org.bukkit.metadata.FixedMetadataValue;

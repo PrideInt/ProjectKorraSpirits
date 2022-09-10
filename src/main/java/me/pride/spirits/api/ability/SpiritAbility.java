@@ -1,4 +1,4 @@
-package me.pride.spirits.game;
+package me.pride.spirits.api.ability;
 
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.ElementalAbility;

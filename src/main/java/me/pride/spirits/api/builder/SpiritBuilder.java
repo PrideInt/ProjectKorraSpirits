@@ -1,12 +1,11 @@
-package me.pride.spirits.api;
+package me.pride.spirits.api.builder;
 
-import me.pride.spirits.api.exception.InvalidSpiritTypeException;
+import me.pride.spirits.api.*;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class SpiritBuilder {
