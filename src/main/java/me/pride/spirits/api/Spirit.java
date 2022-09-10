@@ -37,6 +37,7 @@ public abstract class Spirit {
 	public abstract String spiritName();
 	public abstract long revertTime();
 	
+	private Spirit spirit;
 	private World world;
 	private Location location;
 	private Entity entity;
@@ -132,6 +133,7 @@ public abstract class Spirit {
 	public void remove() {
 		removeFromCache();
 		this.entity.remove();
+		Spirit spirit = this; spirit = null;
 	}
 	
 	/**
@@ -257,22 +259,28 @@ public abstract class Spirit {
 	 */
 	private static void showEntity(Spirit spirit) {
 		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
-			// TODO: teleporting weird, show metadata
+			// TODO: spawn packets sent to client weird location thing. reshowing works though
 			if (v != null) {
-				Entity original = v.getLeft();
-				PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(((CraftEntity) original).getHandle(), SPIRIT_CACHE.get(k).getRight());
+				Entity replaced = v.getLeft();
 				
-				for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-					((CraftPlayer) player).getHandle().b.a(packet);
-				}
-				original.teleport(k.currentLocation());
-				original.setInvulnerable(k.wasInvulnerable());
+				net.minecraft.world.entity.Entity spawn = ((CraftEntity) replaced).getHandle();
+				spawn.a(k.currentLocation().getX(), k.currentLocation().getY(), k.currentLocation().getZ());
 				
-				if (v.getLeft() instanceof LivingEntity) {
-					original.getLocation().setPitch(k.location().getPitch());
-					original.getLocation().setYaw(k.location().getYaw());
+				PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(spawn, SPIRIT_CACHE.get(k).getRight());
+				
+				for (Player player : Bukkit.getServer().getOnlinePlayers()) ((CraftPlayer) player).getHandle().b.a(packet);
+				
+				Entity entity = spawn.getBukkitEntity();
+				entity.setInvulnerable(k.wasInvulnerable());
+				entity.setCustomName(replaced.getCustomName());
+				entity.setCustomNameVisible(true);
+				
+				if (replaced instanceof LivingEntity) {
+					entity.getLocation().setPitch(k.currentLocation().getPitch());
+					entity.getLocation().setYaw(k.currentLocation().getYaw());
 				}
-				original.getPersistentDataContainer().remove(REPLACED_KEY);
+				entity.getPersistentDataContainer().remove(REPLACED_KEY);
+				v = null;
 			}
 			return v;
 		});
@@ -305,6 +313,7 @@ public abstract class Spirit {
 		return RECOLLECTION.remove(spirit) || (SPIRIT_CACHE.get(spirit) == null ? SPIRIT_CACHE.keySet().remove(spirit) : SPIRIT_CACHE.remove(spirit, cache));
 	}
 	public static void handle() {
+		// System.out.println(RECOLLECTION.size() + ", " + SPIRIT_CACHE.keySet().size() + ", " + SPIRIT_CACHE.values().size());
 		if (!RECOLLECTION.isEmpty()) {
 			Spirit spirit = RECOLLECTION.peek();
 			
