@@ -1,8 +1,10 @@
 package me.pride.spirits.util;
 
 import me.pride.spirits.Spirits;
+import me.pride.spirits.game.AncientSoulweaver;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
@@ -15,31 +17,47 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BendingBossBar {
-	private static final Map<UUID, BendingBossBar> BOSS_BARS = new HashMap<>();
-	
+	private static final Set<BendingBossBar> BARS = new HashSet<>();
 	private BossBar bossBar;
+	private NamespacedKey key;
 	private double length;
 	
 	private double progress;
 	
-	public BendingBossBar(String title, BarColor barColor, double length, int begin, boolean startup, long startupTime, Player... players) {
+	public BendingBossBar(String title, NamespacedKey key, BarColor barColor, double length, boolean startup, long startupTime, Player... players) {
+		if (exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
+			removeBar();
+			return;
+		}
 		this.length = length;
-		this.bossBar = Bukkit.createBossBar(title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
+		this.key = key;
+		this.bossBar = Bukkit.createBossBar(key, title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
+		BARS.add(this);
 		
 		if (startup) {
-			new BarTimer(begin, ((startupTime / 1000.0) / 0.05), this.bossBar);
+			this.bossBar.setProgress(0);
+			new BarTimer(0, (0.05 / (startupTime / 1000.0)), this.bossBar);
 		} else {
-			this.progress = begin;
+			this.progress = 1;
 			this.bossBar.setProgress(this.progress);
 		}
 		for (Player player : players) {
 			this.bossBar.setVisible(true);
 			this.bossBar.addPlayer(player);
-			BOSS_BARS.put(player.getUniqueId(), this);
 		}
 	}
-	public BendingBossBar(String title, BarColor barColor, double length, int begin, Player... players) {
-		this(title, barColor, length, begin, false, 0, players);
+	public BendingBossBar(String title, NamespacedKey key, BarColor barColor, double length, Player... players) {
+		this(title, key, barColor, length, false, 0, players);
+	}
+	private void removeBar() {
+		BendingBossBar bendingBossBar = this;
+		bendingBossBar = null;
+	}
+	public BossBar bossBar() {
+		return this.bossBar;
+	}
+	public NamespacedKey key() {
+		return this.key;
 	}
 	public void update(double segment) {
 		if (progress <= 0) {
@@ -50,17 +68,19 @@ public class BendingBossBar {
 		
 		bossBar.setProgress(progress);
 	}
-	public BossBar bossBar() {
-		return this.bossBar;
+	public static Optional<BendingBossBar> from(NamespacedKey key) {
+		for (BendingBossBar bar : BARS) {
+			if (bar.key().getNamespace().equals(key.getNamespace())) {
+				return Optional.of(bar);
+			}
+		}
+		return Optional.empty();
 	}
-	public static BendingBossBar of(UUID uuid) {
-		return BOSS_BARS.get(uuid);
+	public static Optional<BossBar> of(NamespacedKey key) {
+		return Bukkit.getBossBar(key) == null ? Optional.empty() : Optional.of(Bukkit.getBossBar(key));
 	}
-	public static boolean hasBossBar(UUID uuid) {
-		return BOSS_BARS.containsKey(uuid);
-	}
-	public void remove() {
-		BOSS_BARS.keySet().removeIf(BOSS_BARS::containsKey);
+	public static boolean exists(NamespacedKey key) {
+		return of(key).isPresent();
 	}
 	public static void updateTimer() {
 		BarTimer.update();
@@ -85,19 +105,11 @@ class BarTimer {
 	public static void update() {
 		TIMER.removeIf(timer -> {
 			timer.bossBar().setProgress(timer.timer);
-			switch (timer.start) {
-				case 0 -> { timer.timer -= timer.progress;
-					if (timer.timer <= 0) {
-						timer.timer = 0;
-						return true;
-					}
-				}
-				case 1 -> { timer.timer += timer.progress;
-					if (timer.timer >= 1) {
-						timer.timer = 1;
-						return true;
-					}
-				}
+			
+			timer.timer += timer.progress;
+			if (timer.timer >= 1) {
+				timer.timer = 1;
+				return true;
 			}
 			return false;
 		});

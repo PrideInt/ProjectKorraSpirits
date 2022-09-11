@@ -34,8 +34,9 @@ public class Spirits extends JavaPlugin {
         }
         CoreAbility.registerPluginAbilities(this, "me.pride.spirits.abilities");
 
-        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.0.23");
+        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.0.24");
         getServer().getPluginManager().registerEvents(listener, this);
+        getServer().getPluginManager().registerEvents(((SpiritsListener) listener).mainListener(), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);
     }
 

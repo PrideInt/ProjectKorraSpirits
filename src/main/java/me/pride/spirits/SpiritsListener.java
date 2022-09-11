@@ -14,6 +14,7 @@ import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
 import me.pride.spirits.util.BendingBossBar;
@@ -26,6 +27,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BossBar;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -51,6 +53,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
@@ -58,11 +61,12 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 
 public class SpiritsListener implements Listener {
-	public SpiritsListener() { new MainListener(); }
+	public Listener mainListener() { return new MainListener(); }
 	
 	@EventHandler
 	public void onSwing(final PlayerSwingEvent event) {
@@ -312,17 +316,30 @@ class MainListener implements Listener {
 		Entity damager = event.getDamager();
 		
 		if (damager instanceof Player) {
-			if (BendingBossBar.hasBossBar(damager.getUniqueId())) {
-				BendingBossBar.of(damager.getUniqueId()).update(event.getDamage());
-			}
+			BendingBossBar.of(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
+				for (Player player : bar.getPlayers()) {
+					if (player.getUniqueId() == damager.getUniqueId()) {
+						BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(b -> b.update(event.getDamage()));
+					}
+				}
+			});
 		}
 	}
 	
 	@EventHandler
 	public void onEntityRightClick(final PlayerInteractEntityEvent event) {
-		if (event.getRightClicked().getType() == EntityType.WARDEN) {
-			event.getPlayer().sendMessage("clicked");
-			new BendingBossBar("Ancient Soulweaver", BarColor.BLUE, 500, 0, false, 4000, event.getPlayer());
+		if (event.getHand() != EquipmentSlot.HAND) return;
+		
+		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
+			Entity entity = event.getRightClicked();
+			Player player = event.getPlayer();
+			
+			if (entity.getType() == EntityType.WARDEN) {
+				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
+					new BendingBossBar(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 500, true, 4000, player);
+					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
+				}
+			}
 		}
 	}
 }
