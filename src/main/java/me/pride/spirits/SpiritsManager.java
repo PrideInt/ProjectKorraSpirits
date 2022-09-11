@@ -1,6 +1,7 @@
 package me.pride.spirits;
 
 import me.pride.spirits.api.Spirit;
+import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.world.SpiritWorld;
 
 public class SpiritsManager implements Runnable {
@@ -8,5 +9,6 @@ public class SpiritsManager implements Runnable {
 	public void run() {
 		Spirit.handle();
 		SpiritWorld.handle();
+		BendingBossBar.updateTimer();
 	}
 }

@@ -3,6 +3,7 @@ package me.pride.spirits;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.event.PlayerSwingEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
@@ -15,6 +16,7 @@ import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
+import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -23,6 +25,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -34,9 +37,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
@@ -60,11 +65,7 @@ public class SpiritsListener implements Listener {
 	public SpiritsListener() { new MainListener(); }
 	
 	@EventHandler
-	public void onSwing(final PlayerInteractEvent event) {
-		if (event.getHand() != EquipmentSlot.HAND) return;
-		if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_AIR) return;
-		if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.isCancelled()) return;
-		
+	public void onSwing(final PlayerSwingEvent event) {
 		Player player = event.getPlayer();
 		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 		
@@ -302,6 +303,26 @@ class MainListener implements Listener {
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(Spirecite.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
 				event.setDamage(Math.min(event.getDamage(), 5));
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onEntityDamagedByEntity(final EntityDamageByEntityEvent event) {
+		Entity entity = event.getEntity();
+		Entity damager = event.getDamager();
+		
+		if (damager instanceof Player) {
+			if (BendingBossBar.hasBossBar(damager.getUniqueId())) {
+				BendingBossBar.of(damager.getUniqueId()).update(event.getDamage());
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onEntityRightClick(final PlayerInteractEntityEvent event) {
+		if (event.getRightClicked().getType() == EntityType.WARDEN) {
+			event.getPlayer().sendMessage("clicked");
+			new BendingBossBar("Ancient Soulweaver", BarColor.BLUE, 500, 0, false, 4000, event.getPlayer());
 		}
 	}
 }
