@@ -3,6 +3,7 @@ package me.pride.spirits;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.event.AbilityStartEvent;
 import com.projectkorra.projectkorra.event.PlayerSwingEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
@@ -290,11 +291,12 @@ class MainListener implements Listener {
 			Entity entity = event.getEntity();
 			Player killer = event.getEntity().getKiller();
 			
-			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(Spirecite.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
 				ItemStack spirecite = Spirecite.SPIRECITE.clone();
 				spirecite.setAmount(ThreadLocalRandom.current().nextInt(0, 2));
 				
 				event.getDrops().add(spirecite);
+				AncientSoulweaver.remove(entity.getPersistentDataContainer().get(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE).byteValue());
 			}
 		}
 	}
@@ -304,7 +306,7 @@ class MainListener implements Listener {
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
 			Entity entity = event.getEntity();
 			
-			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(Spirecite.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
 				event.setDamage(Math.min(event.getDamage(), 5));
 			}
 		}
@@ -340,6 +342,15 @@ class MainListener implements Listener {
 					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onAbilityStart(final AbilityStartEvent event) {
+		if (event.getAbility().getPlayer().hasMetadata("soulweaver:restricted")) {
+			event.getAbility().remove();
+			event.setCancelled(true);
+			return;
 		}
 	}
 }
