@@ -30,10 +30,7 @@ import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BossBar;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -44,6 +41,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -296,7 +294,7 @@ class MainListener implements Listener {
 				spirecite.setAmount(ThreadLocalRandom.current().nextInt(0, 2));
 				
 				event.getDrops().add(spirecite);
-				AncientSoulweaver.remove(entity.getPersistentDataContainer().get(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE).byteValue());
+				AncientSoulweaver.remove();
 			}
 		}
 	}
@@ -307,24 +305,12 @@ class MainListener implements Listener {
 			Entity entity = event.getEntity();
 			
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
-				event.setDamage(Math.min(event.getDamage(), 5));
+				event.setDamage(Math.min(event.getDamage(), 5.0));
+				
+				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
+					bar.update(event.getDamage());
+				});
 			}
-		}
-	}
-	
-	@EventHandler
-	public void onEntityDamagedByEntity(final EntityDamageByEntityEvent event) {
-		Entity entity = event.getEntity();
-		Entity damager = event.getDamager();
-		
-		if (damager instanceof Player) {
-			BendingBossBar.of(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
-				for (Player player : bar.getPlayers()) {
-					if (player.getUniqueId() == damager.getUniqueId()) {
-						BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(b -> b.update(event.getDamage()));
-					}
-				}
-			});
 		}
 	}
 	
@@ -338,8 +324,9 @@ class MainListener implements Listener {
 			
 			if (entity.getType() == EntityType.WARDEN) {
 				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
-					new BendingBossBar(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 500, true, 4000, player);
+					new BendingBossBar(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 1000, true, 4000, player);
 					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
+					new AncientSoulweaver((Warden) entity);
 				}
 			}
 		}

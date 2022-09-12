@@ -4,10 +4,13 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.config.Config;
+import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
+import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Tools;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -34,7 +37,7 @@ public class Spirits extends JavaPlugin {
         }
         CoreAbility.registerPluginAbilities(this, "me.pride.spirits.abilities");
 
-        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.0.24");
+        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.25.10.3");
         getServer().getPluginManager().registerEvents(listener, this);
         getServer().getPluginManager().registerEvents(((SpiritsListener) listener).mainListener(), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);
@@ -42,6 +45,7 @@ public class Spirits extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        Bukkit.getServer().removeBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
         HandlerList.unregisterAll(listener);
         Spirit.cleanup();
     }

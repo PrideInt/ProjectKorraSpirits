@@ -1,6 +1,7 @@
 package me.pride.spirits;
 
 import me.pride.spirits.api.Spirit;
+import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.world.SpiritWorld;
 
@@ -10,5 +11,6 @@ public class SpiritsManager implements Runnable {
 		Spirit.handle();
 		SpiritWorld.handle();
 		BendingBossBar.updateTimer();
+		AncientSoulweaver.manageAI();
 	}
 }

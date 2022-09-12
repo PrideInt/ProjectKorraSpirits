@@ -3,8 +3,10 @@ package me.pride.spirits.game;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -22,6 +24,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -30,29 +33,27 @@ import java.util.stream.Collectors;
 public class AncientSoulweaver {
 	public static final NamespacedKey ANCIENT_SOULWEAVER_BAR_KEY = new NamespacedKey(Spirits.instance, "soulweaverbar");
 	public static final NamespacedKey ANCIENT_SOULWEAVER_KEY = new NamespacedKey(Spirits.instance, "ancientsoulweaver");
-	public static final String NAME = ChatColor.of("#6E34EB") + "" + ChatColor.BOLD + "Ancient Soulweaver";
-	private static final Set<AncientSoulweaver> SOULWEAVERS = new HashSet<>();
+	public static final String NAME = ChatColor.of("#416485") + "" + ChatColor.BOLD + "Ancient Soulweaver";
+	
+	public static Pair<Warden, Optional<AncientSoulweaver>> ANCIENT_SOULWEAVER = Pair.of(null, Optional.empty());
 	
 	public enum Phase { PROTECTOR, TERROR, NIGHTMARE; }
 	private Phase phase;
-	
-	private static byte VALUE = 0x0;
 	
 	private Warden entity;
 	private SoulweaverAI ai;
 	
 	public AncientSoulweaver(Warden entity, Consumer<Warden> consumer) {
-		if (VALUE == 0x7F) {
+		if (BendingBossBar.exists(ANCIENT_SOULWEAVER_BAR_KEY) && ANCIENT_SOULWEAVER.getRight().isPresent()) {
 			return;
 		}
-		SOULWEAVERS.add(this);
-		
 		this.phase = Phase.PROTECTOR;
 		this.entity = entity;
-		this.entity.getPersistentDataContainer().set(ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE, VALUE);
+		this.entity.getPersistentDataContainer().set(ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING, this.entity.getUniqueId().toString());
 		consumer.accept(this.entity);
 		
-		VALUE++;
+		this.ai = new SoulweaverAI(this);
+		ANCIENT_SOULWEAVER = Pair.of(this.entity, Optional.of(this));
 	}
 	public AncientSoulweaver(Warden entity) {
 		this(entity, warden -> {
@@ -104,24 +105,29 @@ public class AncientSoulweaver {
 	private double healthPartition(int partition) {
 		return Math.ceil((maxHealth() / partition));
 	}
-	public static void remove(byte value) {
-		SOULWEAVERS.removeIf(soulwvr -> soulwvr.has(value));
-	}
-	public static void updateBitValue(byte value) {
-		if (VALUE + value < 0x0) {
-			VALUE = 0x0;
-		} else if (VALUE + value > 0x7F) {
-			VALUE = 0x7F;
-		} else {
-			VALUE += value;
+	public static Optional<AncientSoulweaver> of(Warden warden) {
+		if (ANCIENT_SOULWEAVER.getLeft() == null) return Optional.empty();
+		
+		if (ANCIENT_SOULWEAVER.getLeft().getUniqueId() == warden.getUniqueId()) {
+			return ANCIENT_SOULWEAVER.getRight();
 		}
+		return Optional.empty();
+	}
+	public static void addExistingSoulweaver(Warden warden) {
+		new AncientSoulweaver(warden);
+	}
+	public static void remove() {
+		Optional<AncientSoulweaver> right = ANCIENT_SOULWEAVER.getRight();
+		right.ifPresent(soulweaver -> soulweaver = null);
+		right = Optional.empty();
 	}
 	public static void manageAI() {
-		SOULWEAVERS.iterator().forEachRemaining(soulweaver -> {
+		ANCIENT_SOULWEAVER.getRight().ifPresent(soulweaver -> {
 			SoulweaverAI actions = soulweaver.actions();
 			Warden entity = soulweaver.entity();
 			
 			actions.nightmareCycle();
+			entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
 			
 			switch (soulweaver.phase()) {
 				case PROTECTOR -> { actions.doProtectorPhase();
@@ -132,11 +138,15 @@ public class AncientSoulweaver {
 				}
 				case TERROR -> { actions.doTerrorPhase();
 					if (soulweaver.healthAtNightmare()) {
+						actions.doNightmarePhase(false);
 						soulweaver.setPhase(Phase.NIGHTMARE);
 					}
 					break;
 				}
-				case NIGHTMARE -> { actions.doNightmarePhase(false);
+				case NIGHTMARE -> {
+					if (!actions.naturalNightmare()) {
+						actions.doNightmarePhase(false);
+					}
 					break;
 				}
 			}
@@ -144,6 +154,7 @@ public class AncientSoulweaver {
 	}
 }
 
+// TODO: seperate these damn AIs
 class SoulweaverAI {
 	private AncientSoulweaver soulweaver;
 	private Warden entity;
@@ -151,7 +162,8 @@ class SoulweaverAI {
 	
 	private long nightmareCycle;
 	
-	private boolean forcefield;
+	private Optional<Forcefield> forcefield;
+	private boolean forcefieldRemoval;
 	private long forcefieldTimer;
 	
 	private long timer, regenerationTime;
@@ -165,6 +177,8 @@ class SoulweaverAI {
 		this.entity = this.soulweaver.entity();
 		this.phase = this.soulweaver.phase();
 		
+		this.forcefield = Optional.empty();
+		this.nightmareCycle = System.currentTimeMillis() + 20000;
 		this.naturalNightmare = true;
 		
 		this.attributes = new Pair[] {
@@ -178,24 +192,28 @@ class SoulweaverAI {
 	public void nightmareCycle() {
 		if (naturalNightmare) {
 			if (System.currentTimeMillis() > nightmareCycle) {
-				if (phase != soulweaver.nightmarePhase()) {
-					phase = soulweaver.phase();
+				System.out.println("NIGHTMARE PHASE");
+				if (phase == soulweaver.phase()) {
+					switch (soulweaver.phase()) {
+						case PROTECTOR: phase = AncientSoulweaver.Phase.PROTECTOR; break;
+						case TERROR: phase = AncientSoulweaver.Phase.TERROR; break;
+					}
+					new BukkitRunnable() {
+						@Override
+						public void run() {
+							resetCycle();
+							cancel();
+						}
+					}.runTaskLater(Spirits.instance, 100);
 				}
 				soulweaver.setPhase(AncientSoulweaver.Phase.NIGHTMARE);
 				doNightmarePhase(true);
-				
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						resetCycle();
-						cancel();
-					}
-				}.runTaskLater(Spirits.instance, 40);
 			}
 		}
 	}
 	public void resetCycle() {
-		nightmareCycle = System.currentTimeMillis() + 30000;
+		nightmareCycle = System.currentTimeMillis() + 20000;
+		System.out.println("PHASE RESET, " + phase);
 		soulweaver.setPhase(phase);
 		resetAttributes();
 	}
@@ -208,32 +226,32 @@ class SoulweaverAI {
 				.stream().filter(e -> e.getUniqueId() != entity.getUniqueId() && e instanceof LivingEntity)
 				.map(e -> (LivingEntity) e).collect(Collectors.toList());
 		
+		forcefield.ifPresent(ff -> ff.createSphere(entities));
+		
 		if (!entities.isEmpty()) {
 			forcefield(entities);
 		}
-		if (forcefield) {
-			forcefieldTimer = System.currentTimeMillis() + 4500;
-			
+		if (forcefieldRemoval) {
 			if (System.currentTimeMillis() > forcefieldTimer) {
-				forcefield = false;
+				forcefieldRemoval = false;
 			}
 		}
 	}
 	private void forcefield(List<LivingEntity> entities) {
-		if (forcefield) return;
+		if (forcefieldRemoval) return;
 		
-		new Forcefield(soulweaver.entity().getLocation().clone().add(0, 1, 0)).createSphere(entities, remove -> {
-			if (remove) forcefield = true;
-		});
+		if (!forcefield.isPresent()) {
+			forcefield = Optional.of(new Forcefield(this));
+		}
 	}
 	
 	class Forcefield {
-		private double size; private Location location;
-		public Forcefield(Location location) {
-			this.size = 0; this.location = location;
+		private SoulweaverAI ai; private double size; private Location location;
+		public Forcefield(SoulweaverAI ai) {
+			this.ai = ai; this.size = 0; this.location = ai.entity.getLocation().clone().add(0, 1, 0);
 		}
-		public void createSphere(List<LivingEntity> entities, Consumer<Boolean> remove) {
-			size += 0.75;
+		public void createSphere(List<LivingEntity> entities) {
+			size += 0.5;
 			for (double i = 0; i <= Math.PI; i += Math.PI / 15) {
 				double y = size * Math.cos(i);
 				
@@ -248,14 +266,17 @@ class SoulweaverAI {
 						e.setVelocity(location.getDirection().setY(1.5).multiply(1));
 						e.damage(2);
 					});
-					if (ThreadLocalRandom.current().nextInt(80) == 0) {
-						location.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, location, 1, 0, 0, 0);
+					if (ThreadLocalRandom.current().nextInt(20) == 0) {
+						location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
 					}
 					location.subtract(x, y, z);
 				}
 			}
 			if (size > 5) {
-				remove.accept(true);
+				System.out.println("FORCEFIELD OVER");
+				ai.forcefieldRemoval = true;
+				ai.forcefieldTimer = System.currentTimeMillis() + 4000;
+				ai.forcefield = Optional.empty();
 				Forcefield forcefield = this;
 				forcefield = null;
 			}
@@ -319,5 +340,8 @@ class SoulweaverAI {
 		for (Pair<Attribute, Double> couple : attributes) {
 			entity.getAttribute(couple.getLeft()).setBaseValue(couple.getRight());
 		}
+	}
+	public boolean naturalNightmare() {
+		return naturalNightmare;
 	}
 }
