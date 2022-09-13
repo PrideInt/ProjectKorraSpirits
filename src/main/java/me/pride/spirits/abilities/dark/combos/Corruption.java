@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.builder.SpiritBuilder;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
@@ -151,7 +152,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(blocks.get(i).getLocation(), 1.25)) {
 					if (entity instanceof LivingEntity) {
 						if (Filter.filterEntityFromAbility(entity, player, this) && Filter.filterEntityLight(entity)) {
-							if (!Spirit.isReplacedEntity(entity)) {
+							if (!ReplaceableSpirit.isReplacedEntity(entity)) {
 								spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(entity).build());
 							}
 						}
@@ -216,6 +217,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	
 	@Override
 	public void remove() {
+		super.remove();
 		for (Spirit spirit : spirits) {
 			if (spirit == null) continue;
 			

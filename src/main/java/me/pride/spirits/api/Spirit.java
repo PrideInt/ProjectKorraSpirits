@@ -3,6 +3,7 @@ package me.pride.spirits.api;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.*;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.api.record.SpiritRecord;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,16 +15,14 @@ import org.bukkit.event.Event;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class Spirit {
-	public static final Map<Spirit, Pair<Entity, Integer>> SPIRIT_CACHE = new HashMap<>();
+	public static final Set<Spirit> SPIRIT_CACHE = new HashSet<>();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 	
-	public abstract SpiritType type();
-	public abstract EntityType entityType();
-	public abstract String spiritName();
-	public abstract long revertTime();
+	public abstract SpiritRecord record();
 	
 	private Spirit spirit;
 	private World world;
@@ -31,17 +30,11 @@ public abstract class Spirit {
 	private Entity entity;
 	private long start, end;
 	
-	private boolean replaced;
-	private boolean invulnerable;
-	
-	public Spirit() { SPIRIT_CACHE.put(this, null); }
-	
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
-		SPIRIT_CACHE.put(this, null);
+		SPIRIT_CACHE.add(this);
 	}
-	private boolean wasInvulnerable() { return this.invulnerable; }
 	
 	/**
 	 * @return World that this spirit was spawned in
@@ -65,17 +58,38 @@ public abstract class Spirit {
 	}
 	
 	/**
-	 * @return Whether an entity/spirit was replaced by this spirit
-	 */
-	public boolean replaced() {
-		return this.replaced;
-	}
-	
-	/**
 	 * @return The current location of the spirit
 	 */
 	public Location location() {
 		return this.entity.getLocation();
+	}
+	
+	/**
+	 * @return Custom name of the spirit
+	 */
+	public String spiritName() {
+		return record().spiritName();
+	}
+	
+	/**
+	 * @return Type of entity representing the spirit
+	 */
+	public EntityType entityType() {
+		return record().entityType();
+	}
+	
+	/**
+	 * @return Type of the spirit
+	 */
+	public SpiritType type() {
+		return record().spiritType();
+	}
+	
+	/**
+	 * @return Revert time of the spirit
+	 */
+	public long revertTime() {
+		return record().revertTime();
 	}
 	
 	/**
@@ -183,95 +197,36 @@ public abstract class Spirit {
 		return this;
 	}
 	
-	/**
-	 *
-	 * @param entity - Entity to be replaced
-	 *
-	 * @return this Spirit
-	 */
-	public Spirit replaceEntity(Entity entity) {
-		replaceEntity(world(), entity);
-		return this;
-	}
-	
-	/**
-	 * @param world - World to spawn spirit that replaces the old spirit
-	 * @param entity - Entity to be replaced
-	 *
-	 * @return this Spirit
-	 */
-	public Spirit replaceEntity(World world, Entity entity) {
-		replaceEntity(world, entity, entityType(), type(), revertTime(), e -> {
-			e.setCustomName(spiritName());
-			e.setCustomNameVisible(true);
-		});
-		return this;
-	}
-	
-	/**
-	 * @param world - World to spawn spirit that replaces the old spirit
-	 * @param entity - Entity to be replaced
-	 * @param entityType - Type of entity to spawn
-	 * @param spiritType - type of the Spirit
-	 * @param revertTime - Sets revert time of spirit; -1 does not revert
-	 * @param consumer - Returns spawned entity, allows developers to perform whatever action to alter entity
-	 *
-	 * @return this Spirit
-	 */
-	public Spirit replaceEntity(World world, Entity entity, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
-		spawnEntity(world, entity.getLocation(), entityType, spiritType, revertTime, consumer);
-		
-		this.replaced = true;
-		this.invulnerable = entity.isInvulnerable();
-		
-		entity.setInvulnerable(true);
-		entity.getPersistentDataContainer().set(REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
-		
-		SPIRIT_CACHE.put(this, Pair.of(entity, entity.getEntityId()));
-		// Do packets stuff to hide and unhide original entity
-		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entity.getEntityId());
-		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			((CraftPlayer) player).getHandle().b.a(packet);
-		}
-		Event event = new EntityReplacedBySpiritEvent(entity, this);
-		
-		Optional<Spirit> spiritOf = of(entity);
-		if (spiritOf.isPresent()) {
-			event = new EntitySpiritReplaceEvent(spiritOf.get(), this);
-		}
-		Bukkit.getServer().getPluginManager().callEvent(event);
-		return this;
-	}
-	
 	/* Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
 	 */
 	private static void showEntity(Spirit spirit) {
-		SPIRIT_CACHE.computeIfPresent(spirit, (k, v) -> {
-			// TODO: spawn packets sent to client weird location thing. reshowing works though
-			if (v != null) {
-				Entity replaced = v.getLeft();
-				
-				net.minecraft.world.entity.Entity spawn = ((CraftEntity) replaced).getHandle();
-				spawn.a(k.location().getX(), k.location().getY(), k.location().getZ());
-				
-				PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(spawn, SPIRIT_CACHE.get(k).getRight());
-				
-				for (Player player : Bukkit.getServer().getOnlinePlayers()) ((CraftPlayer) player).getHandle().b.a(packet);
-				
-				Entity entity = spawn.getBukkitEntity();
-				entity.setInvulnerable(k.wasInvulnerable());
-				entity.setCustomName(replaced.getCustomName());
-				entity.setCustomNameVisible(true);
-				
-				if (replaced instanceof LivingEntity) {
-					entity.getLocation().setPitch(k.location().getPitch());
-					entity.getLocation().setYaw(k.location().getYaw());
-				}
-				entity.getPersistentDataContainer().remove(REPLACED_KEY);
-				v = null;
+		if (spirit instanceof ReplaceableSpirit) {
+			if (ReplaceableSpirit.containsKey(spirit.entity())) {
+				ReplaceableSpirit.fromEntity(spirit.entity()).replacedCache().ifPresent(replacedCache -> {
+					Entity replaced = replacedCache.cache().getLeft();
+					
+					net.minecraft.world.entity.Entity spawn = ((CraftEntity) replaced).getHandle();
+					spawn.a(spirit.location().getX(), spirit.location().getY(), spirit.location().getZ());
+					
+					PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(spawn, replacedCache.cache().getRight());
+					
+					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+						((CraftPlayer) player).getHandle().b.a(packet);
+					}
+					Entity entity = spawn.getBukkitEntity();
+					entity.setInvulnerable(replacedCache.invulnerable());
+					entity.setCustomName(replaced.getCustomName());
+					entity.setCustomNameVisible(true);
+					
+					if (replaced instanceof LivingEntity) {
+						entity.getLocation().setPitch(spirit.location().getPitch());
+						entity.getLocation().setYaw(spirit.location().getYaw());
+					}
+					entity.getPersistentDataContainer().remove(REPLACED_KEY);
+				});
+				ReplaceableSpirit.remove(spirit.entity(), ReplaceableSpirit.fromEntity(spirit.entity()));
 			}
-			return v;
-		});
+		}
 	}
 	
 	/**
@@ -280,25 +235,18 @@ public abstract class Spirit {
 	 */
 	public static Optional<Spirit> of(Entity entity) {
 		// TODO: gonna need a better way to search
-		return SPIRIT_CACHE.keySet().stream().filter(spirit -> spirit.entity().getUniqueId() == entity.getUniqueId()).findAny();
+		return SPIRIT_CACHE.stream().filter(spirit -> spirit.entity().getUniqueId() == entity.getUniqueId()).findAny();
 	}
 	public static boolean exists(Entity entity) {
 		return of(entity).isPresent();
-	}
-	public static boolean cacheHas(Spirit spirit) {
-		return SPIRIT_CACHE.containsKey(spirit);
-	}
-	public static boolean isReplacedEntity(Entity entity) {
-		return entity.getPersistentDataContainer().has(REPLACED_KEY, PersistentDataType.STRING);
 	}
 	public static boolean destroy(Spirit spirit) {
 		if (spirit == null) return false;
 		
 		showEntity(spirit);
-		Pair<Entity, Integer> cache = SPIRIT_CACHE.get(spirit);
 		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 		spirit.entity().remove();
-		return RECOLLECTION.remove(spirit) || (SPIRIT_CACHE.get(spirit) == null ? SPIRIT_CACHE.keySet().remove(spirit) : SPIRIT_CACHE.remove(spirit, cache));
+		return (!RECOLLECTION.contains(spirit) ? true : RECOLLECTION.remove(spirit)) && SPIRIT_CACHE.remove(spirit);
 	}
 	public static void handle() {
 		// System.out.println(RECOLLECTION.size() + ", " + SPIRIT_CACHE.keySet().size() + ", " + SPIRIT_CACHE.values().size());
@@ -326,7 +274,7 @@ public abstract class Spirit {
 		}
 	}
 	public static void cleanup() {
-		SPIRIT_CACHE.keySet().forEach(spirit -> {
+		SPIRIT_CACHE.forEach(spirit -> {
 			showEntity(spirit);
 			spirit.remove();
 		});

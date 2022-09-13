@@ -1,6 +1,7 @@
 package me.pride.spirits.api.builder;
 
 import me.pride.spirits.api.*;
+import me.pride.spirits.api.exception.InvalidSpiritTypeException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -87,8 +88,12 @@ public class SpiritBuilder {
 		}
 		return null;
 	}
-	public <T extends Spirit> T build(Supplier<T> supplier) {
-		return (T) (replace ? supplier.get().replaceEntity(world, replacedEntity, entityType, spiritType, revertTime, e -> {
+	public <T extends Spirit> T build(Supplier<T> supplier) throws InvalidSpiritTypeException {
+		if (replace && !(supplier.get() instanceof ReplaceableSpirit)) {
+			throw new InvalidSpiritTypeException();
+		}
+		return (T) (replace ?
+				((ReplaceableSpirit) supplier.get()).replaceEntity(world, replacedEntity, entityType, spiritType, revertTime, e -> {
 					e.setCustomName(name);
 					e.setCustomNameVisible(true);
 				}) : supplier.get().spawnEntity(world, location, entityType, spiritType, revertTime, e -> {}));

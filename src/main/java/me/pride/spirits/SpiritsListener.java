@@ -10,6 +10,7 @@ import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.spirit.Disappear;
+import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.api.ability.LightSpiritAbility;
@@ -146,35 +147,28 @@ public class SpiritsListener implements Listener {
 		if (event.getEntity() instanceof LivingEntity) {
 			if (((LivingEntity) event.getEntity()).getHealth() <= 0) return;
 		}
-		Spirit.of(entity).ifPresent(spirit -> {
-			Spirit.SPIRIT_CACHE.computeIfPresent(spirit, (s, entityPair) -> {
-				if (entityPair != null) {
-					if (entityPair.getLeft() instanceof LivingEntity && entity instanceof LivingEntity) {
-						LivingEntity oldEntity = (LivingEntity) entityPair.getLeft(), newEntity = (LivingEntity) entity;
-						
-						double newMaxHealth = newEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-						double oldMaxHealth = oldEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-						
-						double ratio = newEntity.getHealth() / newMaxHealth;
-						
-						oldEntity.setHealth(oldMaxHealth * ratio);
-					}
-				}
-				return entityPair;
-			});
-		});
+		if (ReplaceableSpirit.containsKey(entity)) {
+			Entity replaced = ReplaceableSpirit.fromEntity(entity).getReplacedCache().cache().getLeft();
+			if (replaced instanceof LivingEntity && entity instanceof LivingEntity) {
+				LivingEntity oldEntity = (LivingEntity) replaced, newEntity = (LivingEntity) entity;
+				
+				double newMaxHealth = newEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+				double oldMaxHealth = oldEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+				
+				double ratio = newEntity.getHealth() / newMaxHealth;
+				
+				oldEntity.setHealth(oldMaxHealth * ratio);
+			}
+		}
 	}
 	
 	@EventHandler
 	public void onSpiritDeath(final EntityDeathEvent event) {
 		Entity entity = event.getEntity();
 		
-		Spirit.of(entity).ifPresent(spirit -> {
-			if (Spirit.SPIRIT_CACHE.get(spirit) != null) {
-				Spirit.SPIRIT_CACHE.get(spirit).getLeft().remove();
-			}
-			spirit.removeFromCache();
-		});
+		if (ReplaceableSpirit.containsKey(entity)) {
+			ReplaceableSpirit.fromEntity(entity).ifCachePresent(cache -> cache.cache().getLeft().remove());
+		}
 	}
 }
 
