@@ -7,7 +7,6 @@ import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
-import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Tools;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -37,7 +36,7 @@ public class Spirits extends JavaPlugin {
         }
         CoreAbility.registerPluginAbilities(this, "me.pride.spirits.abilities");
 
-        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.25.10.3");
+        getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.5.11.1");
         getServer().getPluginManager().registerEvents(listener, this);
         getServer().getPluginManager().registerEvents(((SpiritsListener) listener).mainListener(), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);

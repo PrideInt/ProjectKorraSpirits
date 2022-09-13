@@ -1,8 +1,6 @@
 package me.pride.spirits.util;
 
-import me.pride.spirits.Spirits;
 import me.pride.spirits.game.AncientSoulweaver;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -10,11 +8,8 @@ import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class BendingBossBar {
 	private static final Set<BendingBossBar> BARS = new HashSet<>();
