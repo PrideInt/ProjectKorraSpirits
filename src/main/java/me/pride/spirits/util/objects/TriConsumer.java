@@ -1,4 +1,4 @@
-package me.pride.spirits.util;
+package me.pride.spirits.util.objects;
 
 import java.util.Objects;
 

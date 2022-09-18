@@ -7,6 +7,7 @@ import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
+import me.pride.spirits.util.ChatUtil;
 import me.pride.spirits.util.Tools;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -17,8 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Spirits extends JavaPlugin {
     public static Spirits instance;
-
-    private static final String AUTHOR = "Prride/prideyy", VERSION = "VERSION 1";
 
     private FileConfiguration config;
     private Listener listener;
@@ -49,17 +48,15 @@ public class Spirits extends JavaPlugin {
         Spirit.cleanup();
     }
     public static String getAuthor() {
-        return AUTHOR;
+        return ChatUtil.getAuthor();
     }
     public static String getAuthor(Element element) {
-        return Tools.getOppositeColor(element) + "" + ChatColor.UNDERLINE + AUTHOR;
+        return ChatUtil.getAuthor(element);
     }
     public static String getVersion() {
-        return VERSION;
+        return ChatUtil.getVersion();
     }
-    public static String getVersion(Element element) {
-        return Tools.getOppositeColor(element) + "" + ChatColor.UNDERLINE + VERSION;
-    }
+    
     public FileConfiguration configuration() {
         return this.config;
     }
