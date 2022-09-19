@@ -3,30 +3,26 @@ package me.pride.spirits.game.behavior;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class BehaviorTree {
-	private BehaviorTree root;
-	private Branch[] children;
+	private Branch[] root;
 	
-	public BehaviorTree() {
-		this.root = new BehaviorTree();
-	}
-	public BehaviorTree(Behavior... behaviors) {
-		this();
+	public BehaviorTree(BehaviorAction... behaviors) {
 		init(behaviors);
 	}
-	public BehaviorTree init(Behavior... behaviors) {
-		this.children = new Branch[behaviors.length];
+	protected BehaviorTree init(BehaviorAction... behaviors) {
+		this.root = new Branch[behaviors.length];
 		for (int i = 0; i < behaviors.length; i++) {
-			this.children[i] = new Branch(behaviors[i]);
+			this.root[i] = new Branch(behaviors[i]);
 		}
 		return this;
 	}
-	public void insert(int childIndex, int depth, int breadth, Behavior... behaviors) {
-		if (children != null) {
-			Branch child = children[childIndex];
+	protected void insert(int childIndex, int depth, int breadth, BehaviorAction... behaviors) {
+		if (root != null) {
+			Branch child = root[childIndex];
 			
 			if (depth == 0) {
-				for (Behavior behavior : behaviors) {
+				for (BehaviorAction behavior : behaviors) {
 					child.insert(new Branch(behavior));
 				}
 				return;
@@ -34,34 +30,45 @@ public class BehaviorTree {
 			for (int i = 0; i < depth; i++) {
 				child = child.child(breadth);
 			}
-			for (Behavior behavior : behaviors) {
+			for (BehaviorAction behavior : behaviors) {
 				child.insert(new Branch(behavior));
 			}
 		}
 	}
+	protected Branch[] children() {
+		return this.root;
+	}
+	protected void imported(Branch branch) {
+	
+	}
 	class Branch {
 		private List<Branch> children;
-		private Behavior behavior;
+		private BehaviorAction behavior;
 		
-		public Branch(Behavior behavior) {
+		protected Branch(BehaviorAction behavior) {
 			this.children = new ArrayList<>();
 			this.behavior = behavior;
 		}
-		public Behavior behavior() {
+		protected BehaviorAction behavior() {
 			return this.behavior;
 		}
-		public List<Branch> children() {
+		protected List<Branch> children() {
 			return this.children;
 		}
-		public Branch child(int child) {
+		protected Branch child(int child) {
 			return children.get(child);
 		}
-		public void insert(Branch... branches) {
+		protected void insert(Branch... branches) {
 			for (Branch branch : branches) {
 				children.add(branch);
 			}
 		}
-		public boolean hasChild() {
+		protected void insert(BehaviorAction... actions) {
+			for (BehaviorAction action : actions) {
+				children.add(new Branch(action));
+			}
+		}
+		protected boolean hasChild() {
 			return children.isEmpty();
 		}
 	}
