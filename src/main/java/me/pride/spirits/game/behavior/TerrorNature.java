@@ -1,15 +1,13 @@
 package me.pride.spirits.game.behavior;
 
+import me.pride.spirits.game.AncientSoulweaver;
+
 import java.util.Optional;
 
 @Deprecated
-public class TerrorNature extends BehaviorAction {
+public class TerrorNature extends Behavior {
 	@Override
-	public String type() {
-		return "Terroring";
-	}
-	@Override
-	public Optional<BehaviorRecord> behaviors() {
+	public Optional<BehaviorRecord> behavioralRecord() {
 		return Optional.of(new BehaviorRecord(new FangsCircle(), new FangsLine(), new HealingStasis()));
 	}
 	

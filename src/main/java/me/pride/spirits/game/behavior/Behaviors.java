@@ -4,14 +4,19 @@ import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.behavior.BehaviorTree.Branch;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Deprecated
 public class Behaviors {
 	private BehaviorTree tree;
+	private Branch branch;
 	
 	private ProtectorNature protector;
 	private TerrorNature terror;
 	private NightmareNature nightmare;
+	
+	private final int ATTACKER_ACTION = 0, DEFENDER_ACTION = 1, HEAL_ACTION = 2;
 	
 	public Behaviors() {
 		this.protector = new ProtectorNature();
@@ -19,38 +24,59 @@ public class Behaviors {
 		this.nightmare = new NightmareNature();
 		
 		this.tree = new BehaviorTree(protector, terror, nightmare);
+		this.branch = tree.children()[0];
 	}
 	public void setupTree() {
+		for (Branch<BehaviorAction> branch : branches()) {
+			branch.insert(new Action[]{ new AttackerAct(), new DefenderAct(), new HealAct() });
+		}
 		for (int i = 0; i < 2; i++) {
-			BehaviorAction[] actions = {};
-			BehaviorAction[] operations = branchOf(i).behavior().behaviors().get().actions();
+			Action[] operations = (Action[]) branchOf(i).behavior().behavioralRecord().get().actions();
 			
 			switch (i) {
-				case 0 -> {
-					actions = new BehaviorAction[]{ new DefenderAct(), new HealAct() };
-					protectorDefenderBranch().insert(operations[0]);
-					protectorHealBranch().insert(operations[1]);
+				case ATTACKER_ACTION -> {
+					terrorChildren().get(i).insert(operations[0], operations[1]); // Fangs
+					nightmareChildren().get(i).insert(operations); // All attacking operations
 					break;
 				}
-				case 1 -> {
-					actions = new BehaviorAction[]{ new AttackerAct(), new HealAct() };
-					terrorAttackerBranch().insert(operations[0], operations[1]);
-					terrorHealBranch().insert(operations[2]);
+				case DEFENDER_ACTION -> {
+					protectorChildren().get(i).insert(operations[0]); // Forcefield
 					break;
 				}
-				case 2 -> {
-					actions = new BehaviorAction[]{ new AttackerAct() };
-					nightmareAttackerBranch().insert(operations);
+				case HEAL_ACTION -> {
+					protectorChildren().get(i).insert(operations[1]); // Random heal
+					terrorChildren().get(i).insert(operations[2]); // Healing stasis
 					break;
 				}
 			}
-			branchOf(i).insert(actions);
 		}
 	}
-	
 	public void manageBehavior(AncientSoulweaver soulweaver) {
 		switch (soulweaver.phase()) {
 			case PROTECTOR -> {
+				for (Branch<Action> branch : protectorChildren()) {
+					branch.children().forEach(typeBranch -> {
+						List<Branch<Action>> children = typeBranch.children();
+						
+						switch (typeBranch.behavior().name()) {
+							case "Defending" -> {
+								ProtectorNature.Forcefield forcefield = (ProtectorNature.Forcefield) forcefield();
+								if (!forcefield.progressing()) {
+									forcefield.setLocation(soulweaver.entity().getLocation());
+								}
+								break;
+							}
+							case "Healing" -> {
+							
+							}
+						}
+						children.forEach(child -> {
+							Action action = child.behavior();
+							
+							if (!action.inCooldown()) action.doAction(soulweaver);
+						});
+					});
+				}
 				break;
 			}
 			case TERROR -> {
@@ -62,57 +88,35 @@ public class Behaviors {
 		}
 	}
 	
-	public Branch[] branches() {
+	public Branch<BehaviorAction>[] branches() {
 		return tree.children();
 	}
-	public Branch branchOf(int of) {
+	public Branch<Action> branchOf(int of) {
 		return tree.children()[of];
 	}
-	public Branch protectorBranch() { return branchOf(0); }
-	public Branch terrorBranch() { return branchOf(1); }
-	public Branch nightmareBranch() { return branchOf(2); }
-	
-	public Branch protectorDefenderBranch() { return protectorBranch().child(0); }
-	public Branch protectorHealBranch() { return protectorBranch().child(1); }
-	
-	public Branch terrorAttackerBranch() { return terrorBranch().child(0); }
-	public Branch terrorHealBranch() { return terrorBranch().child(1); }
-	
-	public Branch nightmareAttackerBranch() { return nightmareBranch().child(0); }
-	
-	/*
-			PROTECTOR BEHAVIOR
-	 */
-	public BehaviorAction protectorBehavior() {
-		return protectorBranch().behavior();
-	}
-	public BehaviorAction protectorDefenderAction() {
-		return protectorBranch().child(0).behavior();
-	}
-	public BehaviorAction protectorHealAction() {
-		return protectorBranch().child(1).behavior();
+	public Branch<Action> protectorBranch() { return branchOf(0); }
+	public List<Branch<Action>> protectorChildren() {
+		return protectorBranch().children();
 	}
 	
-	/*
-			TERROR BEHAVIOR
-	 */
-	public BehaviorAction terrorBehavior() {
-		return terrorBranch().behavior();
-	}
-	public BehaviorAction terrorAttackAction() {
-		return terrorBranch().child(0).behavior();
-	}
-	public BehaviorAction terrorHealAction() {
-		return terrorBranch().child(1).behavior();
+	public Branch<Action> terrorBranch() { return branchOf(1); }
+	public List<Branch<Action>> terrorChildren() {
+		return terrorBranch().children();
 	}
 	
-	/*
-			NIGHTMARE BEHAVIOR
-	 */
-	public BehaviorAction nightmareBehavior() {
-		return terrorBranch().behavior();
+	public Branch<Action> nightmareBranch() { return branchOf(2); }
+	public List<Branch<Action>> nightmareChildren() {
+		return nightmareBranch().children();
 	}
-	public BehaviorAction nightmareAttackAction() {
-		return terrorBranch().child(0).behavior();
-	}
+	
+	private Action forcefield() { return protectorChildren().get(DEFENDER_ACTION).child(0).behavior(); }
+	private Action randomHeal() { return protectorChildren().get(HEAL_ACTION).child(0).behavior(); }
+	
+	private Action fangsCircle() { return terrorChildren().get(ATTACKER_ACTION).child(0).behavior(); }
+	private Action fangsLine() { return terrorChildren().get(ATTACKER_ACTION).child(1).behavior(); }
+	private Action healingStasis() { return terrorChildren().get(HEAL_ACTION).child(0).behavior(); }
+	
+	private Action wraith() { return nightmareChildren().get(ATTACKER_ACTION).child(0).behavior(); }
+	private Action obelisk() { return nightmareChildren().get(ATTACKER_ACTION).child(2).behavior(); }
+	private Action insanity() { return nightmareChildren().get(ATTACKER_ACTION).child(3).behavior(); }
 }
