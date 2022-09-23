@@ -68,7 +68,7 @@ public class Eldritchbriar extends DarkSpiritAbility implements AddonAbility, Co
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

@@ -68,7 +68,7 @@ public class Possess extends SpiritAbility implements AddonAbility, ComboAbility
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

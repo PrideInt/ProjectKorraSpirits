@@ -64,6 +64,6 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 }

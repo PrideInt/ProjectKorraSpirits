@@ -65,7 +65,7 @@ public class Darkness extends DarkSpiritAbility implements AddonAbility, Passive
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

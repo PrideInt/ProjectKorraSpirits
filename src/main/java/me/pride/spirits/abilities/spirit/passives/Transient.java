@@ -65,7 +65,7 @@ public class Transient extends SpiritAbility implements AddonAbility, PassiveAbi
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

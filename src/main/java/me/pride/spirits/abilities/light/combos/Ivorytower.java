@@ -129,7 +129,7 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

@@ -183,7 +183,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

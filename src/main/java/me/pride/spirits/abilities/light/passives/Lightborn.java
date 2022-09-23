@@ -65,7 +65,7 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

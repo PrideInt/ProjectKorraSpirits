@@ -243,7 +243,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override

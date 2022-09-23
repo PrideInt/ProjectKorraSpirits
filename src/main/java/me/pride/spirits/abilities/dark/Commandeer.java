@@ -220,6 +220,6 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 }

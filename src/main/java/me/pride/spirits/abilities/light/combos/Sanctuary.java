@@ -174,7 +174,7 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 	
 	@Override
 	public String getVersion() {
-		return Spirits.getVersion(this.getElement());
+		return Spirits.getVersion();
 	}
 	
 	@Override
