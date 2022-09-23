@@ -8,12 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-@Deprecated
 public abstract class BehaviorAction {
 	public abstract Optional<BehaviorRecord> behavioralRecord();
 }
 
-@Deprecated
 record BehaviorRecord(BehaviorAction... actions) {
 	public BehaviorAction[] actions() { return this.actions; }
 }

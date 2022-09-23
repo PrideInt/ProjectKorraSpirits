@@ -3,7 +3,6 @@ package me.pride.spirits.game.behavior;
 import java.util.ArrayList;
 import java.util.List;
 
-@Deprecated
 public class BehaviorTree {
 	private Branch[] root;
 	

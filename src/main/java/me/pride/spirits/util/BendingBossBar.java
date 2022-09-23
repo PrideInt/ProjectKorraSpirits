@@ -20,10 +20,6 @@ public class BendingBossBar {
 	private double progress;
 	
 	public BendingBossBar(String title, NamespacedKey key, BarColor barColor, double length, boolean startup, long startupTime, Player... players) {
-		if (exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
-			remove();
-			return;
-		}
 		this.length = length;
 		this.key = key;
 		this.bossBar = Bukkit.createBossBar(key, title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
@@ -58,13 +54,16 @@ public class BendingBossBar {
 		this.progress = progress;
 		bossBar.setProgress(progress);
 	}
-	public void update(double segment) {
+	public void update(double segment, boolean increase) {
 		if (progress <= 0) {
 			return;
 		}
 		segment = segment / length;
-		progress = progress - segment <= 0 ? 0 : progress - segment;
-		
+		if (increase) {
+			progress = progress + segment >= 1 ? 1 : progress + segment;
+		} else {
+			progress = progress - segment <= 0 ? 0 : progress - segment;
+		}
 		bossBar.setProgress(progress);
 	}
 	public static Optional<BendingBossBar> from(NamespacedKey key) {
@@ -87,34 +86,34 @@ public class BendingBossBar {
 	public static void updateTimer() {
 		BarTimer.update();
 	}
-}
-
-class BarTimer {
-	private static final Set<BarTimer> TIMER = new HashSet<>();
-	private int start;
-	private double progress, timer;
-	private BendingBossBar bossBar;
 	
-	public BarTimer(int start, double progress, BendingBossBar bossBar) {
-		this.start = start; this.progress = progress; this.bossBar = bossBar;
-		TIMER.add(this);
-	}
-	private int start() { return this.start; }
-	private double progress() { return this.progress; }
-	public BendingBossBar bendingBossBar() { return this.bossBar; }
-	public double timer() { return this.timer; }
-	
-	public static void update() {
-		TIMER.removeIf(timer -> {
-			timer.bendingBossBar().setProgress(timer.timer);
-			
-			timer.timer += timer.progress;
-			if (timer.timer >= 1) {
-				timer.bendingBossBar().setProgress(1);
-				timer.timer = 1;
-				return true;
-			}
-			return false;
-		});
+	class BarTimer {
+		private static final Set<BarTimer> TIMER = new HashSet<>();
+		private int start;
+		private double progress, timer;
+		private BendingBossBar bossBar;
+		
+		protected BarTimer(int start, double progress, BendingBossBar bossBar) {
+			this.start = start; this.progress = progress; this.bossBar = bossBar;
+			TIMER.add(this);
+		}
+		private int start() { return this.start; }
+		private double progress() { return this.progress; }
+		public BendingBossBar bendingBossBar() { return this.bossBar; }
+		public double timer() { return this.timer; }
+		
+		public static void update() {
+			TIMER.removeIf(timer -> {
+				timer.bendingBossBar().setProgress(timer.timer);
+				
+				timer.timer += timer.progress;
+				if (timer.timer >= 1) {
+					timer.bendingBossBar().setProgress(1);
+					timer.timer = 1;
+					return true;
+				}
+				return false;
+			});
+		}
 	}
 }

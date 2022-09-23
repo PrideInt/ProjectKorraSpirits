@@ -293,10 +293,19 @@ class MainListener implements Listener {
 			Entity entity = event.getEntity();
 			
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+				Warden soulweaver = (Warden) entity;
+				
+				if (soulweaver.hasMetadata("healingstasis")) {
+					double health = soulweaver.getHealth() + event.getDamage();
+					health = health > soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ? soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() : health;
+					soulweaver.setHealth(health);
+					
+					event.setCancelled(true);
+				}
 				event.setDamage(Math.min(event.getDamage(), 5.0));
 				
 				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
-					bar.update(event.getDamage());
+					bar.update(event.getDamage(), false);
 				});
 			}
 		}

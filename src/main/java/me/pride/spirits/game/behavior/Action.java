@@ -4,7 +4,6 @@ import me.pride.spirits.game.AncientSoulweaver;
 
 import java.util.*;
 
-@Deprecated
 public abstract class Action extends BehaviorAction {
 	private static final Map<Action, Long> ACTION_COOLDOWNS = new HashMap<>();
 	private static final Set<Action> ACTIVE_ACTIONS = new HashSet<>();
@@ -44,21 +43,18 @@ public abstract class Action extends BehaviorAction {
 	}
 }
 
-@Deprecated
 class DefenderAct extends Action {
 	@Override
 	public String name() {
 		return "Defending";
 	}
 }
-@Deprecated
 class AttackerAct extends Action {
 	@Override
 	public String name() {
 		return "Attacking";
 	}
 }
-@Deprecated
 class HealAct extends Action {
 	@Override
 	public String name() {

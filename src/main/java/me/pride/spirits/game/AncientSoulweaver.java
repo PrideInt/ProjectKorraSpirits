@@ -2,6 +2,7 @@ package me.pride.spirits.game;
 
 import com.projectkorra.projectkorra.GeneralMethods;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.game.behavior.Behaviors;
 import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,7 +36,7 @@ public class AncientSoulweaver {
 	private Phase phase;
 	
 	private Warden entity;
-	private AncientSoulweaverAI ai;
+	private Behaviors behaviors;
 	
 	public AncientSoulweaver(Warden entity, Consumer<Warden> consumer) {
 		if (BendingBossBar.exists(ANCIENT_SOULWEAVER_BAR_KEY) && ANCIENT_SOULWEAVER.getRight().isPresent()) {
@@ -46,7 +47,8 @@ public class AncientSoulweaver {
 		this.entity.getPersistentDataContainer().set(ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING, this.entity.getUniqueId().toString());
 		consumer.accept(this.entity);
 		
-		this.ai = new AncientSoulweaverAI(new ProtectorAI(this), new TerrorAI(this), new NightmareAI(this));
+		this.behaviors = new Behaviors();
+		this.behaviors.setupTree();
 		ANCIENT_SOULWEAVER = Pair.of(this.entity, Optional.of(this));
 	}
 	public AncientSoulweaver(Warden entity) {
@@ -87,8 +89,8 @@ public class AncientSoulweaver {
 	public Warden entity() {
 		return this.entity;
 	}
-	public AncientSoulweaverAI actions() {
-		return this.ai;
+	public Behaviors actions() {
+		return this.behaviors;
 	}
 	public boolean has(byte value) {
 		return entity.getPersistentDataContainer().get(ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE).byteValue() == value;
@@ -121,251 +123,25 @@ public class AncientSoulweaver {
 	}
 	public static void manageAI() {
 		ANCIENT_SOULWEAVER.getRight().ifPresent(soulweaver -> {
-			AncientSoulweaverAI actions = soulweaver.actions();
+			Behaviors actions = soulweaver.actions();
 			Warden entity = soulweaver.entity();
 			
-			actions.nightmareAI().nightmareCycle();
-			entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
-			
 			switch (soulweaver.phase()) {
-				case PROTECTOR -> { actions.protectorAI().doProtectorPhase();
+				case PROTECTOR -> {
 					if (soulweaver.healthAtTerror()) {
 						soulweaver.setPhase(Phase.TERROR);
 					}
 					break;
 				}
-				case TERROR -> { actions.terrorAI().doTerrorPhase();
+				case TERROR -> {
 					if (soulweaver.healthAtNightmare()) {
-						actions.nightmareAI().doNightmarePhase(false);
 						soulweaver.setPhase(Phase.NIGHTMARE);
 					}
 					break;
 				}
-				case NIGHTMARE -> {
-					if (!actions.nightmareAI().nightmareCycle().naturalNightmare()) {
-						actions.nightmareAI().doNightmarePhase(false);
-					}
-					break;
-				}
 			}
+			actions.manageBehavior(soulweaver);
+			entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
 		});
-	}
-}
-
-record AncientSoulweaverAI(ProtectorAI protectorAI, TerrorAI terrorAI, NightmareAI nightmareAI) {
-	public ProtectorAI protectorAI() { return protectorAI; }
-	public TerrorAI terrorAI() { return terrorAI; }
-	public NightmareAI nightmareAI() { return nightmareAI; }
-}
-
-record SoulweaverRecord(AncientSoulweaver soulweaver, Warden entity, AncientSoulweaver.Phase phase, Pair<Attribute, Double>[] attributes) {
-	public AncientSoulweaver ancientSoulweaver() { return this.soulweaver; }
-	public Warden entity() { return this.entity; }
-	public AncientSoulweaver.Phase phase() { return this.phase; }
-	public Pair<Attribute, Double>[] attributes() { return this.attributes; }
-}
-
-// TODO: seperate these damn AIs
-abstract class SoulweaverAI {
-	private SoulweaverRecord record;
-	public SoulweaverAI(AncientSoulweaver soulweaver) {
-		record = new SoulweaverRecord(soulweaver, soulweaver.entity(), soulweaver.phase(), new Pair[]{
-				Pair.of(Attribute.GENERIC_ATTACK_DAMAGE, soulweaver.entity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue()),
-				Pair.of(Attribute.GENERIC_FOLLOW_RANGE, soulweaver.entity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue()),
-				Pair.of(Attribute.GENERIC_KNOCKBACK_RESISTANCE, soulweaver.entity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).getValue()),
-				Pair.of(Attribute.GENERIC_MOVEMENT_SPEED, soulweaver.entity().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue())
-		});
-	}
-	protected SoulweaverRecord record() {
-		return this.record;
-	}
-}
-
-class ProtectorAI extends SoulweaverAI {
-	private Optional<Forcefield> forcefield;
-	private boolean forcefieldRemoval;
-	private long forcefieldTimer;
-	
-	public ProtectorAI(AncientSoulweaver soulweaver) {
-		super(soulweaver);
-		this.forcefield = Optional.empty();
-		this.forcefieldTimer = System.currentTimeMillis() + 4000;
-	}
-	/*
-		- PROTECTOR PHASE -
-	 */
-	public void doProtectorPhase() {
-		List<LivingEntity> entities = GeneralMethods.getEntitiesAroundPoint(record().entity().getLocation(), 3)
-				.stream().filter(e -> e.getUniqueId() != record().entity().getUniqueId() && e instanceof LivingEntity)
-				.map(e -> (LivingEntity) e).collect(Collectors.toList());
-		
-		forcefield.ifPresent(ff -> ff.createSphere(entities));
-		
-		if (!entities.isEmpty()) {
-			forcefield(entities);
-		}
-		if (forcefieldRemoval) {
-			if (System.currentTimeMillis() > forcefieldTimer) {
-				forcefieldRemoval = false;
-			}
-		}
-	}
-	private void forcefield(List<LivingEntity> entities) {
-		if (forcefieldRemoval) return;
-		
-		if (!forcefield.isPresent()) {
-			forcefield = Optional.of(new Forcefield(this));
-		}
-	}
-	
-	class Forcefield {
-		private ProtectorAI ai; private double size; private Location location;
-		public Forcefield(ProtectorAI ai) {
-			this.ai = ai; this.size = 0; this.location = ai.record().entity().getLocation().clone().add(0, 1, 0);
-		}
-		public void createSphere(List<LivingEntity> entities) {
-			size += 0.5;
-			for (double i = 0; i <= Math.PI; i += Math.PI / 15) {
-				double y = size * Math.cos(i);
-				
-				for (double j = 0; j <= 2 * Math.PI; j += Math.PI / 30) {
-					double x = size * Math.cos(j) * Math.sin(i);
-					double z = size * Math.sin(j) * Math.sin(i);
-					
-					location.add(x, y, z);
-					entities.forEach(e -> {
-						if (GeneralMethods.locationEqualsIgnoreDirection(e.getLocation(), location)) return;
-						
-						e.setVelocity(location.getDirection().setY(1.5).multiply(1));
-						e.damage(2);
-					});
-					if (ThreadLocalRandom.current().nextInt(20) == 0) {
-						location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
-					}
-					location.subtract(x, y, z);
-				}
-			}
-			if (size > 5) {
-				System.out.println("FORCEFIELD OVER");
-				ai.forcefieldRemoval = true;
-				ai.forcefieldTimer = System.currentTimeMillis() + 4000;
-				ai.forcefield = Optional.empty();
-				Forcefield forcefield = this;
-				forcefield = null;
-			}
-		}
-	}
-}
-
-class TerrorAI extends SoulweaverAI {
-	private long timer, regenerationTime;
-	public TerrorAI(AncientSoulweaver soulweaver) {
-		super(soulweaver);
-	}
-	/*
-		- TERROR PHASE -
-	 */
-	public void doTerrorPhase() {
-	
-	}
-	public boolean beginRegenerating() {
-		return System.currentTimeMillis() > regenerationTime;
-	}
-	public void resetRegenerationTimer() {
-		regenerationTime = System.currentTimeMillis() + 10000;
-	}
-}
-
-class NightmareAI extends SoulweaverAI {
-	private NightmareCycle cycle;
-	public NightmareAI(AncientSoulweaver soulweaver) {
-		super(soulweaver);
-		this.cycle = new NightmareCycle();
-	}
-	/*
-		- NIGHTMARE PHASE -
-	 */
-	public void doNightmarePhase(boolean natural) {
-		if (!natural) {
-			if (this.cycle.naturalNightmare) this.cycle.naturalNightmare = false;
-		}
-		for (Entity e : GeneralMethods.getEntitiesAroundPoint(record().entity().getLocation(), 8)) {
-			if (e.getUniqueId() != record().entity().getUniqueId() && e instanceof Player) {
-				Player player = (Player) e;
-				
-				if (!player.hasMetadata("soulweaver:restricted")) {
-					player.setMetadata("soulweaver:restricted", new FixedMetadataValue(Spirits.instance, 0));
-				}
-			}
-		}
-	}
-	public NightmareCycle nightmareCycle() { return this.cycle; }
-	
-	class NightmareCycle {
-		private long nightmareCycle;
-		private boolean naturalNightmare;
-		private AncientSoulweaver.Phase phase;
-		
-		private NightmareCycle() {
-			this.nightmareCycle = System.currentTimeMillis() + 20000;
-			this.naturalNightmare = true;
-		}
-		public void nightmareCycle() {
-			if (this.naturalNightmare) {
-				if (System.currentTimeMillis() > this.nightmareCycle) {
-					System.out.println("NIGHTMARE PHASE");
-					if (this.phase == record().phase()) {
-						switch (record().phase()) {
-							case PROTECTOR: this.phase = AncientSoulweaver.Phase.PROTECTOR; break;
-							case TERROR: this.phase = AncientSoulweaver.Phase.TERROR; break;
-						}
-						new BukkitRunnable() {
-							@Override
-							public void run() {
-								resetCycle();
-								cancel();
-							}
-						}.runTaskLater(Spirits.instance, 100);
-					}
-					record().soulweaver().setPhase(AncientSoulweaver.Phase.NIGHTMARE);
-					doNightmarePhase(true);
-				}
-			}
-		}
-		public void resetCycle() {
-			this.nightmareCycle = System.currentTimeMillis() + 20000;
-			System.out.println("PHASE RESET, " + this.phase);
-			record().soulweaver().setPhase(this.phase);
-			resetAttributes();
-		}
-		public void updateNightmareAttributes() {
-			for (Pair<Attribute, Double> couple : record().attributes()) {
-				Attribute attribute = couple.getLeft();
-				AttributeInstance instance = record().entity().getAttribute(attribute);
-				double value = instance.getValue();
-				
-				switch (couple.getLeft()) {
-					case GENERIC_ATTACK_DAMAGE -> { value = value * 1.5 > 2048.0 ? 2048.0 : value * 1.5;
-						break;
-					}
-					case GENERIC_FOLLOW_RANGE -> { value = value * 3 > 2048.0 ? 2048.0 : value * 3;
-						break;
-					}
-					case GENERIC_KNOCKBACK_RESISTANCE -> { value = 0.85;
-						break;
-					}
-					case GENERIC_MOVEMENT_SPEED -> { value = value * 1.5 > 1024.0 ? 1024.0 : value * 1.5;
-						break;
-					}
-				}
-				instance.setBaseValue(value);
-			}
-		}
-		public void resetAttributes() {
-			for (Pair<Attribute, Double> couple : record().attributes()) {
-				record().entity().getAttribute(couple.getLeft()).setBaseValue(couple.getRight());
-			}
-		}
-		public boolean naturalNightmare() { return this.naturalNightmare; }
 	}
 }

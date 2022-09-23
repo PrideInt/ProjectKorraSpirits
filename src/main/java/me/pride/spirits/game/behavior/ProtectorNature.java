@@ -2,6 +2,7 @@ package me.pride.spirits.game.behavior;
 
 import com.projectkorra.projectkorra.GeneralMethods;
 import me.pride.spirits.game.AncientSoulweaver;
+import me.pride.spirits.util.BendingBossBar;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
@@ -11,19 +12,22 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-@Deprecated
 public class ProtectorNature extends Behavior {
 	@Override
+	public String toString() {
+		return "Protector";
+	}
+	@Override
 	public Optional<BehaviorRecord> behavioralRecord() {
-		return Optional.of(new BehaviorRecord(new Forcefield(), new HealAct()));
+		return Optional.of(new BehaviorRecord(new Forcefield(), new RandomHeal()));
 	}
 	
 	class Forcefield extends DefenderAct {
-		private double size;
+		private double size, maxSize;
 		private Location location;
 		
-		public Forcefield() {
-			this.size = 0;
+		protected Forcefield() {
+			this.size = 0; this.maxSize = 0;
 		}
 		@Override
 		public String name() {
@@ -39,7 +43,9 @@ public class ProtectorNature extends Behavior {
 			
 			createSphere(entities);
 		}
-		public void setLocation(Location location) {
+		public void reset(double size, double maxSize, Location location) {
+			this.size = size;
+			this.maxSize = maxSize;
 			this.location = location.clone().add(0, 1, 0);
 		}
 		public void createSphere(List<LivingEntity> entities) {
@@ -55,7 +61,7 @@ public class ProtectorNature extends Behavior {
 					entities.forEach(e -> {
 						if (GeneralMethods.locationEqualsIgnoreDirection(e.getLocation(), location)) return;
 						
-						e.setVelocity(location.getDirection().setY(1.5).multiply(1));
+						e.setVelocity(location.getDirection().setY(1).multiply(1));
 						e.damage(2);
 					});
 					if (ThreadLocalRandom.current().nextInt(20) == 0) {
@@ -64,24 +70,35 @@ public class ProtectorNature extends Behavior {
 					location.subtract(x, y, z);
 				}
 			}
-			if (size > 5) {
+			if (size > maxSize) {
 				addCooldown(4000);
 				remove();
 			}
 		}
 	}
 	class RandomHeal extends HealAct {
+		protected RandomHeal() { }
+		@Override
+		public String name() {
+			return "RandomHeal";
+		}
 		@Override
 		public void doAction(AncientSoulweaver soulweaver) {
 			super.doAction(soulweaver);
 			
-			double health = soulweaver.entity().getHealth() + 6.0;
+			double health = soulweaver.entity().getHealth() + 16.0;
 			health = health > soulweaver.maxHealth() ? soulweaver.maxHealth() : health;
 			
 			soulweaver.entity().setHealth(health);
 			
+			if (health <= soulweaver.maxHealth()) {
+				final double update = health;
+				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
+					bar.update(update, true);
+				});
+			}
+			addCooldown(ThreadLocalRandom.current().nextInt(5, 10) * 1000);
 			remove();
-			addCooldown(6000);
 		}
 	}
 }
