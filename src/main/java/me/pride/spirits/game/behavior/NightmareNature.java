@@ -3,11 +3,21 @@ package me.pride.spirits.game.behavior;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.AncientSoulweaver.Phase;
+import me.pride.spirits.util.BendingBossBar;
+import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -46,12 +56,18 @@ public class NightmareNature extends Behavior {
 							Pair.of(Attribute.GENERIC_KNOCKBACK_RESISTANCE, soulweaver.entity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).getValue()),
 							Pair.of(Attribute.GENERIC_MOVEMENT_SPEED, soulweaver.entity().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue())
 					};
+					soulweaver.entity().getWorld().playSound(soulweaver.entity().getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.5F, 0.75F);
+					
+					BendingBossBar.reset(ChatColor.of("#E06969") + "" + ChatColor.BOLD + "Ancient Soulweaver",
+							AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.RED, 1000, BarFlag.DARKEN_SKY, BarFlag.CREATE_FOG);
+
 					updateNightmareAttributes(soulweaver);
 					
 					new BukkitRunnable() {
 						@Override
 						public void run() {
 							if (!soulweaver.healthAtNightmare()) {
+								BendingBossBar.reset(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 1000, BarFlag.CREATE_FOG, BarFlag.PLAY_BOSS_MUSIC);
 								resetCycle(soulweaver);
 							}
 							cancel();

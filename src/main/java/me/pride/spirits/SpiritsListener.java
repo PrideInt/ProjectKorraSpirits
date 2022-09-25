@@ -21,10 +21,7 @@ import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
 import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -39,6 +36,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
@@ -282,7 +280,7 @@ class MainListener implements Listener {
 				spirecite.setAmount(ThreadLocalRandom.current().nextInt(0, 2));
 				
 				event.getDrops().add(spirecite);
-				AncientSoulweaver.remove();
+				AncientSoulweaver.of((Warden) entity).ifPresent(soulweaver -> soulweaver.remove());
 			}
 		}
 	}
@@ -320,6 +318,17 @@ class MainListener implements Listener {
 			Player player = event.getPlayer();
 			
 			if (entity.getType() == EntityType.WARDEN) {
+				if (player.isSneaking()) {
+					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+						AncientSoulweaver.of((Warden) entity).ifPresent(soulweaver -> soulweaver.remove());
+						BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
+							bar.bossBar().removeAll();
+							bar.remove();
+						});
+						Bukkit.getServer().removeBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
+					}
+					return;
+				}
 				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
 					new BendingBossBar(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 1000, true, 4000, player);
 					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));

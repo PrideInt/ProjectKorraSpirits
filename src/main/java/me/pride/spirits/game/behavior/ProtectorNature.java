@@ -5,6 +5,7 @@ import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.util.BendingBossBar;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.List;
@@ -43,12 +44,12 @@ public class ProtectorNature extends Behavior {
 			
 			createSphere(entities);
 		}
-		public void reset(double size, double maxSize, Location location) {
+		protected void attune(double size, double maxSize, Location location) {
 			this.size = size;
 			this.maxSize = maxSize;
 			this.location = location.clone().add(0, 1, 0);
 		}
-		public void createSphere(List<LivingEntity> entities) {
+		protected void createSphere(List<LivingEntity> entities) {
 			size += 0.5;
 			for (double i = 0; i <= Math.PI; i += Math.PI / 15) {
 				double y = size * Math.cos(i);
@@ -64,8 +65,8 @@ public class ProtectorNature extends Behavior {
 						e.setVelocity(location.getDirection().setY(1).multiply(1));
 						e.damage(2);
 					});
-					if (ThreadLocalRandom.current().nextInt(20) == 0) {
-						location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
+					if (ThreadLocalRandom.current().nextInt(10) == 0) {
+						location.getWorld().spawnParticle(Particle.CRIT_MAGIC, location, 1, 0, 0, 0, 0);
 					}
 					location.subtract(x, y, z);
 				}
@@ -86,13 +87,15 @@ public class ProtectorNature extends Behavior {
 		public void doAction(AncientSoulweaver soulweaver) {
 			super.doAction(soulweaver);
 			
-			double health = soulweaver.entity().getHealth() + 16.0;
+			double plus = 1.5;
+			double health = soulweaver.entity().getHealth() + plus;
 			health = health > soulweaver.maxHealth() ? soulweaver.maxHealth() : health;
 			
 			soulweaver.entity().setHealth(health);
+			soulweaver.entity().getWorld().spawnParticle(Particle.GLOW, soulweaver.entity().getLocation(), 5, 0.2, 0.2, 0.2, 0.05);
 			
 			if (health <= soulweaver.maxHealth()) {
-				final double update = health;
+				final double update = plus;
 				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
 					bar.update(update, true);
 				});

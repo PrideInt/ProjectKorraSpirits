@@ -58,6 +58,8 @@ public class TerrorNature extends Behavior {
 		}
 		@Override
 		public void doAction(AncientSoulweaver soulweaver) {
+			super.doAction(soulweaver);
+			
 			location.add(direction.multiply(0.3));
 			
 			if (location.distanceSquared(origin) > 20 * 20) {
@@ -91,6 +93,8 @@ public class TerrorNature extends Behavior {
 		}
 		@Override
 		public void doAction(AncientSoulweaver soulweaver) {
+			super.doAction(soulweaver);
+			
 			if (!soulweaver.entity().hasMetadata("healingstasis")) {
 				soulweaver.entity().setMetadata("healingstatis", new FixedMetadataValue(Spirits.instance, 0));
 			}

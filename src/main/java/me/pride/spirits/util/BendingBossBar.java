@@ -1,6 +1,7 @@
 package me.pride.spirits.util;
 
 import me.pride.spirits.game.AncientSoulweaver;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -41,8 +42,16 @@ public class BendingBossBar {
 		this(title, key, barColor, length, false, 0, players);
 	}
 	public void remove() {
+		bossBar.removeAll();
+		BARS.entrySet().removeIf(entry -> entry.getValue().equals(this));
 		BendingBossBar bendingBossBar = this;
 		bendingBossBar = null;
+	}
+	public List<Player> players() {
+		return bossBar.getPlayers();
+	}
+	public double progress() {
+		return bossBar.getProgress();
 	}
 	public BossBar bossBar() {
 		return this.bossBar;
@@ -50,13 +59,14 @@ public class BendingBossBar {
 	public NamespacedKey key() {
 		return this.key;
 	}
-	public void setProgress(double progress) {
+	public BendingBossBar setProgress(double progress) {
 		this.progress = progress;
 		bossBar.setProgress(progress);
+		return this;
 	}
-	public void update(double segment, boolean increase) {
+	public BendingBossBar update(double segment, boolean increase) {
 		if (progress <= 0) {
-			return;
+			return this;
 		}
 		segment = segment / length;
 		if (increase) {
@@ -65,6 +75,24 @@ public class BendingBossBar {
 			progress = progress - segment <= 0 ? 0 : progress - segment;
 		}
 		bossBar.setProgress(progress);
+		return this;
+	}
+	public static void reset(String title, NamespacedKey key, BarColor barColor, double length, BarFlag... flags) {
+		Bukkit.getServer().removeBossBar(key);
+		
+		from(key).ifPresent(bar -> {
+			double progress = bar.progress();
+			List<Player> players = new ArrayList<>();
+			players.addAll(bar.bossBar.getPlayers());
+			
+			bar.bossBar.removeAll();
+			bar.bossBar = Bukkit.createBossBar(key, title, barColor, BarStyle.SOLID, flags);
+			
+			bar.bossBar.setProgress(progress);
+			for (Player player : players) {
+				bar.bossBar.addPlayer(player);
+			}
+		});
 	}
 	public static Optional<BendingBossBar> from(NamespacedKey key) {
 		for (BendingBossBar bar : BARS.values()) {

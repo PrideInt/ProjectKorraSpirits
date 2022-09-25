@@ -18,7 +18,9 @@ public abstract class Action extends BehaviorAction {
 	}
 
 	public void doAction(AncientSoulweaver soulweaver) {
-		ACTIVE_ACTIONS.add(this);
+		if (!ACTIVE_ACTIONS.contains(this)) {
+			ACTIVE_ACTIONS.add(this);
+		}
 	}
 	public boolean progressing() {
 		return ACTIVE_ACTIONS.contains(this);

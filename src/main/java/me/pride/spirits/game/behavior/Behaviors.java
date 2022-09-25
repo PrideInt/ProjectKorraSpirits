@@ -107,10 +107,9 @@ public class Behaviors {
 		switch (soulweaver.phase()) {
 			case PROTECTOR -> {
 				if (!forcefield.progressing() && !forcefield.inCooldown()) {
-					forcefield.reset(0, ThreadLocalRandom.current().nextInt(4, 8), soulweaver.entity().getLocation());
+					forcefield.attune(0, ThreadLocalRandom.current().nextInt(4, 8), soulweaver.entity().getLocation());
+				
 				} else if (!forcefield.progressing() && !randomHeal.inCooldown()) {
-					System.out.println("HEAL");
-					
 					randomHeal.doAction(soulweaver);
 				}
 				if (!forcefield.inCooldown()) {
