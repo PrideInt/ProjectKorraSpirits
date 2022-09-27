@@ -12,38 +12,56 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
+// TODO: database to store players that are added to the bossbar to handle persistently
 public class BendingBossBar {
-	private static final Map<UUID, BendingBossBar> BARS = new HashMap<>();
+	private static final Set<BendingBossBar> BARS = new HashSet<>();
 	private BossBar bossBar;
 	private NamespacedKey key;
 	private double length;
 	
 	private double progress;
 	
-	public BendingBossBar(String title, NamespacedKey key, BarColor barColor, double length, boolean startup, long startupTime, Player... players) {
-		this.length = length;
-		this.key = key;
-		this.bossBar = Bukkit.createBossBar(key, title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
-		
-		if (startup) {
-			this.bossBar.setProgress(0);
-			new BarTimer(0, (0.05 / (startupTime / 1000.0)), this);
+	public BendingBossBar(NamespacedKey key, String title, BarColor barColor, double length, boolean startup, long startupTime, Player... players) {
+		if (key != null && Bukkit.getBossBar(key) != null) {
+			this.length = length;
+			this.key = key;
+			this.progress = Bukkit.getBossBar(key).getProgress();
+			this.bossBar = Bukkit.getBossBar(key);
+			BARS.add(this);
 		} else {
-			this.progress = 1;
-			this.bossBar.setProgress(this.progress);
-		}
-		for (Player player : players) {
-			this.bossBar.setVisible(true);
-			this.bossBar.addPlayer(player);
-			BARS.put(player.getUniqueId(), this);
+			this.length = length;
+			if (key != null) {
+				this.key = key;
+				this.bossBar = Bukkit.createBossBar(key, title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
+			} else {
+				this.bossBar = Bukkit.createBossBar(title, barColor, BarStyle.SOLID, BarFlag.PLAY_BOSS_MUSIC, BarFlag.CREATE_FOG);
+			}
+			if (startup) {
+				this.bossBar.setProgress(0);
+				new BarTimer(0, (0.05 / (startupTime / 1000.0)), this);
+			} else {
+				this.progress = 1;
+				this.bossBar.setProgress(this.progress);
+			}
+			for (Player player : players) {
+				this.bossBar.setVisible(true);
+				this.bossBar.addPlayer(player);
+				BARS.add(this);
+			}
 		}
 	}
-	public BendingBossBar(String title, NamespacedKey key, BarColor barColor, double length, Player... players) {
-		this(title, key, barColor, length, false, 0, players);
+	public BendingBossBar(NamespacedKey key, String title, BarColor barColor, double length, Player... players) {
+		this(key, title, barColor, length, false, 0, players);
+	}
+	public BendingBossBar(String title, BarColor barColor, double length, Player... players) {
+		this(null, title, barColor, length, false, 0, players);
 	}
 	public void remove() {
 		bossBar.removeAll();
-		BARS.entrySet().removeIf(entry -> entry.getValue().equals(this));
+		if (key != null) {
+			Bukkit.removeBossBar(key);
+		}
+		BARS.removeIf(bar -> bar.equals(this));
 		BendingBossBar bendingBossBar = this;
 		bendingBossBar = null;
 	}
@@ -77,7 +95,7 @@ public class BendingBossBar {
 		bossBar.setProgress(progress);
 		return this;
 	}
-	public static void reset(String title, NamespacedKey key, BarColor barColor, double length, BarFlag... flags) {
+	public static void reset(NamespacedKey key, String title, BarColor barColor, double length, BarFlag... flags) {
 		Bukkit.getServer().removeBossBar(key);
 		
 		from(key).ifPresent(bar -> {
@@ -94,8 +112,21 @@ public class BendingBossBar {
 			}
 		});
 	}
+	public static void reset(BendingBossBar bar, String title, BarColor barColor, double length, BarFlag... flags) {
+		double progress = bar.progress();
+		List<Player> players = new ArrayList<>();
+		players.addAll(bar.bossBar.getPlayers());
+		
+		bar.bossBar.removeAll();
+		bar.bossBar = Bukkit.createBossBar(title, barColor, BarStyle.SOLID, flags);
+		
+		bar.bossBar.setProgress(progress);
+		for (Player player : players) {
+			bar.bossBar.addPlayer(player);
+		}
+	}
 	public static Optional<BendingBossBar> from(NamespacedKey key) {
-		for (BendingBossBar bar : BARS.values()) {
+		for (BendingBossBar bar : BARS) {
 			if (bar.key().getNamespace().equals(key.getNamespace())) {
 				return Optional.of(bar);
 			}
@@ -103,7 +134,12 @@ public class BendingBossBar {
 		return Optional.empty();
 	}
 	public static Optional<BendingBossBar> fromPlayer(Player player) {
-		return BARS.get(player.getUniqueId()) == null ? Optional.empty() : Optional.of(BARS.get(player.getUniqueId()));
+		for (BendingBossBar bar : BARS) {
+			if (bar.bossBar().getPlayers().contains(player)) {
+				return Optional.of(bar);
+			}
+		}
+		return Optional.empty();
 	}
 	public static Optional<BossBar> of(NamespacedKey key) {
 		return Bukkit.getBossBar(key) == null ? Optional.empty() : Optional.of(Bukkit.getBossBar(key));

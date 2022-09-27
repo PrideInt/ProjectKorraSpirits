@@ -58,8 +58,8 @@ public class NightmareNature extends Behavior {
 					};
 					soulweaver.entity().getWorld().playSound(soulweaver.entity().getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.5F, 0.75F);
 					
-					BendingBossBar.reset(ChatColor.of("#E06969") + "" + ChatColor.BOLD + "Ancient Soulweaver",
-							AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.RED, 1000, BarFlag.DARKEN_SKY, BarFlag.CREATE_FOG);
+					BendingBossBar.reset(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY,
+							ChatColor.of("#E06969") + "" + ChatColor.BOLD + "Ancient Soulweaver", BarColor.RED, 1000, BarFlag.DARKEN_SKY, BarFlag.CREATE_FOG);
 
 					updateNightmareAttributes(soulweaver);
 					
@@ -67,7 +67,7 @@ public class NightmareNature extends Behavior {
 						@Override
 						public void run() {
 							if (!soulweaver.healthAtNightmare()) {
-								BendingBossBar.reset(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 1000, BarFlag.CREATE_FOG, BarFlag.PLAY_BOSS_MUSIC);
+								BendingBossBar.reset(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000, BarFlag.CREATE_FOG, BarFlag.PLAY_BOSS_MUSIC);
 								resetCycle(soulweaver);
 							}
 							cancel();

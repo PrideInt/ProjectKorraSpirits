@@ -6,9 +6,7 @@ import me.pride.spirits.game.behavior.Behaviors;
 import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
@@ -21,22 +19,23 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-// TODO: warden entity representing ancient soulweaver stops being associated with it when player logs
 public class AncientSoulweaver {
 	public static final NamespacedKey ANCIENT_SOULWEAVER_BAR_KEY = new NamespacedKey(Spirits.instance, "soulweaverbar");
 	public static final NamespacedKey ANCIENT_SOULWEAVER_KEY = new NamespacedKey(Spirits.instance, "ancientsoulweaver");
 	public static final String NAME = ChatColor.of("#416485") + "" + ChatColor.BOLD + "Ancient Soulweaver";
 	
-	private static Optional<AncientSoulweaver> ANCIENT_SOULWEAVER = Optional.empty();
+	public static Optional<AncientSoulweaver> ANCIENT_SOULWEAVER = Optional.empty();
 	
 	public enum Phase { GRACE, PROTECTOR, TERROR, NIGHTMARE; }
 	private Phase phase;
 	
 	private Warden entity;
+	private World world;
 	private Behaviors behaviors;
 	private long grace;
 	
@@ -46,9 +45,10 @@ public class AncientSoulweaver {
 		}
 		this.phase = Phase.GRACE;
 		this.entity = entity;
-		this.entity.getPersistentDataContainer().set(ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING, this.entity.getUniqueId().toString());
+		this.entity.getPersistentDataContainer().set(ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE, (byte) 0x1);
 		consumer.accept(this.entity);
 		
+		this.world = this.entity.getWorld();
 		this.behaviors = new Behaviors();
 		this.behaviors.setupTree();
 		
@@ -97,11 +97,17 @@ public class AncientSoulweaver {
 	public Warden entity() {
 		return this.entity;
 	}
+	public World world() {
+		return this.world;
+	}
 	public Behaviors actions() {
 		return this.behaviors;
 	}
 	public void setPhase(Phase phase) {
 		this.phase = phase;
+	}
+	public void setEntity(Warden entity) {
+		this.entity = entity;
 	}
 	private double healthPartition(int partition) {
 		return Math.ceil((maxHealth() / partition));
@@ -116,12 +122,22 @@ public class AncientSoulweaver {
 		return Optional.empty();
 	}
 	public static void addExistingSoulweaver(Warden warden) {
-		new AncientSoulweaver(warden);
+		if (warden.getPersistentDataContainer().has(ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
+			AncientSoulweaver soulweaver = new AncientSoulweaver(warden, e -> {});
+			if (soulweaver.healthAtProtector()) {
+				soulweaver.setPhase(Phase.PROTECTOR);
+			} else if (soulweaver.healthAtTerror()) {
+				soulweaver.setPhase(Phase.TERROR);
+			} else if (soulweaver.healthAtNightmare()) {
+				soulweaver.setPhase(Phase.NIGHTMARE);
+			}
+		}
 	}
 	public void remove() {
 		AncientSoulweaver soulweaver = this;
 		soulweaver.entity().getPersistentDataContainer().remove(ANCIENT_SOULWEAVER_KEY);
 		soulweaver.entity().remove();
+		ANCIENT_SOULWEAVER = Optional.empty();
 		soulweaver = null;
 	}
 	public static void manageAI() {
@@ -129,9 +145,10 @@ public class AncientSoulweaver {
 			Behaviors actions = soulweaver.actions();
 			Warden entity = soulweaver.entity();
 			
+			entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
+			
 			switch (soulweaver.phase()) {
 				case GRACE -> {
-					entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
 					if (System.currentTimeMillis() > soulweaver.gracePeriod()) {
 						soulweaver.setPhase(Phase.PROTECTOR);
 					}

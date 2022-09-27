@@ -38,6 +38,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.CraftingInventory;
@@ -48,6 +49,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 
@@ -275,12 +277,14 @@ class MainListener implements Listener {
 			Entity entity = event.getEntity();
 			Player killer = event.getEntity().getKiller();
 			
-			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				ItemStack spirecite = Spirecite.SPIRECITE.clone();
-				spirecite.setAmount(ThreadLocalRandom.current().nextInt(0, 2));
+				spirecite.setAmount(ThreadLocalRandom.current().nextInt(2, 5));
 				
 				event.getDrops().add(spirecite);
 				AncientSoulweaver.of((Warden) entity).ifPresent(soulweaver -> soulweaver.remove());
+				
+				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> bar.remove());
 			}
 		}
 	}
@@ -290,7 +294,7 @@ class MainListener implements Listener {
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
 			Entity entity = event.getEntity();
 			
-			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				Warden soulweaver = (Warden) entity;
 				
 				if (soulweaver.hasMetadata("healingstasis")) {
@@ -300,7 +304,11 @@ class MainListener implements Listener {
 					
 					event.setCancelled(true);
 				}
-				event.setDamage(Math.min(event.getDamage(), 5.0));
+				// TODO: remove this later, testing purposes only
+				if (event.getDamage() < 20) {
+					event.setDamage(Math.min(event.getDamage(), 5.0));
+				}
+				// event.setDamage(Math.min(event.getDamage(), 5.0));
 				
 				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
 					bar.update(event.getDamage(), false);
@@ -319,18 +327,14 @@ class MainListener implements Listener {
 			
 			if (entity.getType() == EntityType.WARDEN) {
 				if (player.isSneaking()) {
-					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.STRING)) {
+					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 						AncientSoulweaver.of((Warden) entity).ifPresent(soulweaver -> soulweaver.remove());
-						BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
-							bar.bossBar().removeAll();
-							bar.remove();
-						});
-						Bukkit.getServer().removeBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
+						BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> bar.remove());
 					}
 					return;
 				}
 				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
-					new BendingBossBar(AncientSoulweaver.NAME, AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, BarColor.BLUE, 1000, true, 4000, player);
+					new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000, true, 4000, player);
 					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
 					new AncientSoulweaver((Warden) entity);
 				}
@@ -345,5 +349,22 @@ class MainListener implements Listener {
 			event.setCancelled(true);
 			return;
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerJoin(final PlayerJoinEvent event) {
+		// TODO: see bendingbossbar
+		BendingBossBar.fromPlayer(event.getPlayer()).ifPresent(bar -> {
+			bar.bossBar().addPlayer(event.getPlayer());
+		});
+		AncientSoulweaver.ANCIENT_SOULWEAVER.ifPresent(soulweaver -> {
+			if (soulweaver.world().getPlayers().isEmpty()) {
+				for (Entity entity : soulweaver.world().getEntities()) {
+					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
+						soulweaver.setEntity((Warden) entity);
+					}
+				}
+			}
+		});
 	}
 }
