@@ -7,6 +7,8 @@ import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
+import me.pride.spirits.storage.SQLite;
+import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.ChatUtil;
 import me.pride.spirits.util.Tools;
@@ -25,20 +27,25 @@ import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Spirits extends JavaPlugin {
     public static Spirits instance;
 
     private FileConfiguration config;
     private Listener listener;
+    private SQLite database;
 
     @Override
     public void onEnable() {
         instance = this;
         listener = new SpiritsListener();
         config = this.getConfig();
+        database = new SQLite();
 
         Config.setup();
         if (getConfig().getBoolean("Spirecite.Enabled")) {
@@ -49,7 +56,10 @@ public class Spirits extends JavaPlugin {
 
         getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.7.1.9");
     
+        StorageCache.queryUUIDs(database);
+        
         BossBar bar = Bukkit.getBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
+        BendingBossBar bendingBossBar = null;
         boolean exists = false;
         
         if (bar != null) {
@@ -58,7 +68,7 @@ public class Spirits extends JavaPlugin {
                     if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
                         Warden warden = (Warden) entity;
                         
-                        new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000.0).setProgress(warden.getHealth() / warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                        bendingBossBar = new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000.0).setProgress(warden.getHealth() / warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
                         AncientSoulweaver.addExistingSoulweaver(warden);
                         exists = true;
                     }
@@ -66,6 +76,9 @@ public class Spirits extends JavaPlugin {
             }
         }
         if (!exists) {
+            for (UUID uuid : StorageCache.uuidCache()) {
+                bendingBossBar.bossBar().addPlayer(Bukkit.getPlayer(uuid));
+            }
             Bukkit.removeBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
         }
         getServer().getPluginManager().registerEvents(listener, this);
@@ -78,6 +91,8 @@ public class Spirits extends JavaPlugin {
         // Bukkit.getServer().removeBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
         HandlerList.unregisterAll(listener);
         Spirit.cleanup();
+        StorageCache.updateLocations();
+        StorageCache.updateUUIDs(database);
     }
     public static String getAuthor() {
         return ChatUtil.getAuthor();
