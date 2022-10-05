@@ -27,8 +27,8 @@ public class StorageCache {
 	private static final Set<UUID> UUID_CACHE = ConcurrentHashMap.newKeySet();
 	private static final Map<String, List<int[]>> LOCATIONS = new ConcurrentHashMap<>();
 	
-	private static final File STATION = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "stations.json");
-	private static final File STORAGE = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "storage.db");
+	protected static final File STATION = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "stations.json");
+	protected static final File STORAGE = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "storage.db");
 	
 	public static void queryUUIDs(SQLite sql) {
 		try {
@@ -67,7 +67,7 @@ public class StorageCache {
 	public static void addUUIDToCache(UUID uuid) {
 		UUID_CACHE.add(uuid);
 	}
-	public static Iterable<UUID> uuidCache() {
+	public static Set<UUID> uuidCache() {
 		return UUID_CACHE;
 	}
 	
@@ -95,6 +95,9 @@ public class StorageCache {
 			writer.close();
 		} catch (IOException e) { }
 	}
+	public static Map<String, List<int[]>> locations() {
+		return LOCATIONS;
+	}
 	public static void removeLocationsFromCache(World world, int[] coordinates) {
 		LOCATIONS.computeIfPresent(world.getName(), (wrld, list) -> { list.remove(coordinates); return list; });
 	}
@@ -102,7 +105,7 @@ public class StorageCache {
 		if (LOCATIONS.containsKey(world.getName())) {
 			LOCATIONS.get(world).add(coordinates);
 		} else {
-			LOCATIONS.put(world.toString(), new ArrayList<int[]>(Arrays.asList(coordinates)));
+			LOCATIONS.put(world.toString(), new ArrayList<int[]>(List.of(coordinates)));
 		}
 	}
 }

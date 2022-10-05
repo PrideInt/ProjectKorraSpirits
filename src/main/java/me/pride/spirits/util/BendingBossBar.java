@@ -1,6 +1,7 @@
 package me.pride.spirits.util;
 
 import me.pride.spirits.game.AncientSoulweaver;
+import me.pride.spirits.storage.StorageCache;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -44,6 +45,7 @@ public class BendingBossBar {
 				this.bossBar.setProgress(this.progress);
 			}
 			for (Player player : players) {
+				StorageCache.addUUIDToCache(player.getUniqueId());
 				this.bossBar.setVisible(true);
 				this.bossBar.addPlayer(player);
 				BARS.add(this);
@@ -57,6 +59,9 @@ public class BendingBossBar {
 		this(null, title, barColor, length, false, 0, players);
 	}
 	public void remove() {
+		for (Player player : bossBar.getPlayers()) {
+			StorageCache.removeUUIDFromCache(player.getUniqueId());
+		}
 		bossBar.removeAll();
 		if (key != null) {
 			Bukkit.removeBossBar(key);

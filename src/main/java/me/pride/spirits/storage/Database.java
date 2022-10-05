@@ -27,7 +27,7 @@ public abstract class Database {
 			}
 		}
 	}
-	public void insert(String... uuids) throws SQLException {
+	protected void insert(String... uuids) throws SQLException {
 		PreparedStatement statement;
 		if (uuids.length > 1) {
 			System.out.println(insertions(uuids));
@@ -40,17 +40,17 @@ public abstract class Database {
 		}
 		statement.executeUpdate();
 	}
-	public void delete(String... uuids) throws SQLException {
+	protected void delete(String... uuids) throws SQLException {
 		PreparedStatement statement = connection.prepareStatement(DELETE);
 		for (String uuid : uuids) {
 			statement.setString(1, uuid);
 			statement.executeUpdate();
 		}
 	}
-	public void deleteAll() throws SQLException {
+	protected void deleteAll() throws SQLException {
 		connection.prepareStatement("DELETE FROM uuids").executeUpdate();
 	}
-	public ResultSet set() throws SQLException {
+	protected ResultSet set() throws SQLException {
 		return connection.prepareStatement(SELECT_ALL).executeQuery();
 	}
 	private String insertions(String... uuids) {

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class SQLite extends Database {
 	public SQLite() {
-		File file = new File(Spirits.instance.getDataFolder().getAbsolutePath() + "storage.db");
+		File file = StorageCache.STORAGE;
 		try {
 			file.createNewFile();
 		} catch (IOException e) { }

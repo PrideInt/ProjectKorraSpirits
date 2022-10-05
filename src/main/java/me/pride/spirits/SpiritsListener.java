@@ -19,6 +19,7 @@ import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
+import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.*;
@@ -46,6 +47,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -231,7 +233,7 @@ class MainListener implements Listener {
 				block.getWorld().dropItem(center.clone().add(x / 2.0, 0, z / 2.0).add(new Vector(0, 0.25, 0).multiply(0.1)), Spirecite.SPIRECITE_FRAGMENTS);
 			}
 		} else if (block.getType() == Material.CRAFTING_TABLE && block.hasMetadata("station:ancient")) {
-		
+			StorageCache.removeLocationsFromCache(block.getWorld(), new int[]{ block.getX(), block.getY(), block.getZ() });
 		}
 	}
 	
@@ -261,7 +263,8 @@ class MainListener implements Listener {
 				return false;
 			};
 			if (condition.test(player)) {
-				// do database stuff
+				StorageCache.addLocationsToCache(block.getWorld(), new int[]{ block.getX(), block.getY(), block.getZ() });
+				block.setMetadata("station:ancient", new FixedMetadataValue(Spirits.instance, 0));
 			} else {
 				ActionBar.sendActionBar(ChatColor.of("#e8204c") + "Not enough spiritual energy to construct a station.", player);
 				event.setBuild(false);
@@ -326,6 +329,7 @@ class MainListener implements Listener {
 			Player player = event.getPlayer();
 			
 			if (entity.getType() == EntityType.WARDEN) {
+				// TODO: testing purposes only
 				if (player.isSneaking()) {
 					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 						AncientSoulweaver.of((Warden) entity).ifPresent(soulweaver -> soulweaver.remove());
@@ -353,7 +357,6 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoin(final PlayerJoinEvent event) {
-		// TODO: see bendingbossbar
 		BendingBossBar.fromPlayer(event.getPlayer()).ifPresent(bar -> {
 			bar.bossBar().addPlayer(event.getPlayer());
 		});

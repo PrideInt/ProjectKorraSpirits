@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public abstract class Spirit {
-	public static final Set<Spirit> SPIRIT_CACHE = new HashSet<>();
+	public static final Map<UUID, Spirit> SPIRIT_CACHE = new HashMap();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 	
 	public abstract SpiritRecord record();
@@ -33,7 +33,14 @@ public abstract class Spirit {
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
-		SPIRIT_CACHE.add(this);
+		SPIRIT_CACHE.put(null, this);
+	}
+	
+	public Spirit(World world, Entity entity) {
+		this.spirit = this;
+		this.world = world;
+		this.entity = entity;
+		SPIRIT_CACHE.put(entity.getUniqueId(), this);
 	}
 	
 	/**
@@ -41,13 +48,6 @@ public abstract class Spirit {
 	 */
 	public World world() {
 		return this.world;
-	}
-	
-	/**
-	 * @return Location that this spirit was spawned at
-	 */
-	public Location spawnLocation() {
-		return this.location;
 	}
 	
 	/**
@@ -143,7 +143,7 @@ public abstract class Spirit {
 	 * @return this Spirit
 	 */
 	public Spirit spawnEntity() {
-		spawnEntity(world(), spawnLocation());
+		spawnEntity(world(), location);
 		return this;
 	}
 	
@@ -184,9 +184,14 @@ public abstract class Spirit {
 	 * @return this Spirit
 	 */
 	public Spirit spawnEntity(World world, Location location, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
+		if (this.entity != null) {
+			return this;
+		}
 		this.entity = world.spawnEntity(location, entityType);
 		this.start = System.currentTimeMillis();
 		this.end = System.currentTimeMillis() + revertTime;
+		
+		SPIRIT_CACHE.replace(this.entity.getUniqueId(), this);
 		
 		consumer.andThen(e -> e.getPersistentDataContainer().set(spiritType.keys().getRight(), PersistentDataType.STRING, spiritType.keys().getLeft() + "-" + this.entity.getUniqueId())).accept(this.entity);
 		
@@ -235,10 +240,13 @@ public abstract class Spirit {
 	 */
 	public static Optional<Spirit> of(Entity entity) {
 		// TODO: gonna need a better way to search
-		return SPIRIT_CACHE.stream().filter(spirit -> spirit.entity().getUniqueId() == entity.getUniqueId()).findAny();
+		return SPIRIT_CACHE.get(entity.getUniqueId()) == null ? Optional.empty() : Optional.of(SPIRIT_CACHE.get(entity.getUniqueId()));
 	}
 	public static boolean exists(Entity entity) {
-		return of(entity).isPresent();
+		if (of(entity).isPresent()) {
+			return true;
+		}
+		return entity.getPersistentDataContainer().has(LIGHT_SPIRIT_KEY, PersistentDataType.STRING) || entity.getPersistentDataContainer().has(DARK_SPIRIT_KEY, PersistentDataType.STRING) || entity.getPersistentDataContainer().has(SPIRIT_KEY, PersistentDataType.STRING);
 	}
 	public static boolean destroy(Spirit spirit) {
 		if (spirit == null) return false;
@@ -246,7 +254,7 @@ public abstract class Spirit {
 		showEntity(spirit);
 		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 		spirit.entity().remove();
-		return (!RECOLLECTION.contains(spirit) ? true : RECOLLECTION.remove(spirit)) && SPIRIT_CACHE.remove(spirit);
+		return (!RECOLLECTION.contains(spirit) ? true : RECOLLECTION.remove(spirit)) && SPIRIT_CACHE.remove(spirit.entity().getUniqueId(), spirit);
 	}
 	public static void handle() {
 		// System.out.println(RECOLLECTION.size() + ", " + SPIRIT_CACHE.keySet().size() + ", " + SPIRIT_CACHE.values().size());
@@ -274,7 +282,7 @@ public abstract class Spirit {
 		}
 	}
 	public static void cleanup() {
-		SPIRIT_CACHE.forEach(spirit -> {
+		SPIRIT_CACHE.values().forEach(spirit -> {
 			showEntity(spirit);
 			spirit.remove();
 		});
