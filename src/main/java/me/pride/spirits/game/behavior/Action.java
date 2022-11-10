@@ -8,7 +8,12 @@ public abstract class Action extends BehaviorAction {
 	private static final Map<Action, Long> ACTION_COOLDOWNS = new HashMap<>();
 	private static final Set<Action> ACTIVE_ACTIONS = new HashSet<>();
 	
+	public enum Act {
+		DEFEND, ATTACK, HEAL, UTIL
+	}
+	
 	public abstract String name();
+	public abstract Act act();
 	
 	public boolean inCooldown() {
 		return ACTION_COOLDOWNS.containsKey(this);
@@ -50,16 +55,38 @@ class DefenderAct extends Action {
 	public String name() {
 		return "Defending";
 	}
+	@Override
+	public Act act() {
+		return Act.DEFEND;
+	}
 }
 class AttackerAct extends Action {
 	@Override
 	public String name() {
 		return "Attacking";
 	}
+	@Override
+	public Act act() {
+		return Act.ATTACK;
+	}
 }
 class HealAct extends Action {
 	@Override
 	public String name() {
 		return "Healing";
+	}
+	@Override
+	public Act act() {
+		return Act.HEAL;
+	}
+}
+class UtilAct extends Action {
+	@Override
+	public String name() {
+		return "Utility";
+	}
+	@Override
+	public Act act() {
+		return Act.UTIL;
 	}
 }

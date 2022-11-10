@@ -222,11 +222,6 @@ public abstract class Spirit {
 					entity.setInvulnerable(replacedCache.invulnerable());
 					entity.setCustomName(replaced.getCustomName());
 					entity.setCustomNameVisible(true);
-					
-					if (replaced instanceof LivingEntity) {
-						entity.getLocation().setPitch(spirit.location().getPitch());
-						entity.getLocation().setYaw(spirit.location().getYaw());
-					}
 					entity.getPersistentDataContainer().remove(REPLACED_KEY);
 				});
 				ReplaceableSpirit.remove(spirit.entity(), ReplaceableSpirit.fromEntity(spirit.entity()));

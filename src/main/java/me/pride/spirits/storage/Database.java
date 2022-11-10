@@ -30,7 +30,6 @@ public abstract class Database {
 	protected void insert(String... uuids) throws SQLException {
 		PreparedStatement statement;
 		if (uuids.length > 1) {
-			System.out.println(insertions(uuids));
 			statement = connection.prepareStatement(insertions(uuids));
 		} else {
 			statement = connection.prepareStatement(INSERT);
