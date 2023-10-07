@@ -115,7 +115,7 @@ being with its heart. Its abilities are terrifying, and the nightmare cycle it e
 more terrifying. It won't be an easy fight. Though, upon its defeat, you will be rewarded generously 
 with its essence.
 
-> ![NOTE]
+> [!NOTE]
 > You should probably have a team of 4 or however many to defeat this boss. Going solo is like.
 > Really hard.
 
