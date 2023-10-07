@@ -1,8 +1,6 @@
 package me.pride.spirits.util;
 
-import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.storage.StorageCache;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -11,7 +9,11 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 // TODO: database to store players that are added to the bossbar to handle persistently
 public class BendingBossBar {

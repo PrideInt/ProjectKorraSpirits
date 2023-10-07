@@ -4,18 +4,25 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.*;
 import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.api.record.SpiritRecord;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
+import net.md_5.bungee.api.ChatColor;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
-import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.*;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
-import org.bukkit.entity.*;
-import org.bukkit.event.Event;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public abstract class Spirit {
@@ -202,27 +209,21 @@ public abstract class Spirit {
 		return this;
 	}
 	
-	/* Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
+	/** Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
 	 */
 	private static void showEntity(Spirit spirit) {
 		if (spirit instanceof ReplaceableSpirit) {
 			if (ReplaceableSpirit.containsKey(spirit.entity())) {
 				ReplaceableSpirit.fromEntity(spirit.entity()).replacedCache().ifPresent(replacedCache -> {
 					Entity replaced = replacedCache.cache().getLeft();
-					
-					net.minecraft.world.entity.Entity spawn = ((CraftEntity) replaced).getHandle();
-					spawn.a(spirit.location().getX(), spirit.location().getY(), spirit.location().getZ());
-					
-					PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(spawn, replacedCache.cache().getRight());
-					
+
 					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-						((CraftPlayer) player).getHandle().b.a(packet);
+						player.showEntity(Spirits.instance, replaced);
 					}
-					Entity entity = spawn.getBukkitEntity();
-					entity.setInvulnerable(replacedCache.invulnerable());
-					entity.setCustomName(replaced.getCustomName());
-					entity.setCustomNameVisible(true);
-					entity.getPersistentDataContainer().remove(REPLACED_KEY);
+					// replaced.setInvulnerable(replacedCache.invulnerable());
+					// replaced.setCustomName(replaced.getCustomName());
+					// replaced.setCustomNameVisible(true);
+					// replaced.getPersistentDataContainer().remove(REPLACED_KEY);
 				});
 				ReplaceableSpirit.remove(spirit.entity(), ReplaceableSpirit.fromEntity(spirit.entity()));
 			}

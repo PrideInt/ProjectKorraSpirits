@@ -21,6 +21,7 @@ import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
 import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
+import me.pride.spirits.util.Filter;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -169,7 +170,18 @@ public class SpiritsListener implements Listener {
 		Entity entity = event.getEntity();
 		
 		if (ReplaceableSpirit.containsKey(entity)) {
-			ReplaceableSpirit.fromEntity(entity).ifCachePresent(cache -> cache.cache().getLeft().remove());
+			ReplaceableSpirit.fromEntity(entity).ifCachePresent(cache -> {
+				Entity e = cache.cache().getLeft();
+
+				if (Filter.filterEntityLight(e)) {
+					e.getWorld().spawnParticle(Particle.SPELL_INSTANT, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+				} else if (Filter.filterEntityDark(e)) {
+					e.getWorld().spawnParticle(Particle.SPELL_WITCH, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+				} else {
+					e.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+				}
+				e.remove();
+			});
 		}
 	}
 }

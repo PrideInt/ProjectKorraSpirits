@@ -1,5 +1,6 @@
 package me.pride.spirits.api;
 
+import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.EntityReplacedBySpiritEvent;
 import me.pride.spirits.api.event.EntitySpiritReplaceEvent;
 import me.pride.spirits.api.record.SpiritRecord;
@@ -8,14 +9,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ReplaceableSpirit extends Spirit implements Replaceable {
@@ -86,10 +89,10 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		
 		entity.setInvulnerable(true);
 		entity.getPersistentDataContainer().set(REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
-		// Do packets stuff to hide and unhide original entity
-		PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(entity.getEntityId());
+
+		// hide original Entity
 		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			((CraftPlayer) player).getHandle().b.a(packet);
+			player.hideEntity(Spirits.instance, entity);
 		}
 		Event event = new EntityReplacedBySpiritEvent(entity, this);
 		

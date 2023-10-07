@@ -2,12 +2,10 @@ package me.pride.spirits.util;
 
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
-import com.projectkorra.projectkorra.configuration.ConfigManager;
 import me.pride.spirits.util.objects.Gradient;
 import me.pride.spirits.util.objects.QuadraticInterpolator;
-import net.md_5.bungee.api.ChatColor;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class ChatUtil {
 	public static String getAuthor() { return "Prride/prideyy"; }

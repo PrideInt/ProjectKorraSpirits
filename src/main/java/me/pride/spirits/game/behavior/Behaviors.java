@@ -2,12 +2,16 @@ package me.pride.spirits.game.behavior;
 
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.behavior.BehaviorTree.Branch;
+import me.pride.spirits.game.behavior.NightmareNature.CauseInsanity;
+import me.pride.spirits.game.behavior.NightmareNature.NightmareCycle;
+import me.pride.spirits.game.behavior.NightmareNature.SummonObelisk;
+import me.pride.spirits.game.behavior.NightmareNature.SummonWraith;
+import me.pride.spirits.game.behavior.ProtectorNature.Forcefield;
+import me.pride.spirits.game.behavior.ProtectorNature.RandomHeal;
+import me.pride.spirits.game.behavior.TerrorNature.FangsCircle;
+import me.pride.spirits.game.behavior.TerrorNature.FangsLine;
+import me.pride.spirits.game.behavior.TerrorNature.HealingStasis;
 
-import me.pride.spirits.game.behavior.ProtectorNature.*;
-import me.pride.spirits.game.behavior.TerrorNature.*;
-import me.pride.spirits.game.behavior.NightmareNature.*;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;

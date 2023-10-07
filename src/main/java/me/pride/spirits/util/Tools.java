@@ -8,7 +8,9 @@ import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.util.objects.TetraConsumer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.function.Consumer;

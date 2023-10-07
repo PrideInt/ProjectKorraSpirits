@@ -5,7 +5,6 @@ import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.util.BendingBossBar;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.List;

@@ -1,28 +1,18 @@
 package me.pride.spirits.game;
 
-import com.projectkorra.projectkorra.GeneralMethods;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.game.behavior.Behaviors;
 import me.pride.spirits.util.BendingBossBar;
 import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang3.tuple.Pair;
-import org.bukkit.*;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Warden;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class AncientSoulweaver {
 	public static final NamespacedKey ANCIENT_SOULWEAVER_BAR_KEY = new NamespacedKey(Spirits.instance, "soulweaverbar");

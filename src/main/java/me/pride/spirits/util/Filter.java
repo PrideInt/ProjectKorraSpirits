@@ -3,7 +3,26 @@ package me.pride.spirits.util;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import org.bukkit.Material;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Blaze;
+import org.bukkit.entity.Cat;
+import org.bukkit.entity.CaveSpider;
+import org.bukkit.entity.Cow;
+import org.bukkit.entity.Enderman;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fox;
+import org.bukkit.entity.Horse;
+import org.bukkit.entity.MagmaCube;
+import org.bukkit.entity.Pig;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Slime;
+import org.bukkit.entity.Spider;
+import org.bukkit.entity.Wolf;
+import org.bukkit.entity.Zoglin;
+import org.bukkit.entity.Zombie;
+import org.bukkit.entity.ZombieHorse;
 
 public class Filter {
 	public static boolean filterEntityLight(Entity entity) {
