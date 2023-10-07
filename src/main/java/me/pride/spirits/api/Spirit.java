@@ -1,17 +1,16 @@
 package me.pride.spirits.api;
 
 import me.pride.spirits.Spirits;
-import me.pride.spirits.api.event.*;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.api.event.EntitySpiritDestroyEvent;
+import me.pride.spirits.api.event.EntitySpiritRevertEvent;
+import me.pride.spirits.api.event.EntitySpiritSpawnEvent;
 import me.pride.spirits.api.record.SpiritRecord;
 import net.md_5.bungee.api.ChatColor;
-import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
