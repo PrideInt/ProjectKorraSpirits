@@ -57,10 +57,30 @@ Holds an `Optional<ReplacedCache>` reference, storing data of the original repla
 `LightSpirit` extends `ReplaceableSpirit`. Used to create `Spirit`s that are primarily defined with
 `SpirtType.LIGHT_SPIRIT` within `SpiritRecord` upon creation and instantiation.
 
+Default constructor:
+```java
+new LightSpirit(World world, Location location, String name, EntityType entityType, long revertTime);
+```
+
 ### DarkSpirit
 
 `DarkSpirit` extends `ReplaceableSpirit`. Used to create `Spirit`s that are primarily defined with
 `SpirtType.DARK_SPIRIT` within `SpiritRecord` upon creation and instantiation.
+
+Default constructor:
+```java
+new DarkSpirit(World world, Location location, String name, EntityType entityType, long revertTime);
+```
+
+### NeutralSpirit
+
+`DarkSpirit` extends `ReplaceableSpirit`. Used to create `Spirit`s that can be defined by any `SpiritType` 
+upon creation and instantiation.
+
+Default constructor:
+```java
+new NeutralSpirit(World world, Location location, String name, EntityType entityType, long revertTime);
+```
 
 ### SpiritBuilder
 
