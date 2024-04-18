@@ -10,6 +10,14 @@ public abstract class LightSpiritAbility extends ElementalAbility {
 		super(player);
 	}
 	@Override
+	public boolean isExplosiveAbility() {
+		return false;
+	}
+	@Override
+	public boolean isIgniteAbility() {
+		return false;
+	}
+	@Override
 	public Element getElement() {
 		return SpiritElement.LIGHT_SPIRIT;
 	}

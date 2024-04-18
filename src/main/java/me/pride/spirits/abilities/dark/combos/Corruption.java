@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import com.projectkorra.projectkorra.region.RegionProtection;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
@@ -76,7 +77,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
 		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
@@ -182,12 +183,6 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	public boolean isHarmlessAbility() {
 		return false;
 	}
-	
-	@Override
-	public boolean isIgniteAbility() { return false; }
-	
-	@Override
-	public boolean isExplosiveAbility() { return false; }
 	
 	@Override
 	public long getCooldown() {

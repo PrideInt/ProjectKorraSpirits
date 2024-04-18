@@ -68,7 +68,7 @@ public class BehaviorTree {
 			}
 		}
 		protected boolean hasChild() {
-			return children.isEmpty();
+			return !children.isEmpty();
 		}
 	}
 }

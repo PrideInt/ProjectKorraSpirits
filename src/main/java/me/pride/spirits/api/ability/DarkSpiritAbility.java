@@ -10,6 +10,14 @@ public abstract class DarkSpiritAbility extends ElementalAbility {
 		super(player);
 	}
 	@Override
+	public boolean isExplosiveAbility() {
+		return false;
+	}
+	@Override
+	public boolean isIgniteAbility() {
+		return false;
+	}
+	@Override
 	public Element getElement() {
 		return SpiritElement.DARK_SPIRIT;
 	}

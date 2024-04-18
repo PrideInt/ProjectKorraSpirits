@@ -3,6 +3,7 @@ package me.pride.spirits.abilities.dark;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
@@ -41,7 +42,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		
 		if (!bPlayer.canBend(this)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
 		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");

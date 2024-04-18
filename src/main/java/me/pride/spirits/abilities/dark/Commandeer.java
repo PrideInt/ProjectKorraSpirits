@@ -3,6 +3,7 @@ package me.pride.spirits.abilities.dark;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.TempPotionEffect;
 import me.pride.spirits.Spirits;
@@ -53,7 +54,7 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		
 		if (!bPlayer.canBend(this)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
 		this.item_cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Item");
@@ -140,8 +141,9 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		player.getWorld().spawnParticle(Particle.SPELL_WITCH, GeneralMethods.getRightSide(target.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
 	}
 	
-	public Optional<LivingEntity> take() {
-		return Optional.of((LivingEntity) GeneralMethods.getTargetedEntity(player, select_range));
+	public void take() {
+		Optional<LivingEntity> take = Optional.of((LivingEntity) GeneralMethods.getTargetedEntity(player, select_range));
+		take.ifPresent(entity -> this.target = entity);
 	}
 	public static void take(Player player) { getAbility(player, Commandeer.class).take(); }
 	
@@ -174,12 +176,6 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	public boolean isHarmlessAbility() {
 		return false;
 	}
-	
-	@Override
-	public boolean isIgniteAbility() { return false; }
-	
-	@Override
-	public boolean isExplosiveAbility() { return false; }
 	
 	@Override
 	public long getCooldown() {

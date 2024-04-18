@@ -28,10 +28,8 @@ public abstract class Spirit {
 	/*
 	TODO: ID assignment to Spirits for efficient searching
 	 */
-	public static final Map<Integer, Spirit> SPIRIT_CACHE = new HashMap();
+	public static final Map<UUID, Spirit> SPIRIT_CACHE = new HashMap();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
-
-	private static int SPIRIT_ID = 0;
 	
 	public abstract SpiritRecord record();
 	
@@ -40,22 +38,18 @@ public abstract class Spirit {
 	private Location location;
 	private Entity entity;
 	private long start, end;
-	private int id;
 	
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
-		this.id = SPIRIT_ID;
-		SPIRIT_ID++;
-		SPIRIT_CACHE.put(this.id, this);
+		SPIRIT_CACHE.put(null, this);
 	}
 	
 	public Spirit(World world, Entity entity) {
 		// this.spirit = this;
 		this.world = world;
 		this.entity = entity;
-		this.id = SPIRIT_ID;
-		SPIRIT_CACHE.put(this.id, this);
+		SPIRIT_CACHE.put(entity.getUniqueId(), this);
 	}
 	
 	/**
@@ -70,13 +64,6 @@ public abstract class Spirit {
 	 */
 	public Entity entity() {
 		return this.entity;
-	}
-
-	/**
-	 * @return The id assigned to the Spirit
-	 */
-	public int id() {
-		return this.id;
 	}
 	
 	/**
@@ -260,7 +247,6 @@ public abstract class Spirit {
 	public static boolean destroy(Spirit spirit) {
 		if (spirit == null) return false;
 
-		--SPIRIT_ID;
 		showEntity(spirit);
 		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 		spirit.entity().remove();
@@ -276,7 +262,6 @@ public abstract class Spirit {
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritRevertEvent(spirit, System.currentTimeMillis()));
 
-					--SPIRIT_ID;
 					spirit.entity().remove();
 					RECOLLECTION.poll();
 				}
@@ -286,7 +271,6 @@ public abstract class Spirit {
 				if (condition) {
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(s));
 
-					--SPIRIT_ID;
 					showEntity(s);
 					s.entity().remove();
 				}
