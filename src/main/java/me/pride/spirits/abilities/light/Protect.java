@@ -26,6 +26,8 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	private double speed;
 	@Attribute(Attribute.DAMAGE)
 	private double damage;
+	@Attribute(Attribute.RANGE)
+	private double range;
 	
 	private Location origin, location;
 	
@@ -42,6 +44,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
 		this.speed = Spirits.instance.getConfig().getDouble(path + "Speed");
 		this.damage = Spirits.instance.getConfig().getDouble(path + "Damage");
+		this.range = Spirits.instance.getConfig().getDouble(path + "Range");
 		
 		this.origin = player.getLocation().clone().add(0, 1, 0);
 		this.location = origin.clone();
@@ -55,6 +58,10 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			remove();
 			return;
 		} else if (GeneralMethods.isRegionProtectedFromBuild(this, location)) {
+			remove();
+			return;
+		}
+		if (origin.distanceSquared(location) > range * range) {
 			remove();
 			return;
 		}
