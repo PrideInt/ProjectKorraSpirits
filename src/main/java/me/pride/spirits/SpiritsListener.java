@@ -9,9 +9,10 @@ import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Protect;
+import me.pride.spirits.abilities.light.Protect.ProtectType;
+import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.api.ReplaceableSpirit;
-import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
@@ -23,13 +24,21 @@ import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Filter;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.*;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Warden;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -38,7 +47,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -52,7 +60,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 
@@ -92,6 +99,11 @@ public class SpiritsListener implements Listener {
 					}
 				}
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
+				switch (bPlayer.getBoundAbilityName()) {
+					case "Protect" -> { new Protect(player, ProtectType.DEFLECT);
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -130,7 +142,7 @@ public class SpiritsListener implements Listener {
 				}
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
-					case "Protect" -> { new Protect(player);
+					case "Protect" -> { new Protect(player, ProtectType.PROTECT);
 						break;
 					}
 				}
@@ -319,9 +331,9 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDamage(final EntityDamageEvent event) {
+		Entity entity = event.getEntity();
+
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
-			Entity entity = event.getEntity();
-			
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				Warden soulweaver = (Warden) entity;
 				
@@ -341,6 +353,22 @@ class MainListener implements Listener {
 				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
 					bar.update(event.getDamage(), false);
 				});
+			}
+		}
+		if (entity.getType() == EntityType.PLAYER) {
+			Player player = (Player) entity;
+
+			if (Protect.isProtecting(player)) {
+				double damage = event.getDamage();
+				double lights = Lightborn.LIGHTS.get(player.getUniqueId());
+				double protection = Math.max(Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Protect.MinProtect") / 100.0, lights / 100.0);
+
+				double offset = damage - (protection * damage);
+
+				event.setDamage(offset);
+
+				Lightborn.LIGHTS.put(player.getUniqueId(), lights / 2.0);
+				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "Light Energy: " + lights + " %", player);
 			}
 		}
 	}

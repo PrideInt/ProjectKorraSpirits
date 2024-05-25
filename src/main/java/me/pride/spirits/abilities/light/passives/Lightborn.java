@@ -7,14 +7,26 @@ import me.pride.spirits.api.ability.LightSpiritAbility;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class Lightborn extends LightSpiritAbility implements AddonAbility, PassiveAbility {
+	public static final Map<UUID, Double> LIGHTS = new HashMap<>();
+
 	public Lightborn(Player player) {
 		super(player);
+
+		LIGHTS.put(player.getUniqueId(), 0.0);
+
+		start();
 	}
 	
 	@Override
 	public void progress() {
-	
+		if (LIGHTS.get(player.getUniqueId()) < 100.0) {
+			LIGHTS.put(player.getUniqueId(), LIGHTS.get(player.getUniqueId()) + 0.1);
+		}
 	}
 	
 	@Override
@@ -70,11 +82,11 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	
 	@Override
 	public boolean isInstantiable() {
-		return false;
+		return true;
 	}
 	
 	@Override
 	public boolean isProgressable() {
-		return false;
+		return true;
 	}
 }

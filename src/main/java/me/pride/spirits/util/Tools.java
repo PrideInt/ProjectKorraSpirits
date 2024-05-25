@@ -12,7 +12,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -91,6 +94,32 @@ public class Tools {
 			double z = size * Math.sin(Math.toRadians(angle - points) * 2);
 			
 			consumer.accept(location.clone().add(x, 0, z));
+		}
+	}
+
+	public static void generateDirectionalCircle(Location location, Vector direction, double radius, int points, Consumer<Location> consumer) {
+		for (int i = 0; i < 360; i += points) {
+			Vector circle = GeneralMethods.getOrthogonalVector(direction.clone(), i, radius);
+			consumer.accept(location.clone().add(circle));
+		}
+	}
+
+	public static void generateSpirals(Location location, Vector direction, double radius, int spirals, int change, boolean clockwise, Consumer<Location> consumer) {
+		int gap = 360 / spirals;
+		List<Integer> points = new ArrayList<>();
+
+		for (int i = 0; i < spirals; i++) {
+			points.add(i * gap);
+		}
+		for (int point : points) {
+			int newPoint = clockwise ? point + change : point - change;
+			if (clockwise && point + change > 360) {
+				newPoint = point + change - 360;
+			} else if (!clockwise && point - change < 0) {
+				newPoint = point - change + 360;
+			}
+			Vector circle = GeneralMethods.getOrthogonalVector(direction.clone(), newPoint, radius);
+			consumer.accept(location.clone().add(circle));
 		}
 	}
 	

@@ -4,10 +4,12 @@ import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import org.bukkit.Material;
+import org.bukkit.entity.Allay;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Cow;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fox;
@@ -27,10 +29,10 @@ import org.bukkit.entity.ZombieHorse;
 
 public class Filter {
 	public static boolean filterEntityLight(Entity entity) {
-		return entity instanceof Sheep || entity instanceof Cow || entity instanceof Pig || entity instanceof Rabbit || entity instanceof Cat || entity instanceof Wolf || entity instanceof Horse || (entity instanceof Slime && !(entity instanceof MagmaCube)) || entity instanceof Fox;
+		return entity instanceof Sheep || entity instanceof Cow || entity instanceof Pig || entity instanceof Rabbit || entity instanceof Cat || entity instanceof Wolf || entity instanceof Horse || (entity instanceof Slime && !(entity instanceof MagmaCube)) || entity instanceof Fox || entity instanceof Allay;
 	}
 	public static boolean filterEntityDark(Entity entity) {
-		return entity instanceof Spider || entity instanceof Enderman || entity instanceof Zoglin || entity instanceof CaveSpider || entity instanceof Skeleton || entity instanceof Zombie || entity instanceof ZombieHorse || (entity instanceof MagmaCube && !(entity instanceof Slime)) || entity instanceof Blaze;
+		return entity instanceof Spider || entity instanceof Enderman || entity instanceof Zoglin || entity instanceof CaveSpider || entity instanceof Skeleton || entity instanceof Zombie || entity instanceof Creeper || entity instanceof ZombieHorse || (entity instanceof MagmaCube && !(entity instanceof Slime)) || entity instanceof Blaze;
 	}
 	public static boolean filterEntityNeutral(Entity entity) {
 		return !filterEntityLight(entity) && !filterEntityDark(entity);
