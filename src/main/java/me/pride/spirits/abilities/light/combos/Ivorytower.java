@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.ability.util.ComboManager;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.command.Commands;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
@@ -46,7 +47,7 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;
 		}
 		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");

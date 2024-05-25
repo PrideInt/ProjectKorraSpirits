@@ -57,7 +57,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		if (player.isOnline() || player.isDead()) {
 			remove();
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, location)) {
+		} else if (RegionProtection.isRegionProtected(player, location, this)) {
 			remove();
 			return;
 		}

@@ -56,7 +56,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		target = result.getHitBlock();
 		if (target == null) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, target.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
 		if (!target.hasMetadata("spirits:corrupted_blocks")) {
@@ -128,7 +128,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	
 	private void obelisk(Location location, Consumer<Block> shape) {
 		for (Block block : GeneralMethods.getBlocksAroundPoint(location, 1.5)) {
-			if (GeneralMethods.isRegionProtectedFromBuild(this, block.getLocation())) continue;
+			if (RegionProtection.isRegionProtected(this, location)) continue;
 			
 			shape.accept(block);
 		}

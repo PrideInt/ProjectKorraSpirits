@@ -3,6 +3,7 @@ package me.pride.spirits.abilities.neutral.combos;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.projectkorra.projectkorra.region.RegionProtection;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.util.Tools;
@@ -48,7 +49,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;
 		}
 		if (!bPlayer.isOnCooldown("Soar")) return;
@@ -81,7 +82,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 		if (System.currentTimeMillis() > delay) {
 			if (slamCheck(player.getLocation())) {
 				for (Block block : GeneralMethods.getBlocksAroundPoint(player.getLocation(), radius)) {
-					if (isAir(block.getType()) || block.isLiquid() || GeneralMethods.isRegionProtectedFromBuild(this, block.getLocation())) {
+					if (isAir(block.getType()) || block.isLiquid() || RegionProtection.isRegionProtected(this, block.getLocation())) {
 						continue;
 					}
 					player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.25, 0.25, 0.25, 0, block.getBlockData());

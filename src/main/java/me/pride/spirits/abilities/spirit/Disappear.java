@@ -4,6 +4,7 @@ import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.TempPotionEffect;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.SpiritAbility;
@@ -36,7 +37,7 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 			return;
 		} else if (CoreAbility.hasAbility(player, Disappear.class)) {
 			return;
-		} else if (GeneralMethods.isRegionProtectedFromBuild(this, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;
 		}
 		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
@@ -62,7 +63,7 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 		
 		if (!player.isSneaking()) {
 			if (target != null) {
-				if (GeneralMethods.isRegionProtectedFromBuild(this, target)) {
+				if (RegionProtection.isRegionProtected(this, target)) {
 					remove();
 					return;
 				}

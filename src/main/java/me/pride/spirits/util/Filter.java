@@ -2,6 +2,7 @@ package me.pride.spirits.util;
 
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.region.RegionProtection;
 import org.bukkit.Material;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Cat;
@@ -35,7 +36,7 @@ public class Filter {
 		return !filterEntityLight(entity) && !filterEntityDark(entity);
 	}
 	public static boolean filterEntityFromAbility(Entity entity, Player player, CoreAbility ability) {
-		return entity.getUniqueId() != player.getUniqueId() && !GeneralMethods.isRegionProtectedFromBuild(ability, entity.getLocation());
+		return entity.getUniqueId() != player.getUniqueId() && !RegionProtection.isRegionProtected(ability, entity.getLocation());
 	}
 	public static boolean filterBlockFlowers(Material material) {
 		switch (material) {

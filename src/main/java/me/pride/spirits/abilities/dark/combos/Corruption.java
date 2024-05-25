@@ -93,7 +93,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 		origin = player.getLocation().clone();
 		
 		blocks = GeneralMethods.getBlocksAroundPoint(origin, radius)
-				.stream().filter(b -> !isAir(b.getType()) && isAir(b.getRelative(BlockFace.UP).getType()) && !GeneralMethods.isRegionProtectedFromBuild(this, b.getLocation()))
+				.stream().filter(b -> !isAir(b.getType()) && isAir(b.getRelative(BlockFace.UP).getType()) && !RegionProtection.isRegionProtected(this, b.getLocation()))
 				.collect(Collectors.toList());
 		corrupted = new ArrayList<>();
 		spirits = new HashSet<>();
