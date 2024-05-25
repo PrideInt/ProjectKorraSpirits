@@ -12,6 +12,7 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
@@ -117,7 +118,12 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		location.add(direction.multiply(speed));
 		size = size >= maxSize ? maxSize : size + sizeIncrease;
 
-		Tools.generateDirectionalCircle(location, location.getDirection(), size, 8, l -> l.getWorld().spawnParticle(Particle.GLOW, l, 1, 0.05, 0.05, 0.05, 0));
+		Tools.generateDirectionalCircle(location, location.getDirection(), size, 8, l -> {
+			if (ThreadLocalRandom.current().nextInt(5) == 0) {
+				l.getWorld().spawnParticle(Particle.GLOW, l, 1, 0.05, 0.05, 0.05, 0);
+			}
+		});
+		location.getWorld().spawnParticle(Particle.SONIC_BOOM, location, 1, 0.25, 0.25, 0.25, 0);
 
 		Tools.trackEntitySpirit(location, size / 1.5, e -> e.getUniqueId() != player.getUniqueId(), (entity, light, dark, neutral) -> {
 			if (dark) {
