@@ -150,6 +150,10 @@ public class SpiritsListener implements Listener {
 		if (event.getEntity() instanceof LivingEntity) {
 			if (((LivingEntity) event.getEntity()).getHealth() <= 0) return;
 		}
+		/*
+		If the transformed Spirit doesn't die before it reverts back, then we will apply the ratio of damage
+		that it took while transformed back to the original entity.
+		 */
 		if (ReplaceableSpirit.containsKey(entity)) {
 			Entity replaced = ReplaceableSpirit.fromEntity(entity).getReplacedCache().cache().getLeft();
 			if (replaced instanceof LivingEntity && entity instanceof LivingEntity) {
@@ -205,8 +209,15 @@ class MainListener implements Listener {
 				positions.add(slot);
 			}
 			key = Spirecite.FRAGMENTS_KEY;
-			result = new ItemStack(Material.GOLD_INGOT, 1);
-			
+			result = new ItemStack(Material.RAW_GOLD, 1);
+			result.getItemMeta().getPersistentDataContainer().set(Spirecite.SPIRECITE_KEY, PersistentDataType.STRING, "spirecite");
+		} else if (recipe.getResult().equals(Spirecite.SPIRECITE_BLOCK)) {
+			for (ItemStack slot : matrix) {
+				positions.add(slot);
+			}
+			key = Spirecite.SPIRECITE_KEY;
+			result = new ItemStack(Material.RAW_GOLD_BLOCK, 1);
+			result.getItemMeta().getPersistentDataContainer().set(Spirecite.SPIRECITE_BLOCK_KEY, PersistentDataType.STRING, "spirecite_block");
 		} else if (recipe.getResult().equals(Spirecite.SPIRECITE_CROWN)) {
 			positions = Arrays.asList(matrix[3], matrix[4], matrix[5]);
 			
@@ -253,11 +264,11 @@ class MainListener implements Listener {
 	public void onBlockPlace(final BlockPlaceEvent event) {
 		ItemStack item = event.getItemInHand();
 		ItemMeta meta = item.getItemMeta();
+
+		Block block = event.getBlockPlaced();
+		Player player = event.getPlayer();
 		
 		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING)) {
-			Block block = event.getBlockPlaced();
-			Player player = event.getPlayer();
-			
 			Predicate<Player> condition = p -> {
 				if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
 					StructureSearchResult result = p.getWorld().locateNearestStructure(p.getLocation(), Structure.ANCIENT_CITY, 2, false);
@@ -283,6 +294,8 @@ class MainListener implements Listener {
 				event.setCancelled(true);
 				return;
 			}
+		} else if (meta.getPersistentDataContainer().has(Spirecite.SPIRECITE_BLOCK_KEY, PersistentDataType.STRING)) {
+			block.setMetadata("spirecite:block", new FixedMetadataValue(Spirits.instance, 0));
 		}
 	}
 	

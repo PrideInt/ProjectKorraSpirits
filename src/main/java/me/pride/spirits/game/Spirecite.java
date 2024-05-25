@@ -11,11 +11,12 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 public class Spirecite {
-	public static ItemStack SPIRECITE, SPIRECITE_FRAGMENTS;
+	public static ItemStack SPIRECITE, SPIRECITE_FRAGMENTS, SPIRECITE_BLOCK;
 	public static ItemStack SPIRECITE_CROWN, SPIRECITE_CLUB, SPIRECITE_MEDALLION;
 	
 	public static final NamespacedKey SPIRECITE_KEY = new NamespacedKey(Spirits.instance, "spirecite");
 	public static final NamespacedKey FRAGMENTS_KEY = new NamespacedKey(Spirits.instance, "spirecite_fragments");
+	public static final NamespacedKey SPIRECITE_BLOCK_KEY = new NamespacedKey(Spirits.instance, "spirecite_block");
 	
 	public static final NamespacedKey SPIRECITE_CROWN_KEY = new NamespacedKey(Spirits.instance, "spirecite_crown");
 	public static final NamespacedKey SPIRECITE_CLUB_KEY = new NamespacedKey(Spirits.instance, "spirecite_club");
@@ -24,23 +25,29 @@ public class Spirecite {
 	public static final NamespacedKey[] KEYS = { SPIRECITE_KEY, FRAGMENTS_KEY, SPIRECITE_CROWN_KEY, SPIRECITE_CLUB_KEY, SPIRECITE_MEDALLION_KEY };
 	
 	private static void setupItem() {
-		ItemStack spirecite = new ItemStack(Material.RAW_GOLD, 1), fragments = new ItemStack(Material.GOLD_NUGGET, 1);
+		ItemStack spirecite = new ItemStack(Material.RAW_GOLD, 1), fragments = new ItemStack(Material.GOLD_NUGGET, 1), spireciteBlock = new ItemStack(Material.RAW_GOLD_BLOCK, 1);
 		
-		ItemMeta spireciteMeta = spirecite.getItemMeta(), fragmentsMeta = fragments.getItemMeta();
+		ItemMeta spireciteMeta = spirecite.getItemMeta(), fragmentsMeta = fragments.getItemMeta(), spireciteBlockMeta = spireciteBlock.getItemMeta();
 		
 		spireciteMeta.setDisplayName("§fSpirecite");
 		fragmentsMeta.setDisplayName("§fSpirecite Fragments");
+		spireciteBlockMeta.setDisplayName("§fSpirecite Block");
 		
-		PersistentDataContainer spireciteTag = spireciteMeta.getPersistentDataContainer(), fragmentsTag = fragmentsMeta.getPersistentDataContainer();
+		PersistentDataContainer spireciteTag = spireciteMeta.getPersistentDataContainer(), fragmentsTag = fragmentsMeta.getPersistentDataContainer(), spireciteBlockTag = spireciteBlockMeta.getPersistentDataContainer();
 		spireciteTag.set(SPIRECITE_KEY, PersistentDataType.STRING, "spirecite");
 		fragmentsTag.set(FRAGMENTS_KEY, PersistentDataType.STRING, "spirecite_fragments");
+		spireciteBlockTag.set(SPIRECITE_BLOCK_KEY, PersistentDataType.STRING, "spirecite_block");
 		
 		spirecite.setItemMeta(spireciteMeta);
 		fragments.setItemMeta(fragmentsMeta);
+		spireciteBlock.setItemMeta(spireciteBlockMeta);
 		
-		SPIRECITE = spirecite; SPIRECITE_FRAGMENTS = fragments;
+		SPIRECITE = spirecite;
+		SPIRECITE_FRAGMENTS = fragments;
+		SPIRECITE_BLOCK = spireciteBlock;
 		
 		createSpireciteRecipe(SPIRECITE);
+		createSpireciteBlockRecipe(SPIRECITE_BLOCK);
 	}
 	
 	private static void setupSpireciteItem() {
@@ -78,15 +85,20 @@ public class Spirecite {
 	}
 	
 	private static void createSpireciteItemRecipe() {
-		ShapedRecipe crownRecipe = new ShapedRecipe(SPIRECITE_CROWN_KEY, SPIRECITE_CROWN).shape("   ", "TTT", "   ").setIngredient('T', Material.GOLD_INGOT);
+		ShapedRecipe crownRecipe = new ShapedRecipe(SPIRECITE_CROWN_KEY, SPIRECITE_CROWN).shape("   ", "TTT", "   ").setIngredient('T', Material.RAW_GOLD);
 		ShapedRecipe clubRecipe = new ShapedRecipe(SPIRECITE_MEDALLION_KEY, SPIRECITE_MEDALLION).shape(" T ", "TTT", " S ");
-		ShapedRecipe medallionRecipe = new ShapedRecipe(SPIRECITE_CLUB_KEY, SPIRECITE_CLUB).shape("T T", "TTT", " T ").setIngredient('T', Material.GOLD_INGOT);
-		clubRecipe.setIngredient('T', Material.GOLD_INGOT).setIngredient('S', Material.GOLDEN_SWORD);
+		clubRecipe.setIngredient('T', Material.RAW_GOLD).setIngredient('S', Material.GOLDEN_SWORD);
+		ShapedRecipe medallionRecipe = new ShapedRecipe(SPIRECITE_CLUB_KEY, SPIRECITE_CLUB).shape("T T", "TTT", " T ").setIngredient('T', Material.RAW_GOLD);
 		
 		ShapedRecipe[] recipes = {crownRecipe, clubRecipe, medallionRecipe};
 		for (ShapedRecipe r : recipes) {
 			Bukkit.getServer().addRecipe(r);
 		}
+	}
+
+	private static void createSpireciteBlockRecipe(ItemStack spireciteBlock) {
+		ShapedRecipe spireciteBlockRecipe = new ShapedRecipe(SPIRECITE_BLOCK_KEY, spireciteBlock).shape("TTT", "TTT", "TTT").setIngredient('T', Material.RAW_GOLD);
+		Bukkit.getServer().addRecipe(spireciteBlockRecipe);
 	}
 	
 	public static void setup() {

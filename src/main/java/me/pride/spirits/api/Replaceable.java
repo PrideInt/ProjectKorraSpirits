@@ -10,6 +10,10 @@ public interface Replaceable {
 		public boolean replaced() { return this.replaced; }
 		public boolean invulnerable() { return this.invulnerable; }
 		public Pair<Entity, Integer> cache() { return this.cache; }
+
+		public Entity getReplaced() { return cache.getLeft(); }
+
+		public int getReplacedID() { return cache.getRight(); }
 	}
 	
 	ReplaceableSpirit replaceEntity(Entity entity);

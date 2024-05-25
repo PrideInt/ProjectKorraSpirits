@@ -30,91 +30,102 @@ public abstract class Spirit {
 	 */
 	public static final Map<UUID, Spirit> SPIRIT_CACHE = new HashMap();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
-	
+
+	private static int SPIRIT_ID = 0;
+
 	public abstract SpiritRecord record();
-	
+
 	// private Spirit spirit;
 	private World world;
 	private Location location;
 	private Entity entity;
 	private long start, end;
-	
+
+	private int id;
+
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
 		SPIRIT_CACHE.put(null, this);
 	}
-	
+
 	public Spirit(World world, Entity entity) {
 		// this.spirit = this;
 		this.world = world;
 		this.entity = entity;
 		SPIRIT_CACHE.put(entity.getUniqueId(), this);
 	}
-	
+
 	/**
 	 * @return World that this spirit was spawned in
 	 */
 	public World world() {
 		return this.world;
 	}
-	
+
 	/**
 	 * @return The entity spawned that represents this Spirit object
 	 */
 	public Entity entity() {
 		return this.entity;
 	}
-	
+
+	/**
+	 * @return The id assigned to the Spirit
+	 */
+	public int id() {
+		return this.id;
+	}
+
 	/**
 	 * @return The current location of the spirit
 	 */
 	public Location location() {
 		return this.entity.getLocation();
 	}
-	
+
 	/**
 	 * @return Custom name of the spirit
 	 */
 	public String spiritName() {
 		return record().spiritName();
 	}
-	
+
 	/**
 	 * @return Type of entity representing the spirit
 	 */
 	public EntityType entityType() {
 		return record().entityType();
 	}
-	
+
 	/**
 	 * @return Type of the spirit
 	 */
 	public SpiritType type() {
 		return record().spiritType();
 	}
-	
+
 	/**
 	 * @return Revert time of the spirit
 	 */
 	public long revertTime() {
 		return record().revertTime();
 	}
-	
+
 	/**
 	 * @return System time when this spirit was created
 	 */
 	public long startTime() {
 		return this.start;
 	}
-	
+
 	/**
 	 * @return Applicable only to spirits that revert; system time when this spirit will revert
 	 */
 	public long endTime() {
 		return this.end;
 	}
-	
+
 	/**
 	 * @param time - provided system time
 	 * @return Applicable only to spirits that revert; time that will be left before this spirit reverts
@@ -122,14 +133,14 @@ public abstract class Spirit {
 	public long timeLeft(long time) {
 		return (this.start + time) - this.start;
 	}
-	
+
 	/**
 	 * @return Applicable only to spirits that revert; true if the current system time reaches the time in which this spirit will revert
 	 */
 	public boolean timesUp() {
 		return System.currentTimeMillis() > this.end;
 	}
-	
+
 	/**
 	 * Removes this spirit from the cache
 	 */
@@ -137,7 +148,7 @@ public abstract class Spirit {
 		RECOLLECTION.remove(this);
 		SPIRIT_CACHE.remove(this);
 	}
-	
+
 	/**
 	 * Removes this spirit from the cache, as well as the entity representing the spirit
 	 */
@@ -146,7 +157,7 @@ public abstract class Spirit {
 		this.entity.remove();
 		Spirit spirit = this; spirit = null;
 	}
-	
+
 	/**
 	 * Spawns an entity with world and location provided beforehand prior to calling this method
 	 * @return this Spirit
@@ -155,7 +166,7 @@ public abstract class Spirit {
 		spawnEntity(world(), location);
 		return this;
 	}
-	
+
 	/**
 	 * @param world - World to spawn spirit
 	 * @param location - Location to spawn spirit
@@ -169,7 +180,7 @@ public abstract class Spirit {
 		});
 		return this;
 	}
-	
+
 	/**
 	 * @param world - World to spawn spirit
 	 * @param location - Location to spawn spirit
@@ -181,7 +192,7 @@ public abstract class Spirit {
 		spawnEntity(world, location, entityType(), type(), revertTime(), consumer);
 		return this;
 	}
-	
+
 	/**
 	 * @param world - World to spawn spirit
 	 * @param location - Location to spawn spirit
@@ -199,16 +210,16 @@ public abstract class Spirit {
 		this.entity = world.spawnEntity(location, entityType);
 		this.start = System.currentTimeMillis();
 		this.end = System.currentTimeMillis() + revertTime;
-		
+
 		consumer.andThen(e -> e.getPersistentDataContainer().set(spiritType.keys().getRight(), PersistentDataType.STRING, spiritType.keys().getLeft() + "-" + this.entity.getUniqueId())).accept(this.entity);
-		
+
 		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
 		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
-		
+
 		if (revertTime >= 0) RECOLLECTION.add(this);
 		return this;
 	}
-	
+
 	/** Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
 	 */
 	private static void showEntity(Spirit spirit) {
@@ -220,6 +231,7 @@ public abstract class Spirit {
 					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 						player.showEntity(Spirits.instance, replaced);
 					}
+					replaced.teleport(spirit.entity().getLocation());
 					// replaced.setInvulnerable(replacedCache.invulnerable());
 					// replaced.setCustomName(replaced.getCustomName());
 					// replaced.setCustomNameVisible(true);
@@ -229,7 +241,7 @@ public abstract class Spirit {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param entity - Entity mapped to find spirit associated with the entity
 	 * @return an Optional of the Spirit that is found, if any
@@ -256,7 +268,7 @@ public abstract class Spirit {
 		// System.out.println(RECOLLECTION.size() + ", " + SPIRIT_CACHE.keySet().size() + ", " + SPIRIT_CACHE.values().size());
 		if (!RECOLLECTION.isEmpty()) {
 			Spirit spirit = RECOLLECTION.peek();
-			
+
 			if (spirit != null) {
 				if (spirit.timesUp()) {
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));

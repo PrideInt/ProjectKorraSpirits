@@ -34,6 +34,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	
 	public ReplaceableSpirit(World world, Entity entity, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, entity.getLocation());
+
 		if (isReplacedEntity(entity)) {
 			super.removeFromCache();
 			REPLACED.remove(this);
@@ -112,10 +113,17 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		return REPLACED.containsKey(entity);
 	}
 	public static boolean remove(Entity entity, ReplaceableSpirit spirit) {
+		REPLACED.get(entity).getReplacedCache().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
 		return REPLACED.remove(entity, spirit);
 	}
 	public void remove() {
-		REPLACED.entrySet().removeIf(entry -> entry.getValue().equals(this));
+		REPLACED.entrySet().removeIf(entry -> {
+			if (entry.getValue().equals(this)) {
+				entry.getValue().getReplacedCache().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
+				return true;
+			}
+			return false;
+		});
 		super.remove();
 	}
 	
