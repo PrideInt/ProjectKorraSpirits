@@ -101,7 +101,9 @@ public class SpiritsListener implements Listener {
 				}
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
-					case "Protect" -> { new Protect(player, ProtectType.DEFLECT);
+					case "Protect" -> {
+						player.sendMessage("started!!");
+						new Protect(player, ProtectType.DEFLECT);
 						break;
 					}
 				}

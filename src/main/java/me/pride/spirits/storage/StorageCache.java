@@ -99,9 +99,9 @@ public class StorageCache {
 	}
 	public static void addLocationsToCache(World world, int[] coordinates) {
 		if (LOCATIONS.containsKey(world.getName())) {
-			LOCATIONS.get(world).add(coordinates);
+			LOCATIONS.get(world.getName()).add(coordinates);
 		} else {
-			LOCATIONS.put(world.toString(), new ArrayList<int[]>(List.of(coordinates)));
+			LOCATIONS.put(world.getName(), new ArrayList<int[]>(List.of(coordinates)));
 		}
 	}
 }
