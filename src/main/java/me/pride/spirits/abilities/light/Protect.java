@@ -18,6 +18,7 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -44,6 +45,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	private boolean validated;
 
 	private double sizeIncrease;
+	private int time;
 	
 	private Location origin, location;
 	private Vector direction;
@@ -132,6 +134,20 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 				new HorizontalVelocityTracker(entity, player, 0, this);
 			}
 		});
+		for (Entity entity : GeneralMethods.getEntitiesAroundPoint(location, size)) {
+			if (entity instanceof Projectile) {
+				Projectile projectile = (Projectile) entity;
+
+				if (projectile.getShooter() instanceof LivingEntity) {
+					LivingEntity shooter = (LivingEntity) projectile.getShooter();
+
+					if (shooter.getUniqueId() != player.getUniqueId()) {
+						projectile.setVelocity(player.getEyeLocation().getDirection().multiply(0.5));
+						new HorizontalVelocityTracker(projectile, player, 0, this);
+					}
+				}
+			}
+		}
 	}
 
 	private void protect() {
@@ -139,6 +155,19 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			bPlayer.addCooldown(this);
 			remove();
 			return;
+		} else if (!bPlayer.canBendIgnoreBinds(this)) {
+			bPlayer.addCooldown(this);
+			remove();
+			return;
+		}
+		time = time >= 15 ? 0 : time + 1;
+
+		if (time == 15) {
+			double x = ThreadLocalRandom.current().nextDouble(-2, 2);
+			double y = ThreadLocalRandom.current().nextDouble(0.5, 2);
+			double z = ThreadLocalRandom.current().nextDouble(-2, 2);
+
+			player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation().clone().add(x, y, z), 1, 0.25, 0.25, 0.25, 0);
 		}
 	}
 
