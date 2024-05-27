@@ -33,6 +33,13 @@ public abstract class Spirit {
 
 	private static int SPIRIT_ID = 0;
 
+	/**
+	 * Record object that contains information about the Spirit.
+	 *
+	 * For developers, you will need to implement a record that stores references
+	 * to the Spirit's name, type, entity type, and revert time in any class that extends
+	 * Spirit. See ReplaceableSpirit for an example.
+	 */
 	public abstract SpiritRecord record();
 
 	// private Spirit spirit;
@@ -46,7 +53,6 @@ public abstract class Spirit {
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
-		SPIRIT_CACHE.put(null, this);
 	}
 
 	public Spirit(World world, Entity entity) {
@@ -146,7 +152,7 @@ public abstract class Spirit {
 	 */
 	public void removeFromCache() {
 		RECOLLECTION.remove(this);
-		SPIRIT_CACHE.remove(this);
+		SPIRIT_CACHE.remove(this.entity.getUniqueId());
 	}
 
 	/**
@@ -205,6 +211,9 @@ public abstract class Spirit {
 	 */
 	public Spirit spawnEntity(World world, Location location, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
 		if (this.entity != null) {
+			if (SPIRIT_CACHE.containsKey(this.entity.getUniqueId())) {
+				SPIRIT_CACHE.put(this.entity.getUniqueId(), this);
+			}
 			return this;
 		}
 		this.entity = world.spawnEntity(location, entityType);
@@ -216,30 +225,10 @@ public abstract class Spirit {
 		EntitySpiritSpawnEvent spawnEvent = new EntitySpiritSpawnEvent(this);
 		Bukkit.getServer().getPluginManager().callEvent(spawnEvent);
 
+		SPIRIT_CACHE.put(this.entity.getUniqueId(), this);
+
 		if (revertTime >= 0) RECOLLECTION.add(this);
 		return this;
-	}
-
-	/** Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
-	 */
-	private static void showEntity(Spirit spirit) {
-		if (spirit instanceof ReplaceableSpirit) {
-			if (ReplaceableSpirit.containsKey(spirit.entity())) {
-				ReplaceableSpirit.fromEntity(spirit.entity()).replacedCache().ifPresent(replacedCache -> {
-					Entity replaced = replacedCache.cache().getLeft();
-
-					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-						player.showEntity(Spirits.instance, replaced);
-					}
-					replaced.teleport(spirit.entity().getLocation());
-					// replaced.setInvulnerable(replacedCache.invulnerable());
-					// replaced.setCustomName(replaced.getCustomName());
-					// replaced.setCustomNameVisible(true);
-					// replaced.getPersistentDataContainer().remove(REPLACED_KEY);
-				});
-				ReplaceableSpirit.remove(spirit.entity(), ReplaceableSpirit.fromEntity(spirit.entity()));
-			}
-		}
 	}
 
 	/**
@@ -259,7 +248,7 @@ public abstract class Spirit {
 	public static boolean destroy(Spirit spirit) {
 		if (spirit == null) return false;
 
-		showEntity(spirit);
+		ReplaceableSpirit.reverse(spirit);
 		Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(spirit));
 		spirit.entity().remove();
 		return (!RECOLLECTION.contains(spirit) ? true : RECOLLECTION.remove(spirit)) && SPIRIT_CACHE.remove(spirit.entity().getUniqueId(), spirit);
@@ -283,7 +272,7 @@ public abstract class Spirit {
 				if (condition) {
 					Bukkit.getServer().getPluginManager().callEvent(new EntitySpiritDestroyEvent(s));
 
-					showEntity(s);
+					ReplaceableSpirit.reverse(s);
 					s.entity().remove();
 				}
 				return condition;
@@ -292,7 +281,7 @@ public abstract class Spirit {
 	}
 	public static void cleanup() {
 		SPIRIT_CACHE.values().forEach(spirit -> {
-			showEntity(spirit);
+			ReplaceableSpirit.reverse(spirit);
 			spirit.remove();
 		});
 		SPIRIT_CACHE.clear();

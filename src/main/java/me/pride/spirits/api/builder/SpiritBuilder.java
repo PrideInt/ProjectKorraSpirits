@@ -88,6 +88,15 @@ public class SpiritBuilder {
 		}
 		return null;
 	}
+
+	/**
+	 * Build a spirit with any Spirit object extended from Spirit; for developers using this API
+	 *
+	 * @param supplier a Spirit object extended from Spirit
+	 * @return a Spirit
+	 * @param <T>
+	 * @throws InvalidSpiritTypeException
+	 */
 	public <T extends Spirit> T build(Supplier<T> supplier) throws InvalidSpiritTypeException {
 		if (replace && !(supplier.get() instanceof ReplaceableSpirit)) {
 			throw new InvalidSpiritTypeException();

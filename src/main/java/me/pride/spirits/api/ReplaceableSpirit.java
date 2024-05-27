@@ -102,6 +102,28 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		Bukkit.getServer().getPluginManager().callEvent(event);
 		return this;
 	}
+
+	/** Any hidden spirits or entities that are stored in the cache will be unhidden from players' client
+	 */
+	protected static void reverse(Spirit spirit) {
+		if (spirit instanceof ReplaceableSpirit) {
+			if (ReplaceableSpirit.containsKey(spirit.entity())) {
+				ReplaceableSpirit.fromEntity(spirit.entity()).replacedCache().ifPresent(replacedCache -> {
+					Entity replaced = replacedCache.cache().getLeft();
+
+					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+						player.showEntity(Spirits.instance, replaced);
+					}
+					replaced.teleport(spirit.entity().getLocation());
+					// replaced.setInvulnerable(replacedCache.invulnerable());
+					// replaced.setCustomName(replaced.getCustomName());
+					// replaced.setCustomNameVisible(true);
+					// replaced.getPersistentDataContainer().remove(REPLACED_KEY);
+				});
+				ReplaceableSpirit.remove(spirit.entity(), ReplaceableSpirit.fromEntity(spirit.entity()));
+			}
+		}
+	}
 	
 	public static boolean isReplacedEntity(Entity entity) {
 		return entity.getPersistentDataContainer().has(REPLACED_KEY, PersistentDataType.STRING);

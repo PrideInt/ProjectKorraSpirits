@@ -13,6 +13,7 @@ import me.pride.spirits.abilities.light.Protect.ProtectType;
 import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.api.ReplaceableSpirit;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
@@ -185,18 +186,16 @@ public class SpiritsListener implements Listener {
 	public void onSpiritDeath(final EntityDeathEvent event) {
 		Entity entity = event.getEntity();
 		
-		if (ReplaceableSpirit.containsKey(entity)) {
-			ReplaceableSpirit.fromEntity(entity).ifCachePresent(cache -> {
-				Entity e = cache.cache().getLeft();
-
-				if (Filter.filterEntityLight(e)) {
-					e.getWorld().spawnParticle(Particle.SPELL_INSTANT, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
-				} else if (Filter.filterEntityDark(e)) {
-					e.getWorld().spawnParticle(Particle.SPELL_WITCH, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+		if (Spirit.exists(entity)) {
+			Spirit.of(entity).ifPresent(spirit -> {
+				if (Filter.filterEntityLight(entity)) {
+					entity.getWorld().spawnParticle(Particle.SPELL_INSTANT, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+				} else if (Filter.filterEntityDark(entity)) {
+					entity.getWorld().spawnParticle(Particle.SPELL_WITCH, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				} else {
-					e.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, e.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+					entity.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				}
-				e.remove();
+				spirit.removeFromCache();
 			});
 		}
 	}

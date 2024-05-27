@@ -1,9 +1,13 @@
 package me.pride.spirits.api;
 
+import com.projectkorra.projectkorra.BendingPlayer;
+import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.util.Filter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 
 public class NeutralSpirit extends ReplaceableSpirit {
 	public NeutralSpirit(World world, Location location, String name, EntityType entityType, long revertTime) {
@@ -26,5 +30,20 @@ public class NeutralSpirit extends ReplaceableSpirit {
 	}
 	public NeutralSpirit(World world, Location location, String name, long revertTime) {
 		this(world, location, name, SpiritType.SPIRIT.entityType(), revertTime);
+	}
+
+	public static boolean isNeutralSpirit(Entity entity) {
+		boolean filter = Filter.filterEntityNeutral(entity);
+
+		if (entity.getType() == EntityType.PLAYER) {
+			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer((Player) entity);
+
+			if (bPlayer != null) {
+				if (bPlayer.hasElement(SpiritElement.SPIRIT)) {
+					return true;
+				}
+			}
+		}
+		return filter;
 	}
 }

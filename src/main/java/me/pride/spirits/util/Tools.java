@@ -9,6 +9,7 @@ import me.pride.spirits.util.objects.TetraConsumer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -61,7 +62,7 @@ public class Tools {
 			if (entity instanceof LivingEntity) {
 				LivingEntity e = (LivingEntity) entity;
 				
-				if (e instanceof Player) {
+				if (e.getType() == EntityType.PLAYER) {
 					Player player = (Player) e;
 					BendingPlayer bendingPlayer = BendingPlayer.getBendingPlayer(player);
 					
