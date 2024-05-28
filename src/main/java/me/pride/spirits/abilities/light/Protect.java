@@ -1,13 +1,28 @@
 package me.pride.spirits.abilities.light;
 
 import com.projectkorra.projectkorra.GeneralMethods;
+import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.ability.util.Collision;
+import com.projectkorra.projectkorra.airbending.AirBlast;
+import com.projectkorra.projectkorra.airbending.AirSwipe;
 import com.projectkorra.projectkorra.attribute.Attribute;
+import com.projectkorra.projectkorra.earthbending.EarthBlast;
+import com.projectkorra.projectkorra.earthbending.metal.MetalClips;
+import com.projectkorra.projectkorra.firebending.FireBlast;
+import com.projectkorra.projectkorra.firebending.combo.FireKick;
+import com.projectkorra.projectkorra.firebending.combo.FireSpin;
+import com.projectkorra.projectkorra.firebending.combo.FireWheel;
 import com.projectkorra.projectkorra.object.HorizontalVelocityTracker;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
+import com.projectkorra.projectkorra.waterbending.WaterManipulation;
+import com.projectkorra.projectkorra.waterbending.ice.IceBlast;
+import com.projectkorra.projectkorra.waterbending.ice.IceSpikeBlast;
+import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArmsFreeze;
+import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArmsWhip;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
@@ -15,6 +30,7 @@ import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -55,11 +71,11 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 		if (!bPlayer.canBend(this)) {
 			return;
-		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
-			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
 		} else if (CoreAbility.hasAbility(player, Protect.class)) {
+			return;
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
 		this.origin = player.getLocation().clone().add(0, 1, 0);
@@ -91,6 +107,9 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		}
 		this.type = type;
 
+		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 0.5F, 1.75F);
+
+		applyCollisions();
 		start();
 	}
 	
@@ -138,14 +157,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			if (entity instanceof Projectile) {
 				Projectile projectile = (Projectile) entity;
 
-				if (projectile.getShooter() instanceof LivingEntity) {
-					LivingEntity shooter = (LivingEntity) projectile.getShooter();
-
-					if (shooter.getUniqueId() != player.getUniqueId()) {
-						projectile.setVelocity(player.getEyeLocation().getDirection().multiply(0.5));
-						new HorizontalVelocityTracker(projectile, player, 0, this);
-					}
-				}
+				projectile.setVelocity(player.getEyeLocation().getDirection().multiply(0.5));
 			}
 		}
 	}
@@ -182,6 +194,35 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	public ProtectType getType() {
 		return type;
 	}
+
+	private void applyCollisions() {
+		CoreAbility main = CoreAbility.getAbility(Protect.class);
+
+		CoreAbility[] abilities = {
+				CoreAbility.getAbility(FireBlast.class),
+				CoreAbility.getAbility(EarthBlast.class),
+				CoreAbility.getAbility(WaterManipulation.class),
+				CoreAbility.getAbility(AirBlast.class),
+				CoreAbility.getAbility(AirSwipe.class),
+				CoreAbility.getAbility(IceBlast.class),
+				CoreAbility.getAbility(IceSpikeBlast.class),
+				CoreAbility.getAbility(MetalClips.class),
+				CoreAbility.getAbility(FireKick.class),
+				CoreAbility.getAbility(FireSpin.class),
+				CoreAbility.getAbility(FireWheel.class),
+				CoreAbility.getAbility(WaterArmsFreeze.class),
+				CoreAbility.getAbility(WaterArmsWhip.class)
+		};
+
+		for (CoreAbility ability : abilities) {
+			ProjectKorra.getCollisionManager().addCollision(new Collision(main, ability, false, true));
+		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Protect.Enabled", true);
+	}
 	
 	@Override
 	public boolean isSneakAbility() {
@@ -207,20 +248,30 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	public Location getLocation() {
 		return null;
 	}
+
+	@Override
+	public void handleCollision(Collision collision) {
+		super.handleCollision(collision);
+	}
+
+	@Override
+	public double getCollisionRadius() {
+		return size;
+	}
+
+	@Override
+	public String getAuthor() {
+		return Spirits.getAuthor(this.getElement());
+	}
+
+	@Override
+	public String getVersion() {
+		return Spirits.getVersion();
+	}
 	
 	@Override
 	public void load() { }
 	
 	@Override
 	public void stop() { }
-	
-	@Override
-	public String getAuthor() {
-		return Spirits.getAuthor(this.getElement());
-	}
-	
-	@Override
-	public String getVersion() {
-		return Spirits.getVersion();
-	}
 }
