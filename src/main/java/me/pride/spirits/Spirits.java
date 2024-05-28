@@ -57,6 +57,7 @@ public class Spirits extends JavaPlugin {
         getLogger().info("Pride's Spirits: Definitive Version is now open for public use! Trial 1.8.0.0");
     
         StorageCache.queryUUIDs(database);
+        StorageCache.querySpirits(database);
         StorageCache.queryLocations();
         
         for (Map.Entry<String, List<int[]>> entry : StorageCache.locations().entrySet()) {
@@ -119,6 +120,7 @@ public class Spirits extends JavaPlugin {
         Spirit.cleanup();
         StorageCache.updateLocations();
         StorageCache.updateUUIDs(database);
+        StorageCache.updateSpirits(database);
     }
     public static String getAuthor() {
         return ChatUtil.getAuthor();

@@ -2,6 +2,7 @@ package me.pride.spirits.storage;
 
 import com.google.gson.Gson;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.Spirit;
 import org.bukkit.World;
 
 import java.io.File;
@@ -28,7 +29,7 @@ public class StorageCache {
 	
 	public static void queryUUIDs(SQLite sql) {
 		try {
-			ResultSet set = sql.set();
+			ResultSet set = sql.setBosses();
 			
 			while (set.next()) {
 				UUID_CACHE.add(UUID.fromString(set.getString("id")));
@@ -39,7 +40,7 @@ public class StorageCache {
 		Set<UUID> dbSet = ConcurrentHashMap.newKeySet();
 		
 		try {
-			ResultSet set = sql.set();
+			ResultSet set = sql.setBosses();
 			
 			while (set.next()) {
 				String suuid = set.getString("id");
@@ -47,12 +48,43 @@ public class StorageCache {
 				
 				dbSet.add(uuid);
 				if (!UUID_CACHE.contains(uuid)) {
-					sql.delete(suuid);
+					sql.deleteBoss(suuid);
 				}
 			}
 			for (UUID uuid : UUID_CACHE) {
 				if (!dbSet.contains(uuid.toString())) {
-					sql.insert(uuid.toString());
+					sql.insertBoss(uuid.toString());
+				}
+			}
+		} catch (SQLException e) { }
+	}
+	public static void querySpirits(SQLite sql) {
+		try {
+			ResultSet set = sql.setSpirits();
+
+			while (set.next()) {
+				UUID_CACHE.add(UUID.fromString(set.getString("spirit_id")));
+			}
+		} catch (SQLException e) { }
+	}
+	public static void updateSpirits(SQLite sql) {
+		Set<UUID> dbSet = ConcurrentHashMap.newKeySet();
+
+		try {
+			ResultSet set = sql.setSpirits();
+
+			while (set.next()) {
+				String suuid = set.getString("spirit_id");
+				UUID uuid = UUID.fromString(suuid);
+
+				dbSet.add(uuid);
+				if (!Spirit.SPIRIT_CACHE.keySet().contains(uuid)) {
+					sql.deleteSpirit(suuid);
+				}
+			}
+			for (UUID uuid : Spirit.SPIRIT_CACHE.keySet()) {
+				if (!dbSet.contains(uuid.toString())) {
+					sql.insertSpirit(uuid.toString());
 				}
 			}
 		} catch (SQLException e) { }
