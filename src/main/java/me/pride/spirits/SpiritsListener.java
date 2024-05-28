@@ -3,6 +3,7 @@ package me.pride.spirits;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.event.AbilityDamageEntityEvent;
 import com.projectkorra.projectkorra.event.AbilityStartEvent;
 import com.projectkorra.projectkorra.event.PlayerSwingEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
@@ -48,6 +49,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -364,6 +366,7 @@ class MainListener implements Listener {
 		}
 		if (entity.getType() == EntityType.PLAYER) {
 			Player player = (Player) entity;
+			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 
 			if (Protect.isProtecting(player)) {
 				double damage = event.getDamage();
@@ -378,6 +381,41 @@ class MainListener implements Listener {
 				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "Light Energy: " + (int) (lights / 2.0) + " %", player);
 
 				player.getWorld().spawnParticle(Particle.FLASH, player.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-1.5, 1.5), ThreadLocalRandom.current().nextDouble(0.8, 2), ThreadLocalRandom.current().nextDouble(-1.5, 1.5)), 1, 0.25, 0.25, 0.25);
+			} else if (bPlayer.hasElement(SpiritElement.SPIRIT)) {
+				if (Spirits.instance.getConfig().getBoolean("Spirit.Passives.Transient.Enabled")) {
+					int chance = Spirits.instance.getConfig().getInt("Spirit.Passives.Transient.PhaseMeleeDamageChance");
+
+					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
+						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+							event.setDamage(0);
+						}
+					}
+					if (event.getCause() == DamageCause.FALLING_BLOCK || event.getCause() == DamageCause.CRAMMING || event.getCause() == DamageCause.SUFFOCATION) {
+						event.setDamage(0);
+					} else if (event.getCause() == DamageCause.DROWNING) {
+						event.setCancelled(true);
+					}
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onEntityBendingDamage(final AbilityDamageEntityEvent event) {
+		Entity entity = event.getEntity();
+
+		if (entity.getType() == EntityType.PLAYER) {
+			Player player = (Player) entity;
+			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+			if (bPlayer.hasElement(SpiritElement.SPIRIT)) {
+				if (Spirits.instance.getConfig().getBoolean("Spirit.Passives.Transient.Enabled")) {
+					int chance = Spirits.instance.getConfig().getInt("Spirit.Passives.Transient.PhaseBendingDamageChance");
+
+					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
+						event.setDamage(0);
+					}
+				}
 			}
 		}
 	}

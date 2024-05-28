@@ -66,6 +66,9 @@ public class Config {
 		config.addDefault("Light.Combos.Sanctuary.Repel", 0.3);
 		config.addDefault("Light.Combos.Sanctuary.Resistance.EffectDuration", 3);
 		config.addDefault("Light.Combos.Sanctuary.Resistance.EffectAmplifier", 1);
+
+		/* Lightborn */
+		config.addDefault("Light.Passives.Lightborn.Enabled", true);
 		
 		/*
 		 *    	- Neutral -
@@ -90,6 +93,11 @@ public class Config {
 		config.addDefault("Spirit.Combos.Skyrocket.Range", 25);
 		config.addDefault("Spirit.Combos.Skyrocket.SlamRadius", 2.5);
 		config.addDefault("Spirit.Combos.Skyrocket.RevertTime", 4500);
+
+		/* Transient */
+		config.addDefault("Spirit.Passives.Transient.Enabled", true);
+		config.addDefault("Spirit.Passives.Transient.PhaseBendingDamageChance", 10);
+		config.addDefault("Spirit.Passives.Transient.PhaseMeleeDamageChance", 75);
 		
 		Spirits.instance.getConfig().options().copyDefaults(true);
 		Spirits.instance.saveConfig();
