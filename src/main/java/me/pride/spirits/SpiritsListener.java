@@ -8,10 +8,12 @@ import com.projectkorra.projectkorra.event.PlayerSwingEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
+import me.pride.spirits.abilities.light.Blessing;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.light.Protect.ProtectType;
 import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.spirit.Disappear;
+import me.pride.spirits.abilities.spirit.Rematerialize;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
@@ -101,9 +103,10 @@ public class SpiritsListener implements Listener {
 				}
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
-					case "Protect" -> {
-						player.sendMessage("started!!");
-						new Protect(player, ProtectType.DEFLECT);
+					case "Protect" -> { new Protect(player, ProtectType.DEFLECT);
+						break;
+					}
+					case "Blessing" -> { new Blessing(player);
 						break;
 					}
 				}
@@ -152,6 +155,9 @@ public class SpiritsListener implements Listener {
 			} else if (coreAbil instanceof SpiritAbility && bPlayer.isElementToggled(SpiritElement.SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
 					case "Disappear" -> { new Disappear(player);
+						break;
+					}
+					case "Rematerialize" -> { new Rematerialize(player);
 						break;
 					}
 				}

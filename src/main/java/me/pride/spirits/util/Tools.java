@@ -4,15 +4,21 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import me.pride.spirits.api.DarkSpirit;
+import me.pride.spirits.api.LightSpirit;
 import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.util.objects.TetraConsumer;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -61,20 +67,10 @@ public class Tools {
 			
 			if (entity instanceof LivingEntity) {
 				LivingEntity e = (LivingEntity) entity;
-				
-				if (e.getType() == EntityType.PLAYER) {
-					Player player = (Player) e;
-					BendingPlayer bendingPlayer = BendingPlayer.getBendingPlayer(player);
-					
-					if (bendingPlayer.hasElement(SpiritElement.LIGHT_SPIRIT)) {
-						light = true;
-					} else if (bendingPlayer.hasElement(SpiritElement.DARK_SPIRIT)) {
-						dark = true;
-					}
-				}
-				if (Filter.filterEntityLight(e)) {
+
+				if (LightSpirit.isLightSpirit(e)) {
 					light = true;
-				} else if (Filter.filterEntityDark(e)) {
+				} else if (DarkSpirit.isDarkSpirit(e)) {
 					dark = true;
 				}
 				if (light) {
@@ -88,12 +84,82 @@ public class Tools {
 			}
 		}
 	}
-	
+
+	public static Block rayTraceBlock(World world, Location start, Vector direction, double range, boolean traceFluid) {
+		RayTraceResult result = traceFluid ?
+				world.rayTraceBlocks(start.clone(), direction, range, FluidCollisionMode.ALWAYS, true) :
+				world.rayTraceBlocks(start.clone(), direction, range);
+		if (result != null) {
+			return result.getHitBlock();
+		}
+		return null;
+	}
+
+	public static Block rayTraceBlock(World world, Location start, Vector direction, double range) {
+		return rayTraceBlock(world, start, direction, range, false);
+	}
+
+	public static Block rayTraceBlock(Player player, double range, boolean traceFluid) {
+		return rayTraceBlock(player.getWorld(), player.getEyeLocation(), player.getEyeLocation().getDirection(), range, traceFluid);
+	}
+
+	public static Block rayTraceBlock(Player player, double range) {
+		return rayTraceBlock(player.getWorld(), player.getEyeLocation(), player.getEyeLocation().getDirection(), range);
+	}
+
+	public static Entity rayTraceEntity(World world, Player player, Location start, Vector direction, double range) {
+		RayTraceResult result = world.rayTraceEntities(start.clone(), direction, range, 1.2, e -> e instanceof LivingEntity && e.getUniqueId() != player.getUniqueId());
+		if (result != null) {
+			return result.getHitEntity();
+		}
+		return null;
+	}
+
+	public static Entity rayTraceEntity(Player player, double range) {
+		return rayTraceEntity(player.getWorld(), player, player.getEyeLocation(), player.getEyeLocation().getDirection(), range);
+	}
+
+	public static RayTraceResult rayTrace(World world, Location start, Vector direction, double range, double raySize, Predicate<Entity> predicate) {
+		Predicate<Entity> pred = predicate;
+		if (predicate == null) {
+			pred = e -> true;
+		}
+		RayTraceResult result = world.rayTrace(
+				start.clone(),
+				direction,
+				range,
+				FluidCollisionMode.NEVER,
+				false,
+				raySize,
+				pred);
+
+		if (result != null) {
+			return result;
+		}
+		return null;
+	}
+
+	public static RayTraceResult rayTrace(World world, Location start, Vector direction, double range, double raySize) {
+		return rayTrace(world, start, direction, range, raySize, null);
+	}
+
+	public static RayTraceResult rayTrace(World world, Location start, Vector direction, double range, Predicate<Entity> predicate) {
+		return rayTrace(world, start, direction, range, 1, predicate);
+	}
+
+	public static RayTraceResult rayTrace(Player player, double range, Predicate<Entity> predicate) {
+		return rayTrace(player.getWorld(), player.getEyeLocation(), player.getEyeLocation().getDirection(), range, 1, predicate);
+	}
+
+	public static RayTraceResult rayTrace(Player player, double range) {
+		return rayTrace(player.getWorld(), player.getEyeLocation(), player.getEyeLocation().getDirection(), range, 1, null);
+	}
+
 	public static void createCircle(Location location, double size, int points, Consumer<Location> consumer) {
 		for (int angle = 180; angle >= 0; angle -= 5) {
 			double x = size * Math.cos(Math.toRadians(angle - points) * 2);
 			double z = size * Math.sin(Math.toRadians(angle - points) * 2);
-			
+
 			consumer.accept(location.clone().add(x, 0, z));
 		}
 	}
@@ -121,6 +187,21 @@ public class Tools {
 			}
 			Vector circle = GeneralMethods.getOrthogonalVector(direction.clone(), newPoint, radius);
 			consumer.accept(location.clone().add(circle));
+		}
+	}
+
+	public static void generateSphere(double size, Location location, Consumer<Location> consumer) {
+		for (double i = 0; i <= Math.PI; i += Math.PI / 15) {
+			double y = size * Math.cos(i);
+
+			for (double j = 0; j <= 2 * Math.PI; j += Math.PI / 30) {
+				double x = size * Math.cos(j) * Math.sin(i);
+				double z = size * Math.sin(j) * Math.sin(i);
+
+				location.add(x, y, z);
+				consumer.accept(location);
+				location.subtract(x, y, z);
+			}
 		}
 	}
 	
