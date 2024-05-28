@@ -23,12 +23,11 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
 	@Attribute(Attribute.SELECT_RANGE)
-	private double select_range;
+	private double selectRange;
 	@Attribute(Attribute.DURATION)
 	private long duration;
 	
 	private Location target;
-	private TempPotionEffect potionEffect;
 	
 	public Disappear(Player player) {
 		super(player);
@@ -40,9 +39,9 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;
 		}
-		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
-		select_range = Spirits.instance.getConfig().getDouble(path + "SelectRange");
-		duration = Spirits.instance.getConfig().getLong(path + "Duration");
+		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
+		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
+		this.duration = Spirits.instance.getConfig().getLong(path + "Duration");
 		
 		player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CONDUIT_AMBIENT, 1, 1);
 		player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation(), 4, 0.125, 0.3, 0.125, 0.01);
@@ -52,18 +51,27 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	
 	@Override
 	public void progress() {
-		if (!bPlayer.canBendIgnoreBinds(this)) {
+		if (!player.isOnline() || player.isDead()) {
+			remove();
+			return;
+		} else if (!bPlayer.canBendIgnoreBinds(this)) {
+			remove();
+			return;
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
+			remove();
+			return;
+		} else if (System.currentTimeMillis() > getStartTime() + duration) {
 			remove();
 			return;
 		}
-		new TempPotionEffect(player, new PotionEffect(PotionEffectType.SLOW_FALLING, 10, 1));
-		new TempPotionEffect(player, new PotionEffect(PotionEffectType.INVISIBILITY, 10, 1));
+		PotionEffectType.SLOW_FALLING.createEffect(10, 1).apply(player);
+		PotionEffectType.INVISIBILITY.createEffect(10, 1).apply(player);
 		
-		target = GeneralMethods.getTargetedLocation(player, select_range);
+		target = GeneralMethods.getTargetedLocation(player, selectRange);
 		
 		if (!player.isSneaking()) {
 			if (target != null) {
-				if (RegionProtection.isRegionProtected(this, target)) {
+				if (RegionProtection.isRegionProtected(player, target, this)) {
 					remove();
 					return;
 				}
@@ -75,6 +83,11 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 			return;
 		}
 	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Spirit.Abilities.Disappear.Enabled", true);
+	}
 	
 	@Override
 	public boolean isSneakAbility() {
@@ -85,12 +98,6 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	public boolean isHarmlessAbility() {
 		return false;
 	}
-	
-	@Override
-	public boolean isIgniteAbility() { return false; }
-	
-	@Override
-	public boolean isExplosiveAbility() { return false; }
 	
 	@Override
 	public long getCooldown() {
@@ -106,18 +113,12 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	public Location getLocation() {
 		return null;
 	}
-	
+
 	@Override
 	public void remove() {
 		bPlayer.addCooldown(this);
 		super.remove();
 	}
-	
-	@Override
-	public void load() { }
-	
-	@Override
-	public void stop() { }
 	
 	@Override
 	public String getAuthor() {
@@ -128,4 +129,10 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	public String getVersion() {
 		return Spirits.getVersion();
 	}
+
+	@Override
+	public void load() { }
+
+	@Override
+	public void stop() { }
 }
