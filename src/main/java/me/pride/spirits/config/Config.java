@@ -34,6 +34,17 @@ public class Config {
 		/*
 		 *   	- Light -
 		 */
+		/* Blessing */
+		config.addDefault("Light.Abilities.Blessing.Enabled", true);
+		config.addDefault("Light.Abilities.Blessing.Cooldown", 8000);
+		config.addDefault("Light.Abilities.Blessing.Duration", 10000);
+		config.addDefault("Light.Abilities.Blessing.Damage", 2);
+		config.addDefault("Light.Abilities.Blessing.Radius", 8);
+		config.addDefault("Light.Abilities.Blessing.SelectRange", 20);
+		config.addDefault("Light.Abilities.Blessing.BlessRate", 10);
+		config.addDefault("Light.Abilities.Blessing.LetBlessingFinish", false);
+		config.addDefault("Light.Abilities.Blessing.BlessRegularSpirits", true);
+
 		/* Protect */
 		config.addDefault("Light.Abilities.Protect.Enabled", true);
 		config.addDefault("Light.Abilities.Protect.Deflect.Cooldown", 1000);
@@ -59,13 +70,18 @@ public class Config {
 		/*
 		 *    	- Neutral -
 		 */
+		/* Disappear */
+		config.addDefault("Spirit.Abilities.Disappear.Enabled", true);
+		config.addDefault("Spirit.Abilities.Disappear.Cooldown", 4000);
+		config.addDefault("Spirit.Abilities.Disappear.SelectRange", 10);
+		config.addDefault("Spirit.Abilities.Disappear.Duration", 3000);
+
 		/* Rematerialize */
 		config.addDefault("Spirit.Abilities.Rematerialize.Enabled", true);
 		config.addDefault("Spirit.Abilities.Rematerialize.Cooldown", 6000);
-		config.addDefault("Spirit.Abilities.Rematerialize.Increment", 0.1);
-		config.addDefault("Spirit.Abilities.Rematerialize.MinRadius", 5);
-		config.addDefault("Spirit.Abilities.Rematerialize.MaxRadius", 15);
-		config.addDefault("Spirit.Abilities.Rematerialize.BlindDuration", 2);
+		config.addDefault("Spirit.Abilities.Rematerialize.MinSearchRadius", 5);
+		config.addDefault("Spirit.Abilities.Rematerialize.MaxSearchRadius", 20);
+		config.addDefault("Spirit.Abilities.Rematerialize.Delay", 35);
 		
 		/* Skyrocket */
 		config.addDefault("Spirit.Combos.Skyrocket.Enabled", true);
