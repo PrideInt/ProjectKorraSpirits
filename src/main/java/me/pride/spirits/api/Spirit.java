@@ -22,13 +22,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public abstract class Spirit {
 	/*
 	TODO: ID assignment to Spirits for efficient searching
 	 */
-	public static final Map<UUID, Spirit> SPIRIT_CACHE = new HashMap();
+	public static final Map<UUID, Spirit> SPIRIT_CACHE = new ConcurrentHashMap<>();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 
 	private static int SPIRIT_ID = 0;
