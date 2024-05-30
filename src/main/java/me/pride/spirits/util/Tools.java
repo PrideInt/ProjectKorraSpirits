@@ -23,6 +23,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -220,5 +221,13 @@ public class Tools {
 				PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS,
 				PotionEffectType.WITHER
 		};
+	}
+
+	public static Set<PotionEffectType> getPositiveEffectsSet() {
+		return Set.of(getPositiveEffects());
+	}
+
+	public static Set<PotionEffectType> getNegativeEffectsSet() {
+		return Set.of(getNegativeEffects());
 	}
 }

@@ -2,6 +2,7 @@ package me.pride.spirits.util;
 
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.command.Commands;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import org.bukkit.Material;
 import org.bukkit.entity.Allay;
@@ -12,6 +13,7 @@ import org.bukkit.entity.Cow;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.MagmaCube;
@@ -39,6 +41,9 @@ public class Filter {
 	}
 	public static boolean filterEntityFromAbility(Entity entity, Player player, CoreAbility ability) {
 		return entity.getUniqueId() != player.getUniqueId() && !RegionProtection.isRegionProtected(ability, entity.getLocation());
+	}
+	public static boolean filterGeneral(Entity entity, Player player, CoreAbility ability) {
+		return filterEntityFromAbility(entity, player, ability) && entity.getType() != EntityType.ARMOR_STAND && !Commands.invincible.contains(entity.getName());
 	}
 	public static boolean filterBlockFlowers(Material material) {
 		switch (material) {

@@ -69,6 +69,16 @@ public class Config {
 
 		/* Lightborn */
 		config.addDefault("Light.Passives.Lightborn.Enabled", true);
+		config.addDefault("Light.Passives.Lightborn.Shed", true);
+		config.addDefault("Light.Passives.Lightborn.ShedChance", 50);
+		config.addDefault("Light.Passives.Lightborn.ShedRate", 30);
+		config.addDefault("Light.Passives.Lightborn.AmplifyDamage", true);
+		config.addDefault("Light.Passives.Lightborn.Amplifier", 1.10);
+		config.addDefault("Light.Passives.Lightborn.Vulnerability", true);
+		config.addDefault("Light.Passives.Lightborn.VulnerabilityMultiplier", 1.50);
+		config.addDefault("Light.Passives.Lightborn.Bleed.Enabled", true);
+		config.addDefault("Light.Passives.Lightborn.Bleed.Damage", 3);
+		config.addDefault("Light.Passives.Lightborn.Bleed.Heal", 3);
 		
 		/*
 		 *    	- Neutral -

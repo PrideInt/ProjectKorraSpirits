@@ -131,12 +131,8 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				Block block = blocks.get(index);
 				BlockData corruptBlockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
 				
-				new TempBlock(block, corruptBlockData, revert_time).setRevertTask(new RevertTask() {
-					@Override
-					public void run() {
-						block.removeMetadata(METADATA_VALUE.getLeft(), Spirits.instance);
-					}
-				});
+				new TempBlock(block, corruptBlockData, revert_time).setRevertTask(() -> block.removeMetadata(METADATA_VALUE.getLeft(), Spirits.instance));
+
 				spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 				player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				
@@ -172,6 +168,11 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				spawnSpiritSpeed = 0;
 			}
 		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Dark.Combos.Corruption.Enabled", true);
 	}
 	
 	@Override
@@ -221,17 +222,6 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	}
 	
 	@Override
-	public void load() { }
-	
-	@Override
-	public void stop() { }
-	
-	@Override
-	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean("Dark.Combos.Corruption.Enabled", true);
-	}
-	
-	@Override
 	public String getAuthor() {
 		return Spirits.getAuthor(this.getElement());
 	}
@@ -250,6 +240,12 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	public String getInstructions() {
 		return "";
 	}
+
+	@Override
+	public void load() { }
+
+	@Override
+	public void stop() { }
 	
 	@Override
 	public Object createNewComboInstance(Player player) {
