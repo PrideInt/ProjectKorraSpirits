@@ -23,6 +23,12 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	protected static final Map<Entity, ReplaceableSpirit> REPLACED = new HashMap<>();
 	
 	private SpiritRecord record;
+
+	// ReplacedCache contains information on
+	// * Entity that was replaced: use getReplaced()
+	// * Entity's UUID: use getReplacedID()
+	// * Whether the entity was replaced: use replaced()
+	// * Whether the entity was invulnerable: use invulnerable()
 	private Optional<ReplacedCache> replacedCache;
 	
 	public ReplaceableSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
@@ -35,14 +41,16 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	public ReplaceableSpirit(World world, Entity entity, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, entity.getLocation());
 
+		Entity e = entity;
+
+		// If the entity is a replaced entity, reverse it, replace it
 		if (isReplacedEntity(entity)) {
-			super.removeFromCache();
-			REPLACED.remove(this);
-			return;
+			e = fromEntity(entity).entityInCache().get();
+			ReplaceableSpirit.reverse(Spirit.of(entity).get());
 		}
 		this.record = new SpiritRecord(name, entityType, spiritType, revertTime);
 		
-		replaceEntity(world, entity);
+		replaceEntity(world, e);
 	}
 	
 	/**
@@ -160,7 +168,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	}
 	public Optional<Entity> entityInCache() {
 		if (replacedCache.isPresent()) {
-			return Optional.of(replacedCache.get().cache().getLeft());
+			return Optional.of(replacedCache.get().getReplaced());
 		}
 		return Optional.empty();
 	}
