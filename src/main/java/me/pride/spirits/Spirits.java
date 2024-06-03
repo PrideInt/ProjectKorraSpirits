@@ -4,6 +4,7 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
+import me.pride.spirits.api.builder.SpiritBuilder;
 import me.pride.spirits.api.record.SpiritRecord;
 import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
@@ -59,6 +60,9 @@ public class Spirits extends JavaPlugin {
         StorageCache.queryUUIDs(database);
         StorageCache.querySpirits(database);
         StorageCache.queryLocations();
+        if (getConfig().getBoolean("Light.CanStackTotems")) {
+            StorageCache.queryTotemStacks(database);
+        }
         
         for (Map.Entry<String, List<int[]>> entry : StorageCache.locations().entrySet()) {
             World world = Bukkit.getWorld(entry.getKey());
@@ -83,13 +87,12 @@ public class Spirits extends JavaPlugin {
                     } else if (entity.getPersistentDataContainer().has(Spirit.DARK_SPIRIT_KEY, PersistentDataType.STRING)) {
                         spiritType = SpiritType.DARK;
                     }
-                    SpiritType finalSpiritType = spiritType;
-                    new Spirit(world, entity) {
-                        @Override
-                        public SpiritRecord record() {
-                            return new SpiritRecord(entity.getCustomName(), entity.getType(), finalSpiritType, -1);
-                        }
-                    };
+                    SpiritBuilder
+                            .builder(spiritType)
+                            .spiritName(entity.getCustomName())
+                            .entityType(entity.getType())
+                            .revertTime(-1)
+                            .build();
                 }
                 if (bar != null) {
                     if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
@@ -121,6 +124,9 @@ public class Spirits extends JavaPlugin {
         StorageCache.updateLocations();
         StorageCache.updateUUIDs(database);
         StorageCache.updateSpirits(database);
+        if (getConfig().getBoolean("Light.CanStackTotems")) {
+            StorageCache.updateTotemStacks(database);
+        }
     }
     public static String getAuthor() {
         return ChatUtil.getAuthor();

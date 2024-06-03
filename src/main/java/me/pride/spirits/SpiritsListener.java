@@ -34,6 +34,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -47,6 +48,7 @@ import org.bukkit.entity.Warden;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -54,6 +56,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
@@ -216,6 +219,9 @@ public class SpiritsListener implements Listener {
 		Entity entity = event.getEntity();
 		double damage = event.getDamage();
 
+		if (event.getFinalDamage() <= 0 || event.isCancelled()) {
+			return;
+		}
 		if (entity.getType() == EntityType.PLAYER) {
 			Player player = (Player) entity;
 			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
@@ -233,7 +239,7 @@ public class SpiritsListener implements Listener {
 				if (Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Bleed.Enabled")) {
 					Lightborn.addHit(player, 1);
 
-					if (Lightborn.getHit(player) == 4) {
+					if (Lightborn.getHit(player) == Spirits.instance.getConfig().getInt("Light.Passives.Lightborn.Bleed.HitsToBleed")) {
 						new LightBlood(player);
 						Lightborn.setHit(player, 0);
 					}
@@ -259,10 +265,14 @@ public class SpiritsListener implements Listener {
 					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
 						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 							event.setDamage(0);
+							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
+							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "Transience phased the damage away.", player);
 						}
 					}
 					if (event.getCause() == DamageCause.FALLING_BLOCK || event.getCause() == DamageCause.CRAMMING || event.getCause() == DamageCause.SUFFOCATION) {
 						event.setDamage(0);
+						player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
+						ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "Transience phased the damage away.", player);
 					} else if (event.getCause() == DamageCause.DROWNING) {
 						event.setCancelled(true);
 					}
@@ -403,10 +413,10 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDeath(final EntityDeathEvent event) {
+		Entity entity = event.getEntity();
+		Player killer = event.getEntity().getKiller();
+
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
-			Entity entity = event.getEntity();
-			Player killer = event.getEntity().getKiller();
-			
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				ItemStack spirecite = Spirecite.SPIRECITE.clone();
 				spirecite.setAmount(ThreadLocalRandom.current().nextInt(2, 5));
@@ -443,6 +453,38 @@ class MainListener implements Listener {
 				BendingBossBar.from(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY).ifPresent(bar -> {
 					bar.update(event.getDamage(), false);
 				});
+			}
+		}
+		if (Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
+			if (entity.getType() == EntityType.PLAYER) {
+				Player player = (Player) entity;
+
+				if (player.getHealth() - event.getFinalDamage() <= 0) {
+					if (StorageCache.totemStackCache().containsKey(player.getUniqueId())) {
+						event.setCancelled(true);
+
+						PotionEffectType.BLINDNESS.createEffect(20, 1).apply(player);
+						PotionEffectType.REGENERATION.createEffect(200, 1).apply(player);
+						PotionEffectType.FIRE_RESISTANCE.createEffect(200, 0).apply(player);
+						PotionEffectType.ABSORPTION.createEffect(100, 1).apply(player);
+
+						player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() / 3);
+						player.setFireTicks(0);
+						player.setFallDistance(0);
+						player.setExhaustion(0);
+						player.setRemainingAir(player.getMaximumAir());
+						player.setVelocity(new Vector(0, 0, 0));
+
+						int stack = StorageCache.totemStackCache().get(player.getUniqueId());
+
+						StorageCache.updateTotems(player.getUniqueId(), stack - 1);
+
+						if (stack - 1 == 0) {
+							StorageCache.removeUUIDFromTotems(player.getUniqueId());
+						}
+						player.getWorld().playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1, 1);
+					}
+				}
 			}
 		}
 	}
@@ -496,5 +538,37 @@ class MainListener implements Listener {
 				}
 			}
 		});
+	}
+
+	@EventHandler
+	public void onRightClick(final PlayerInteractEvent event) {
+		Player player = event.getPlayer();
+		Action action = event.getAction();
+
+		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		if (event.getHand() == EquipmentSlot.HAND || event.getHand() == EquipmentSlot.OFF_HAND) {
+			ItemStack item = event.getItem();
+
+			if (item == null) {
+				return;
+			}
+			if (Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
+				if (item.getType() == Material.TOTEM_OF_UNDYING) {
+					int stack = StorageCache.totemStackCache().containsKey(player.getUniqueId()) ? StorageCache.totemStackCache().get(player.getUniqueId()) + 1 : 1;
+					StorageCache.updateTotems(player.getUniqueId(), stack);
+
+					int amount = item.getAmount();
+					ItemStack totem = amount > 1 ? new ItemStack(item.getType(), amount - 1) : new ItemStack(Material.AIR);
+
+					if (event.getHand() == EquipmentSlot.HAND) {
+						player.getInventory().setItemInMainHand(totem);
+					} else {
+						player.getInventory().setItemInOffHand(totem);
+					}
+				}
+			}
+		}
 	}
 }

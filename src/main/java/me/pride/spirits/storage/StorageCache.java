@@ -58,7 +58,7 @@ public class StorageCache {
 			}
 			for (UUID uuid : TOTEM_STACK_CACHE.keySet()) {
 				if (!dbMap.keySet().contains(uuid)) {
-					sql.insertTotemStack(uuid.toString() + "," + TOTEM_STACK_CACHE.get(uuid));
+					sql.insertTotemStack(uuid.toString(), String.valueOf(TOTEM_STACK_CACHE.get(uuid)));
 				}
 			}
 		} catch (SQLException e) { }
@@ -129,6 +129,15 @@ public class StorageCache {
 	}
 	public static Set<UUID> uuidCache() {
 		return UUID_CACHE;
+	}
+	public static void removeUUIDFromTotems(UUID uuid) {
+		TOTEM_STACK_CACHE.remove(uuid);
+	}
+	public static void updateTotems(UUID uuid, int stack) {
+		TOTEM_STACK_CACHE.put(uuid, stack);
+	}
+	public static Map<UUID, Integer> totemStackCache() {
+		return TOTEM_STACK_CACHE;
 	}
 
 	public static void query(SQLite sql, String query, Consumer<ResultSet> consumer) {

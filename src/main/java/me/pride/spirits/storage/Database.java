@@ -22,7 +22,7 @@ public abstract class Database {
 			SELECT_SPIRIT = "SELECT spirit_id FROM spirit_uuids WHERE spirit_id=?",
 			SELECT_ALL_SPIRIT = "SELECT spirit_id FROM spirit_uuids",
 
-			SELECT_ALL_TOTEM_STACK = "SELECT id FROM totem_stack";
+			SELECT_ALL_TOTEM_STACK = "SELECT * FROM totem_stack";
 	
 	public void init() {
 		connection = getConnection();
@@ -39,9 +39,10 @@ public abstract class Database {
 			}
 		}
 	}
-	protected void insertTotemStack(String uuid) throws SQLException {
-		PreparedStatement statement = connection.prepareStatement("INSERT INTO totem_stack(uuid, stack) VALUES(?)");
+	protected void insertTotemStack(String uuid, String stack) throws SQLException {
+		PreparedStatement statement = connection.prepareStatement("INSERT INTO totem_stack(uuid, stack) VALUES(?, ?)");
 		statement.setString(1, uuid);
+		statement.setString(2, stack);
 		statement.executeUpdate();
 	}
 	protected void deleteTotemStack(String uuid) throws SQLException {
