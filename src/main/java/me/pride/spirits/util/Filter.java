@@ -18,6 +18,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fox;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.MagmaCube;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
@@ -32,10 +33,50 @@ import org.bukkit.entity.ZombieHorse;
 
 public class Filter {
 	public static boolean filterEntityLight(Entity entity) {
-		return entity instanceof Sheep || entity instanceof Cow || entity instanceof Pig || entity instanceof Rabbit || entity instanceof Cat || entity instanceof Wolf || entity instanceof Horse || (entity instanceof Slime && !(entity instanceof MagmaCube)) || entity instanceof Fox || entity instanceof Allay;
+		switch (entity.getType()) {
+			case ALLAY:
+			case AXOLOTL:
+			case CAT:
+			case COW:
+			case FOX:
+			case HORSE:
+			case PIG:
+			case RABBIT:
+			case SHEEP:
+			case SLIME:
+			case WOLF:
+				return true;
+		}
+		return false;
 	}
 	public static boolean filterEntityDark(Entity entity) {
-		return entity instanceof Spider || entity instanceof Enderman || entity instanceof Zoglin || entity instanceof CaveSpider || entity instanceof Skeleton || entity instanceof Zombie || entity instanceof Creeper || entity instanceof ZombieHorse || (entity instanceof MagmaCube && !(entity instanceof Slime)) || entity instanceof Blaze;
+		switch (entity.getType()) {
+			case BLAZE:
+			case CAVE_SPIDER:
+			case CREEPER:
+			case DROWNED:
+			case ENDERMAN:
+			case ENDERMITE:
+			case EVOKER:
+			case ILLUSIONER:
+			case MAGMA_CUBE:
+			case PILLAGER:
+			case PHANTOM:
+			case RAVAGER:
+			case SKELETON:
+			case SPIDER:
+			case VEX:
+			case WARDEN:
+			case WITCH:
+			case WITHER:
+			case ZOGLIN:
+			case ZOMBIE:
+			case ZOMBIE_HORSE:
+			case ZOMBIE_VILLAGER:
+			case ZOMBIFIED_PIGLIN:
+				return true;
+		}
+		return false;
 	}
 	public static boolean filterEntityNeutral(Entity entity) {
 		return !filterEntityLight(entity) && !filterEntityDark(entity);

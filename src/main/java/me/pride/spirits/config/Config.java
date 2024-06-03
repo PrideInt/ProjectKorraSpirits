@@ -53,11 +53,16 @@ public class Config {
 		config.addDefault("Light.Abilities.Protect.Deflect.Cooldown", 1000);
 		config.addDefault("Light.Abilities.Protect.Deflect.Speed", 1);
 		config.addDefault("Light.Abilities.Protect.Deflect.Damage", 2);
+		config.addDefault("Light.Abilities.Protect.Deflect.Knockback", 1.25);
 		config.addDefault("Light.Abilities.Protect.Deflect.MinRange", 4);
 		config.addDefault("Light.Abilities.Protect.Deflect.MaxRange", 8);
 		config.addDefault("Light.Abilities.Protect.Deflect.MaxSize", 4.0);
-		config.addDefault("Light.Abilities.Protect.Protect.Cooldown", 5000);
+
+		config.addDefault("Light.Abilities.Protect.Deflect.Stockpile.Cooldown", 6000);
+
+		config.addDefault("Light.Abilities.Protect.Protect.Cooldown", 0);
 		config.addDefault("Light.Abilities.Protect.Protect.MinProtect", 10);
+		config.addDefault("Light.Abilities.Protect.Protect.SlowAmplifier", 2);
 
 		/* Sanctuary */
 		config.addDefault("Light.Combos.Sanctuary.Enabled", true);

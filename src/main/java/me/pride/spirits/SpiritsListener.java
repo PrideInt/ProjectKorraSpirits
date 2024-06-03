@@ -109,7 +109,26 @@ public class SpiritsListener implements Listener {
 				}
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
-					case "Protect" -> { new Protect(player, ProtectType.DEFLECT);
+					case "Protect" -> {
+						if (CoreAbility.hasAbility(player, Protect.class)) {
+							if (Protect.isProtecting(player)) {
+								Protect.removeWithoutCooldown(player);
+								double stockpile = Protect.getStockpile(player);
+
+								double minRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MinRange");
+								double maxRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxRange");
+
+								double damage = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Damage") * stockpile;
+								double knockback = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Knockback") * stockpile;
+								double range = ThreadLocalRandom.current().nextDouble(minRange * stockpile, maxRange * stockpile) * stockpile;
+								double maxSize = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxSize") * stockpile;
+
+								new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+								new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+							}
+						} else {
+							new Protect(player, ProtectType.DEFLECT);
+						}
 						break;
 					}
 					case "Blessing" -> { new Blessing(player);
@@ -255,6 +274,7 @@ public class SpiritsListener implements Listener {
 				event.setDamage(offset);
 
 				Lightborn.LIGHTS.put(player.getUniqueId(), lights / 2.0);
+				Protect.stockpile(player, Protect.getStockpile(player) + lights / 100.0);
 				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "Light Energy: " + (int) (lights / 2.0) + " %", player);
 
 				player.getWorld().spawnParticle(Particle.FLASH, player.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-1.5, 1.5), ThreadLocalRandom.current().nextDouble(0.8, 2), ThreadLocalRandom.current().nextDouble(-1.5, 1.5)), 1, 0.25, 0.25, 0.25);
@@ -265,7 +285,7 @@ public class SpiritsListener implements Listener {
 					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
 						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 							event.setDamage(0);
-							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
+							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 2, 0.5F);
 							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "Transience phased the damage away.", player);
 						}
 					}

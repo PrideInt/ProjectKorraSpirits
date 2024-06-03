@@ -1,5 +1,6 @@
 package me.pride.spirits.abilities.light;
 
+import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AddonAbility;
@@ -35,6 +36,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -46,18 +48,27 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		PROTECT, DEFLECT
 	}
 	private ProtectType type;
-	
+
+	// Both
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
+
+	// Deflect
 	@Attribute(Attribute.SPEED)
 	private double speed;
 	@Attribute(Attribute.DAMAGE)
 	private double damage;
+	@Attribute(Attribute.KNOCKBACK)
+	private double knockback;
 	@Attribute(Attribute.RANGE)
 	private double minRange, range, maxRange;
 	@Attribute(Attribute.RADIUS)
 	private double size, maxSize;
 
+	// Protect
+	private int slowAmplifier;
+
+	private double stockpile;
 	private boolean validated;
 
 	private double sizeIncrease;
@@ -78,6 +89,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
+		this.stockpile = 1;
 		this.origin = player.getLocation().clone().add(0, 1, 0);
 		this.location = this.origin.clone();
 		this.validated = true;
@@ -93,6 +105,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			this.cooldown = Spirits.instance.getConfig().getLong(path + "Deflect.Cooldown");
 			this.speed = Spirits.instance.getConfig().getDouble(path + "Deflect.Speed");
 			this.damage = Spirits.instance.getConfig().getDouble(path + "Deflect.Damage");
+			this.knockback = Spirits.instance.getConfig().getDouble(path + "Deflect.Knockback");
 			this.minRange = Spirits.instance.getConfig().getDouble(path + "Deflect.MinRange");
 			this.maxRange = Spirits.instance.getConfig().getDouble(path + "Deflect.MaxRange");
 			this.maxSize = Spirits.instance.getConfig().getDouble(path + "Deflect.MaxSize");
@@ -102,14 +115,47 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			this.direction = this.location.getDirection();
 
+			applyCollisions();
 		} else if (type == ProtectType.PROTECT) {
 			this.cooldown = Spirits.instance.getConfig().getLong(path + "Protect.Cooldown");
+			this.slowAmplifier = Spirits.instance.getConfig().getInt(path + "Protect.SlowAmplifier");
 		}
 		this.type = type;
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 0.5F, 1.75F);
 
+		start();
+	}
+
+	// Stockpiled deflect blast
+	public Protect(Player player, Location origin, double damage, double knockback, double range, double maxSize) {
+		this(player);
+
+		if (!bPlayer.canBend(this)) {
+			return;
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
+			return;
+		}
+		this.cooldown = Spirits.instance.getConfig().getLong(path + "Deflect.Stockpile.Cooldown");
+		this.speed = Spirits.instance.getConfig().getDouble(path + "Deflect.Speed");
+
+		this.damage = damage;
+		this.knockback = knockback;
+		this.range = range;
+		this.maxSize = maxSize;
+
+		this.sizeIncrease = ThreadLocalRandom.current().nextDouble(0.5, 1.0);
+
+		this.origin = origin.clone();
+		this.location = this.origin.clone();
+		this.direction = location.getDirection();
+
+		this.type = ProtectType.DEFLECT;
+
+		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 0.5F, 1.75F);
+
 		applyCollisions();
+
 		start();
 	}
 	
@@ -119,7 +165,6 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			remove();
 			return;
 		} else if (RegionProtection.isRegionProtected(player, location, this)) {
-			bPlayer.addCooldown(this);
 			remove();
 			return;
 		}
@@ -132,7 +177,6 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 	private void deflect() {
 		if (origin.distanceSquared(location) > range * range) {
-			bPlayer.addCooldown(this);
 			remove();
 			return;
 		}
@@ -147,9 +191,11 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		location.getWorld().spawnParticle(Particle.SONIC_BOOM, location, 1, 0.25, 0.25, 0.25, 0);
 
 		Tools.trackEntitySpirit(location, size / 1.5, e -> e.getUniqueId() != player.getUniqueId(), (entity, light, dark, neutral) -> {
-			if (dark) {
-				DamageHandler.damageEntity(entity, damage, this);
-				entity.setVelocity(player.getEyeLocation().getDirection().multiply(0.5));
+			if (dark || neutral) {
+				if (dark) {
+					DamageHandler.damageEntity(entity, damage, this);
+				}
+				entity.setVelocity(player.getEyeLocation().getDirection().multiply(knockback));
 				new HorizontalVelocityTracker(entity, player, 0, this);
 			}
 		});
@@ -157,18 +203,16 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			if (entity instanceof Projectile) {
 				Projectile projectile = (Projectile) entity;
 
-				projectile.setVelocity(player.getEyeLocation().getDirection().multiply(0.5));
+				projectile.setVelocity(player.getEyeLocation().getDirection().multiply(knockback));
 			}
 		}
 	}
 
 	private void protect() {
 		if (!player.isSneaking()) {
-			bPlayer.addCooldown(this);
 			remove();
 			return;
 		} else if (!bPlayer.canBendIgnoreBinds(this)) {
-			bPlayer.addCooldown(this);
 			remove();
 			return;
 		}
@@ -181,6 +225,13 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation().clone().add(x, y, z), 1, 0.25, 0.25, 0.25, 0);
 		}
+		PotionEffectType.SLOW.createEffect(10, slowAmplifier).apply(player);
+	}
+
+	public static void removeWithoutCooldown(Player player) {
+		if (CoreAbility.hasAbility(player, Protect.class)) {
+			CoreAbility.getAbility(player, Protect.class).removeWithoutCooldown();
+		}
 	}
 
 	public static boolean isProtecting(Player player) {
@@ -189,6 +240,27 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 	public static boolean isDeflecting(Player player) {
 		return CoreAbility.hasAbility(player, Protect.class) && CoreAbility.getAbility(player, Protect.class).getType() == ProtectType.DEFLECT;
+	}
+
+	public static void stockpile(Player player, double stockpile) {
+		if (CoreAbility.hasAbility(player, Protect.class)) {
+			CoreAbility.getAbility(player, Protect.class).stockpile(stockpile);
+		}
+	}
+
+	public static double getStockpile(Player player) {
+		if (CoreAbility.hasAbility(player, Protect.class)) {
+			return CoreAbility.getAbility(player, Protect.class).getStockpile();
+		}
+		return 1;
+	}
+
+	public void stockpile(double stockpile) {
+		this.stockpile = stockpile;
+	}
+
+	public double getStockpile() {
+		return stockpile;
 	}
 
 	public ProtectType getType() {
@@ -247,6 +319,18 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	@Override
 	public Location getLocation() {
 		return null;
+	}
+
+	@Override
+	public void remove() {
+		super.remove();
+		if (!bPlayer.isOnCooldown(this)) {
+			bPlayer.addCooldown(this);
+		}
+	}
+
+	public void removeWithoutCooldown() {
+		super.remove();
 	}
 
 	@Override
