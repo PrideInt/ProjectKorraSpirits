@@ -20,7 +20,9 @@ public abstract class Database {
 			INSERT_SPIRIT = "INSERT INTO spirit_uuids(spirit_id) VALUES(?)",
 			DELETE_SPIRIT = "DELETE FROM spirit_uuids WHERE spirit_id=?",
 			SELECT_SPIRIT = "SELECT spirit_id FROM spirit_uuids WHERE spirit_id=?",
-			SELECT_ALL_SPIRIT = "SELECT spirit_id FROM spirit_uuids";
+			SELECT_ALL_SPIRIT = "SELECT spirit_id FROM spirit_uuids",
+
+			SELECT_ALL_TOTEM_STACK = "SELECT id FROM totem_stack";
 	
 	public void init() {
 		connection = getConnection();
@@ -30,11 +32,28 @@ public abstract class Database {
 				Statement statement = connection.createStatement();
 				statement.execute("CREATE TABLE IF NOT EXISTS uuids(id)");
 				statement.execute("CREATE TABLE IF NOT EXISTS spirit_uuids(spirit_id)");
+				statement.execute("CREATE TABLE IF NOT EXISTS totem_stack(uuid, stack)");
 				statement.close();
 			} catch (SQLException e) {
 				// table exists
 			}
 		}
+	}
+	protected void insertTotemStack(String uuid) throws SQLException {
+		PreparedStatement statement = connection.prepareStatement("INSERT INTO totem_stack(uuid, stack) VALUES(?)");
+		statement.setString(1, uuid);
+		statement.executeUpdate();
+	}
+	protected void deleteTotemStack(String uuid) throws SQLException {
+		PreparedStatement statement = connection.prepareStatement("DELETE FROM totem_stack WHERE uuid=?");
+		statement.setString(1, uuid);
+		statement.executeUpdate();
+	}
+	protected void updateTotemStack(String uuid, String stack) throws SQLException {
+		PreparedStatement statement = connection.prepareStatement("UPDATE totem_stack SET stack=? WHERE uuid=?");
+		statement.setString(1, stack);
+		statement.setString(2, uuid);
+		statement.executeUpdate();
 	}
 	protected void insertBoss(String... uuids) throws SQLException {
 		PreparedStatement statement;
@@ -74,17 +93,17 @@ public abstract class Database {
 			statement.executeUpdate();
 		}
 	}
-	protected void deleteAllBosses() throws SQLException {
+	public void deleteAllBosses() throws SQLException {
 		connection.prepareStatement("DELETE FROM uuids").executeUpdate();
 	}
-	protected void deleteAllSpirits() throws SQLException {
+	public void deleteAllSpirits() throws SQLException {
 		connection.prepareStatement("DELETE FROM spirit_uuids").executeUpdate();
 	}
-	protected ResultSet setBosses() throws SQLException {
-		return connection.prepareStatement(SELECT_ALL_BOSS).executeQuery();
+	public void deleteAllTotems() throws SQLException {
+		connection.prepareStatement("DELETE FROM totem_stack").executeUpdate();
 	}
-	protected ResultSet setSpirits() throws SQLException {
-		return connection.prepareStatement(SELECT_ALL_SPIRIT).executeQuery();
+	protected ResultSet set(String statement) throws SQLException {
+		return connection.prepareStatement(statement).executeQuery();
 	}
 	private String insertions(String s, String... uuids) {
 		StringBuilder builder = new StringBuilder(s);

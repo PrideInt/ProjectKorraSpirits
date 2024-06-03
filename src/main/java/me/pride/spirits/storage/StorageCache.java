@@ -19,28 +19,62 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class StorageCache {
 	private static final Set<UUID> UUID_CACHE = ConcurrentHashMap.newKeySet();
+	private static final Map<UUID, Integer> TOTEM_STACK_CACHE = new ConcurrentHashMap<>();
 	private static final Map<String, List<int[]>> LOCATIONS = new ConcurrentHashMap<>();
 	
 	protected static final File STATION = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "stations.json");
 	protected static final File STORAGE = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "storage.db");
-	
-	public static void queryUUIDs(SQLite sql) {
+
+	public static void queryTotemStacks(SQLite sql) {
+		query(sql, Database.SELECT_ALL_TOTEM_STACK, set -> {
+			try {
+				TOTEM_STACK_CACHE.put(UUID.fromString(set.getString("uuid")), set.getInt("stack"));
+			} catch (SQLException e) { }
+		});
+	}
+	public static void updateTotemStacks(SQLite sql) {
+		Map<UUID, Integer> dbMap = new ConcurrentHashMap<>();
+
 		try {
-			ResultSet set = sql.setBosses();
-			
+			ResultSet set = sql.set(Database.SELECT_ALL_TOTEM_STACK);
+
 			while (set.next()) {
-				UUID_CACHE.add(UUID.fromString(set.getString("id")));
+				String suuid = set.getString("uuid");
+				UUID uuid = UUID.fromString(suuid);
+				int stack = set.getInt("stack");
+
+				dbMap.put(uuid, stack);
+				if (!TOTEM_STACK_CACHE.containsKey(uuid)) {
+					sql.deleteTotemStack(suuid);
+				} else {
+					if (TOTEM_STACK_CACHE.get(uuid) != stack) {
+						sql.updateTotemStack(suuid, String.valueOf(TOTEM_STACK_CACHE.get(uuid)));
+					}
+				}
+			}
+			for (UUID uuid : TOTEM_STACK_CACHE.keySet()) {
+				if (!dbMap.keySet().contains(uuid)) {
+					sql.insertTotemStack(uuid.toString() + "," + TOTEM_STACK_CACHE.get(uuid));
+				}
 			}
 		} catch (SQLException e) { }
+	}
+	public static void queryUUIDs(SQLite sql) {
+		query(sql, Database.SELECT_ALL_BOSS, set -> {
+			try {
+				UUID_CACHE.add(UUID.fromString(set.getString("id")));
+			} catch (SQLException e) { }
+		});
 	}
 	public static void updateUUIDs(SQLite sql) {
 		Set<UUID> dbSet = ConcurrentHashMap.newKeySet();
 		
 		try {
-			ResultSet set = sql.setBosses();
+			ResultSet set = sql.set(Database.SELECT_ALL_BOSS);
 			
 			while (set.next()) {
 				String suuid = set.getString("id");
@@ -59,19 +93,17 @@ public class StorageCache {
 		} catch (SQLException e) { }
 	}
 	public static void querySpirits(SQLite sql) {
-		try {
-			ResultSet set = sql.setSpirits();
-
-			while (set.next()) {
-				UUID_CACHE.add(UUID.fromString(set.getString("spirit_id")));
-			}
-		} catch (SQLException e) { }
+		query(sql, Database.SELECT_ALL_SPIRIT, set -> {
+			try {
+				Spirit.SPIRIT_CACHE.keySet().add(UUID.fromString(set.getString("spirit_id")));
+			} catch (SQLException e) { }
+		});
 	}
 	public static void updateSpirits(SQLite sql) {
 		Set<UUID> dbSet = ConcurrentHashMap.newKeySet();
 
 		try {
-			ResultSet set = sql.setSpirits();
+			ResultSet set = sql.set(Database.SELECT_ALL_SPIRIT);
 
 			while (set.next()) {
 				String suuid = set.getString("spirit_id");
@@ -97,6 +129,16 @@ public class StorageCache {
 	}
 	public static Set<UUID> uuidCache() {
 		return UUID_CACHE;
+	}
+
+	public static void query(SQLite sql, String query, Consumer<ResultSet> consumer) {
+		try {
+			ResultSet set = sql.set(query);
+
+			while (set.next()) {
+				consumer.accept(set);
+			}
+		} catch (SQLException e) { }
 	}
 	
 	public static void queryLocations() {
