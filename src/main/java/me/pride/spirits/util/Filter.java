@@ -5,6 +5,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.command.Commands;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Allay;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Cat;
@@ -45,7 +46,7 @@ public class Filter {
 	public static boolean filterGeneral(Entity entity, Player player, CoreAbility ability) {
 		return filterEntityFromAbility(entity, player, ability) && entity.getType() != EntityType.ARMOR_STAND && !Commands.invincible.contains(entity.getName());
 	}
-	public static boolean filterBlockFlowers(Material material) {
+	public static boolean filterFlowers(Material material) {
 		switch (material) {
 			case DANDELION:
 			case POPPY:
@@ -67,5 +68,8 @@ public class Filter {
 				return true;
 		}
 		return false;
+	}
+	public static boolean filterFlowers(Block block) {
+		return filterFlowers(block.getType());
 	}
 }

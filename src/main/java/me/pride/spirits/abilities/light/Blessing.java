@@ -9,6 +9,7 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
+import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
@@ -46,7 +47,8 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	@Attribute(Attribute.SELECT_RANGE)
 	private int selectRange;
 	private int blessRate;
-	private boolean letBlessingFinish;
+	private int blessPerRate;
+	// private boolean letBlessingFinish;
 	private boolean blessRegularSpirits;
 
 	private int rate;
@@ -75,7 +77,8 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 		this.radius = Spirits.instance.getConfig().getInt(path + "Radius");
 		this.selectRange = Spirits.instance.getConfig().getInt(path + "SelectRange");
 		this.blessRate = Spirits.instance.getConfig().getInt(path + "BlessRate");
-		this.letBlessingFinish = Spirits.instance.getConfig().getBoolean(path + "LetBlessingFinish");
+		this.blessPerRate = Spirits.instance.getConfig().getInt(path + "BlessBlockPerRate");
+		// this.letBlessingFinish = Spirits.instance.getConfig().getBoolean(path + "LetBlessingFinish");
 		this.blessRegularSpirits = Spirits.instance.getConfig().getBoolean(path + "BlessRegularSpirits");
 
 		this.quartz = Material.QUARTZ_BLOCK.createBlockData();
@@ -93,6 +96,17 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 		this.target = targetBlock.getLocation().clone().add(0.5, 0.5, 0.5);
 		this.blessedArea = blessedArea(targetBlock);
 
+		/*
+		 * Spawning particles. I don't know if this looks good
+		 *
+		double distance = player.getLocation().clone().distanceSquared(this.target);
+		Location particleLocation = player.getLocation().clone().add(0, 1, 0);
+
+		for (int i = 0; i < (int) Math.sqrt(distance); i += 3) {
+			particleLocation.getWorld().spawnParticle(Particle.SONIC_BOOM, particleLocation, 1, 0.25, 0.25, 0.25, 0);
+			particleLocation.add(particleLocation.getDirection().multiply(i));
+		}
+		 */
 		bPlayer.addCooldown(this);
 		start();
 	}
@@ -103,27 +117,29 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 			remove();
 			return;
 		}
-		if (!letBlessingFinish && System.currentTimeMillis() > getStartTime() + duration) {
+		if (System.currentTimeMillis() > getStartTime() + duration) {
 			remove();
 			return;
 		}
-		target.getWorld().spawnParticle(Particle.SPELL_INSTANT, target, 10, radius / 4, radius / 4, radius / 4, 0);
+		target.getWorld().spawnParticle(Particle.SPELL_INSTANT, target, 5, radius / 1.5, radius / 1.5, radius / 1.5, 0);
 
 		rate = rate > blessRate ? 0 : rate + 1;
 		if (rate == 0) {
-			Block block = blessedArea.get(ThreadLocalRandom.current().nextInt(blessedArea.size()));
-			block.setMetadata("spirits:blessed_source", new FixedMetadataValue(Spirits.instance, 0));
+			for (int i = 0; i < blessPerRate; i++) {
+				Block block = blessedArea.get(ThreadLocalRandom.current().nextInt(blessedArea.size()));
 
-			// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
-			// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
-			block.getWorld().spawnParticle(Particle.SHRIEK, block.getLocation().clone().add(0.5, 0.85, 0.5), 1, 0.25, 0.25, 0.25, 0, 1);
+				if (!blessedBlocks.contains(block)) {
+					block.setMetadata("spirits:blessed_source", new FixedMetadataValue(Spirits.instance, 0));
 
-			blessedBlocks.add(block);
+					// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
+					// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
+					block.getWorld().spawnParticle(Particle.SHRIEK, block.getLocation().clone().add(0.5, 0.85, 0.5), 1, 0.25, 0.25, 0.25, 0, 1);
 
-			if (isPlant(block)) {
-				new TempBlock(block, lotv, duration, this);
-			} else {
-				new TempBlock(block, quartz, duration, this);
+					blessedBlocks.add(block);
+
+					BlockData data = isPlant(block) || block.getType() == Material.DEAD_BUSH ? lotv : quartz;
+					new TempBlock(block, data, duration, this);
+				}
 			}
 		}
 		Tools.trackEntitySpirit(target, radius, e -> e instanceof LivingEntity && e.getType() != EntityType.ARMOR_STAND && e.getUniqueId() != player.getUniqueId(), (entity, light, dark, neutral) -> {
@@ -140,9 +156,13 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	}
 
 	private List<Block> blessedArea(Block block) {
-		return GeneralMethods.getCircle(block.getLocation(), radius, 1, false, false, 0).stream()
-				.map(l -> (Block) l.getBlock())
-				.filter(b -> !isAir(b.getType()) && (isAir(b.getRelative(BlockFace.UP).getType()) || isPlant(b.getRelative(BlockFace.UP))) && !RegionProtection.isRegionProtected(this, b.getLocation()))
+		return GeneralMethods.getBlocksAroundPoint(block.getLocation(), radius)
+				.stream()
+				.filter(b -> {
+					boolean isValidSurfaceBlock = !isAir(b.getType()) && isAir(b.getRelative(BlockFace.UP).getType());
+					boolean isValidSurfacePlant = !GeneralMethods.isSolid(b) && (isPlant(b) || b.getType() == Material.DEAD_BUSH) && isAir(b.getRelative(BlockFace.UP).getType());
+					return !RegionProtection.isRegionProtected(player, b.getLocation(), this) && (isValidSurfaceBlock || isValidSurfacePlant);
+				})
 				.collect(Collectors.toList());
 	}
 

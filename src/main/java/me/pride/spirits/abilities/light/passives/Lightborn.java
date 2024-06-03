@@ -7,13 +7,16 @@ import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.attribute.AttributeModifier;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.LightSpirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -57,10 +60,13 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	@Override
 	public void progress() {
 		if (!RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
-			if (bPlayer.isToggled()) {
-				LIGHTS.computeIfPresent(player.getUniqueId(), (k, v) -> LIGHTS.remove(player.getUniqueId()));
+			if (!bPlayer.isToggled()) {
+				if (LIGHTS.containsKey(player.getUniqueId())) {
+					LIGHTS.remove(player.getUniqueId());
+				}
+				// LIGHTS.computeIfPresent(player.getUniqueId(), (k, v) -> LIGHTS.remove(player.getUniqueId()));
 			}
-			if (LIGHTS.get(player.getUniqueId()) < 100.0) {
+			if (LIGHTS.containsKey(player.getUniqueId()) && LIGHTS.get(player.getUniqueId()) < 100.0) {
 				LIGHTS.put(player.getUniqueId(), LIGHTS.get(player.getUniqueId()) + 0.1);
 			}
 			/*
@@ -73,6 +79,7 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 						for (PotionEffect active : player.getActivePotionEffects()) {
 							if (Tools.getNegativeEffectsSet().contains(active.getType())) {
 								player.removePotionEffect(active.getType());
+								break;
 							}
 						}
 					}
@@ -103,6 +110,15 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 					}
 				}
 			}
+
+			/*
+			 * Give regeneration to nearby light or passive entities.
+			 */
+			Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneral(e, player, this), (entity, light, dark, neutral) -> {
+				if (light) {
+					PotionEffectType.REGENERATION.createEffect(30, 1).apply(entity);
+				}
+			});
 		}
 	}
 

@@ -10,6 +10,8 @@ public class Config {
 		config.addDefault("Spirecite.Enabled", true);
 		config.addDefault("Spirecite.WardenDrops", true);
 		config.addDefault("Spirecite.Chance", 0.05);
+
+		config.addDefault("Light.CanStackTotems", true);
 		
 		/*
 		 *   	- Dark -
@@ -42,7 +44,8 @@ public class Config {
 		config.addDefault("Light.Abilities.Blessing.Radius", 8);
 		config.addDefault("Light.Abilities.Blessing.SelectRange", 20);
 		config.addDefault("Light.Abilities.Blessing.BlessRate", 10);
-		config.addDefault("Light.Abilities.Blessing.LetBlessingFinish", false);
+		config.addDefault("Light.Abilities.Blessing.BlessBlockPerRate", 3);
+		// config.addDefault("Light.Abilities.Blessing.LetBlessingFinish", false);
 		config.addDefault("Light.Abilities.Blessing.BlessRegularSpirits", true);
 
 		/* Protect */
@@ -77,6 +80,8 @@ public class Config {
 		config.addDefault("Light.Passives.Lightborn.Vulnerability", true);
 		config.addDefault("Light.Passives.Lightborn.VulnerabilityMultiplier", 1.50);
 		config.addDefault("Light.Passives.Lightborn.Bleed.Enabled", true);
+		config.addDefault("Light.Passives.Lightborn.Bleed.HitsToBleed", 4);
+		config.addDefault("Light.Passives.Lightborn.Bleed.Duration", 20000);
 		config.addDefault("Light.Passives.Lightborn.Bleed.Damage", 3);
 		config.addDefault("Light.Passives.Lightborn.Bleed.Heal", 3);
 		

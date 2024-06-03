@@ -1,20 +1,22 @@
 package me.pride.spirits.abilities.light.passives.other;
 
-import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 
 public class LightBlood extends LightSpiritAbility implements AddonAbility {
-	private final String path = Tools.path(this, Path.PASSIVES) + "Bleed.";
+	private final String path = Tools.path(CoreAbility.getAbility(Lightborn.class), Path.PASSIVES) + "Bleed.";
 
 	@Attribute(Attribute.DURATION)
 	private long duration;
@@ -28,6 +30,10 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 	public LightBlood(Player player) {
 		super(player);
 
+		if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
+			return;
+		}
+		this.duration = Spirits.instance.getConfig().getLong(path + "Duration");
 		this.damage = Spirits.instance.getConfig().getDouble(path + "Damage");
 		this.heal = Spirits.instance.getConfig().getDouble(path + "Heal");
 
@@ -38,14 +44,14 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 
 	@Override
 	public void progress() {
-		if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
-			remove();
-			return;
-		}
 		if (System.currentTimeMillis() > getStartTime() + duration) {
 			remove();
 			return;
 		}
+		location.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, location, 1, 1, 1, 1, 0);
+		// location.getWorld().spawnParticle(Particle.SPELL_INSTANT, location, 1, 0, 0, 0, 0);
+		location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
+
 		Tools.trackEntitySpirit(location, 1.25, e -> Filter.filterGeneral(e, player, this), (entity, light, dark, neutral) -> {
 			if (light || neutral) {
 				double heal = entity.getHealth() + this.heal;
