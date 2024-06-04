@@ -134,7 +134,10 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 
 				spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 				player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
-				
+
+				if (block.hasMetadata("spirits:blessed_source")) {
+					block.removeMetadata("spirits:blessed_source", Spirits.instance);
+				}
 				block.setMetadata("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
 				corrupted.add(index);
 			}

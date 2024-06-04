@@ -199,6 +199,9 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 						}
 					}
 					if (!blessedBlocks.contains(block)) {
+						if (block.hasMetadata("spirits:corrupted_blocks")) {
+							block.removeMetadata("spirits:corrupted_blocks", Spirits.instance);
+						}
 						block.setMetadata("spirits:blessed_source", new FixedMetadataValue(Spirits.instance, 0));
 						// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);

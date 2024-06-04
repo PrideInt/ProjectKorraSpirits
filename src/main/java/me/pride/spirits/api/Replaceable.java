@@ -6,7 +6,7 @@ import org.bukkit.entity.Entity;
 import java.util.Optional;
 
 public interface Replaceable {
-	record ReplacedCache(boolean replaced, boolean invulnerable, Pair<Entity, Integer> cache) {
+	record ReplacedDefinitions(boolean replaced, boolean invulnerable, Pair<Entity, Integer> cache) {
 		public boolean replaced() { return this.replaced; }
 		public boolean invulnerable() { return this.invulnerable; }
 		public Pair<Entity, Integer> cache() { return this.cache; }
@@ -17,5 +17,5 @@ public interface Replaceable {
 	}
 	
 	ReplaceableSpirit replaceEntity(Entity entity);
-	Optional<ReplacedCache> replacedCache();
+	Optional<ReplacedDefinitions> definitions();
 }

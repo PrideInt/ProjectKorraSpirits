@@ -32,7 +32,7 @@ public abstract class Spirit {
 	public static final Map<UUID, Spirit> SPIRIT_CACHE = new ConcurrentHashMap<>();
 	public static final Queue<Spirit> RECOLLECTION = new LinkedList<>();
 
-	private static int SPIRIT_ID = 0;
+	// private static int SPIRIT_ID = 0;
 
 	/**
 	 * Record object that contains information about the Spirit.
@@ -49,7 +49,7 @@ public abstract class Spirit {
 	private Entity entity;
 	private long start, end;
 
-	private int id;
+	// private int id;
 
 	public Spirit(World world, Location location) {
 		this.world = world;
@@ -80,9 +80,11 @@ public abstract class Spirit {
 	/**
 	 * @return The id assigned to the Spirit
 	 */
+	/*
 	public int id() {
 		return this.id;
 	}
+	 */
 
 	/**
 	 * @return The current location of the spirit
@@ -237,7 +239,6 @@ public abstract class Spirit {
 	 * @return an Optional of the Spirit that is found, if any
 	 */
 	public static Optional<Spirit> of(Entity entity) {
-		// TODO: gonna need a better way to search
 		return SPIRIT_CACHE.get(entity.getUniqueId()) == null ? Optional.empty() : Optional.of(SPIRIT_CACHE.get(entity.getUniqueId()));
 	}
 	public static boolean exists(Entity entity) {

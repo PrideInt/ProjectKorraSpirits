@@ -205,7 +205,7 @@ public class SpiritsListener implements Listener {
 		that it took while transformed back to the original entity.
 		 */
 		if (ReplaceableSpirit.containsKey(entity)) {
-			Entity replaced = ReplaceableSpirit.fromEntity(entity).getReplacedCache().cache().getLeft();
+			Entity replaced = ReplaceableSpirit.fromEntity(entity).getReplacedDefinitions().getReplaced();
 			if (replaced instanceof LivingEntity && entity instanceof LivingEntity) {
 				LivingEntity oldEntity = (LivingEntity) replaced, newEntity = (LivingEntity) entity;
 				
@@ -593,6 +593,7 @@ class MainListener implements Listener {
 						} else {
 							player.getInventory().setItemInOffHand(totem);
 						}
+						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 0.75F, 0.75F);
 						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + stack + " *", player);
 					} else {
 						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + (stack - 1) + " *", player);

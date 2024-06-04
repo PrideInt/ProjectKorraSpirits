@@ -49,7 +49,7 @@ If we want them to permanently replace said entity, we can do that. If we want t
 replace the entity and then convert them back to the original entity, we can do that too. Any
 `Spirit` instance that extends `ReplaceableSpirit` will be able to do this.
 
-Holds an `Optional<ReplacedCache>` reference, storing data of the original replaced entity. Also, the 
+Holds an `Optional<ReplacedDefinitions>` reference, storing data of the original replaced entity. Also, the 
 `SpiritRecord` reference.
 
 ### LightSpirit

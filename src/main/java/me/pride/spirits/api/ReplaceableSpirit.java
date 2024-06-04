@@ -24,17 +24,17 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	
 	private SpiritRecord record;
 
-	// ReplacedCache contains information on
+	// ReplacedDefinitions contains information on
 	// * Entity that was replaced: use getReplaced()
 	// * Entity's UUID: use getReplacedID()
 	// * Whether the entity was replaced: use replaced()
 	// * Whether the entity was invulnerable: use invulnerable()
-	private Optional<ReplacedCache> replacedCache;
+	private Optional<ReplacedDefinitions> definitions;
 	
 	public ReplaceableSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, location);
 		this.record = new SpiritRecord(name, entityType, spiritType, revertTime);
-		this.replacedCache = Optional.empty();
+		this.definitions = Optional.empty();
 		super.spawnEntity(world, location);
 	}
 	
@@ -45,7 +45,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 
 		// If the entity is a replaced entity, reverse it, replace it
 		if (isReplacedEntity(entity)) {
-			e = fromEntity(entity).entityInCache().get();
+			e = fromEntity(entity).entityInRecord().get();
 			ReplaceableSpirit.reverse(Spirit.of(entity).get());
 		}
 		this.record = new SpiritRecord(name, entityType, spiritType, revertTime);
@@ -92,7 +92,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	public ReplaceableSpirit replaceEntity(World world, Entity entity, EntityType entityType, SpiritType spiritType, long revertTime, Consumer<Entity> consumer) {
 		REPLACED.put(spawnEntity(world, entity.getLocation(), entityType, spiritType, revertTime, consumer).entity(), this);
 		
-		this.replacedCache = Optional.of(new ReplacedCache(true, entity.isInvulnerable(), Pair.of(entity, entity.getEntityId())));
+		this.definitions = Optional.of(new ReplacedDefinitions(true, entity.isInvulnerable(), Pair.of(entity, entity.getEntityId())));
 		
 		entity.setInvulnerable(true);
 		entity.getPersistentDataContainer().set(REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
@@ -116,14 +116,14 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	protected static void reverse(Spirit spirit) {
 		if (spirit instanceof ReplaceableSpirit) {
 			if (ReplaceableSpirit.containsKey(spirit.entity())) {
-				ReplaceableSpirit.fromEntity(spirit.entity()).replacedCache().ifPresent(replacedCache -> {
-					Entity replaced = replacedCache.cache().getLeft();
+				ReplaceableSpirit.fromEntity(spirit.entity()).definitions().ifPresent(definitions -> {
+					Entity replaced = definitions.getReplaced();
 
 					for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 						player.showEntity(Spirits.instance, replaced);
 					}
 					replaced.teleport(spirit.entity().getLocation());
-					// replaced.setInvulnerable(replacedCache.invulnerable());
+					// replaced.setInvulnerable(definitions.invulnerable());
 					// replaced.setCustomName(replaced.getCustomName());
 					// replaced.setCustomNameVisible(true);
 					// replaced.getPersistentDataContainer().remove(REPLACED_KEY);
@@ -143,13 +143,13 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		return REPLACED.containsKey(entity);
 	}
 	public static boolean remove(Entity entity, ReplaceableSpirit spirit) {
-		REPLACED.get(entity).getReplacedCache().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
+		REPLACED.get(entity).getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
 		return REPLACED.remove(entity, spirit);
 	}
 	public void remove() {
 		REPLACED.entrySet().removeIf(entry -> {
 			if (entry.getValue().equals(this)) {
-				entry.getValue().getReplacedCache().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
+				entry.getValue().getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
 				return true;
 			}
 			return false;
@@ -158,19 +158,26 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	}
 	
 	@Override
-	public Optional<ReplacedCache> replacedCache() { return this.replacedCache; }
-	@Override
-	public SpiritRecord record() { return this.record; }
-	
-	public ReplacedCache getReplacedCache() { return replacedCache.get(); }
-	public void ifCachePresent(Consumer<ReplacedCache> consumer) {
-		replacedCache.ifPresent(consumer);
+	public Optional<ReplacedDefinitions> definitions() {
+		return this.definitions;
 	}
-	public Optional<Entity> entityInCache() {
-		if (replacedCache.isPresent()) {
-			return Optional.of(replacedCache.get().getReplaced());
+	@Override
+	public SpiritRecord record() {
+		return this.record;
+	}
+	public ReplacedDefinitions getReplacedDefinitions() {
+		return definitions.get();
+	}
+	public void ifCachePresent(Consumer<ReplacedDefinitions> consumer) {
+		definitions.ifPresent(consumer);
+	}
+	public Optional<Entity> entityInRecord() {
+		if (definitions.isPresent()) {
+			return Optional.of(definitions.get().getReplaced());
 		}
 		return Optional.empty();
 	}
-	public static Iterable<ReplaceableSpirit> replaced() { return REPLACED.values(); }
+	public static Iterable<ReplaceableSpirit> replaced() {
+		return REPLACED.values();
+	}
 }
