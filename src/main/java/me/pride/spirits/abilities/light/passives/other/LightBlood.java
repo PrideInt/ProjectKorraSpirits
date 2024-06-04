@@ -52,7 +52,7 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 		// location.getWorld().spawnParticle(Particle.SPELL_INSTANT, location, 1, 0, 0, 0, 0);
 		location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
 
-		Tools.trackEntitySpirit(location, 1.25, e -> Filter.filterGeneral(e, player, this), (entity, light, dark, neutral) -> {
+		Tools.trackEntitySpirit(location, 1.25, e -> Filter.filterGeneralEntity(e, player, this), (entity, light, dark, neutral) -> {
 			if (light || neutral) {
 				double heal = entity.getHealth() + this.heal;
 

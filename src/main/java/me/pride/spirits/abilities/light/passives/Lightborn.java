@@ -114,7 +114,7 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 			/*
 			 * Give regeneration to nearby light or passive entities.
 			 */
-			Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneral(e, player, this), (entity, light, dark, neutral) -> {
+			Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneralEntity(e, player, this), (entity, light, dark, neutral) -> {
 				if (light) {
 					PotionEffectType.REGENERATION.createEffect(30, 1).apply(entity);
 				}

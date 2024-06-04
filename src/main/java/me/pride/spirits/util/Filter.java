@@ -1,35 +1,14 @@
 package me.pride.spirits.util;
 
-import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.command.Commands;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Allay;
-import org.bukkit.entity.Blaze;
-import org.bukkit.entity.Cat;
-import org.bukkit.entity.CaveSpider;
-import org.bukkit.entity.Cow;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Enderman;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Fox;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.MagmaCube;
-import org.bukkit.entity.Phantom;
-import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Rabbit;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Slime;
-import org.bukkit.entity.Spider;
-import org.bukkit.entity.Wolf;
-import org.bukkit.entity.Zoglin;
-import org.bukkit.entity.Zombie;
-import org.bukkit.entity.ZombieHorse;
 
 public class Filter {
 	public static boolean filterEntityLight(Entity entity) {
@@ -84,8 +63,36 @@ public class Filter {
 	public static boolean filterEntityFromAbility(Entity entity, Player player, CoreAbility ability) {
 		return entity.getUniqueId() != player.getUniqueId() && !RegionProtection.isRegionProtected(ability, entity.getLocation());
 	}
-	public static boolean filterGeneral(Entity entity, Player player, CoreAbility ability) {
+	public static boolean filterGeneralEntity(Entity entity, Player player, CoreAbility ability) {
 		return filterEntityFromAbility(entity, player, ability) && entity.getType() != EntityType.ARMOR_STAND && !Commands.invincible.contains(entity.getName());
+	}
+	public static boolean filterGeneralSolidBlock(Material material) {
+		return material.isSolid() && !material.isInteractable() && material != Material.BARRIER;
+	}
+	public static boolean filterGeneralSolidBlock(Block block) {
+		return filterGeneralSolidBlock(block.getType());
+	}
+	public static boolean filterIndestructible(Material material) {
+		switch (material) {
+			case BEDROCK:
+			case BARRIER:
+			case COMMAND_BLOCK:
+			case COMMAND_BLOCK_MINECART:
+			case CHAIN_COMMAND_BLOCK:
+			case END_GATEWAY:
+			case END_PORTAL_FRAME:
+			case END_PORTAL:
+			case JIGSAW:
+			case NETHER_PORTAL:
+			case REPEATING_COMMAND_BLOCK:
+			case STRUCTURE_BLOCK:
+			case STRUCTURE_VOID:
+				return true;
+		}
+		return false;
+	}
+	public static boolean filterIndestructible(Block block) {
+		return filterIndestructible(block.getType());
 	}
 	public static boolean filterFlowers(Material material) {
 		switch (material) {
@@ -112,5 +119,65 @@ public class Filter {
 	}
 	public static boolean filterFlowers(Block block) {
 		return filterFlowers(block.getType());
+	}
+	public static boolean filterCrops(Material material, boolean includeFarmland) {
+		if (includeFarmland && material == Material.FARMLAND) {
+			return true;
+		}
+		switch (material) {
+			case BEETROOTS:
+			case CARROTS:
+			case CAVE_VINES:
+			case COCOA:
+			case MELON_STEM:
+			case NETHER_WART:
+			case POTATOES:
+			case PUMPKIN_STEM:
+			case WHEAT:
+				return true;
+		}
+		return false;
+	}
+	public static boolean filterCrops(Block block, boolean includeFarmland) {
+		if (block.getBlockData() instanceof Ageable) {
+			return true;
+		}
+		return filterCrops(block.getType(), includeFarmland);
+	}
+	public static boolean filterCrops(Material material) {
+		return filterCrops(material, false);
+	}
+	public static boolean filterCrops(Block block) {
+		return filterCrops(block, false);
+	}
+	public static boolean filterLogs(Material material) {
+		switch (material) {
+			case ACACIA_LOG:
+			case BIRCH_LOG:
+			case DARK_OAK_LOG:
+			case JUNGLE_LOG:
+			case OAK_LOG:
+			case SPRUCE_LOG:
+				return true;
+		}
+		return false;
+	}
+	public static boolean filterLogs(Block block) {
+		return filterLogs(block.getType());
+	}
+	public static boolean filterLeaves(Material material) {
+		switch (material) {
+			case ACACIA_LEAVES:
+			case BIRCH_LEAVES:
+			case DARK_OAK_LEAVES:
+			case JUNGLE_LEAVES:
+			case OAK_LEAVES:
+			case SPRUCE_LEAVES:
+				return true;
+		}
+		return false;
+	}
+	public static boolean filterLeaves(Block block) {
+		return filterLeaves(block.getType());
 	}
 }

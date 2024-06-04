@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Entity;
@@ -57,13 +58,16 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	private int blessPerRate;
 	// private boolean letBlessingFinish;
 	private boolean blessRegularSpirits;
+	private boolean growCrops;
+	private boolean growGlowBerries;
 
 	private boolean validated;
 	private boolean progressing;
 	private int rate;
 
 	private Location target;
-	private BlockData quartz, lotv;
+	private BlockData quartz;
+	private List<BlockData> flowers = List.of(Material.AZURE_BLUET.createBlockData(), Material.LILY_OF_THE_VALLEY.createBlockData(), Material.OXEYE_DAISY.createBlockData(), Material.WHITE_TULIP.createBlockData());
 	private List<Block> blessedArea;
 	private Set<Block> blessedBlocks;
 	private Set<LivingEntity> blessedEntities;
@@ -89,9 +93,10 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 		this.blessPerRate = Spirits.instance.getConfig().getInt(path + "BlessBlockPerRate");
 		// this.letBlessingFinish = Spirits.instance.getConfig().getBoolean(path + "LetBlessingFinish");
 		this.blessRegularSpirits = Spirits.instance.getConfig().getBoolean(path + "BlessRegularSpirits");
+		this.growCrops = Spirits.instance.getConfig().getBoolean(path + "GrowCrops");
+		this.growGlowBerries = Spirits.instance.getConfig().getBoolean(path + "GrowGlowBerries");
 
 		this.quartz = Material.QUARTZ_BLOCK.createBlockData();
-		this.lotv = Material.LILY_OF_THE_VALLEY.createBlockData();
 		this.blessedBlocks = new HashSet<>();
 		this.blessedEntities = new HashSet<>();
 
@@ -178,17 +183,36 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 				for (int i = 0; i < blessPerRate; i++) {
 					Block block = blessedArea.get(ThreadLocalRandom.current().nextInt(blessedArea.size()));
 
+					if (growCrops) {
+						if (Filter.filterCrops(block, true)) {
+							if (block.getBlockData() instanceof Ageable) {
+								Ageable crop = (Ageable) block.getBlockData();
+
+								if (crop.getAge() + 1 <= crop.getMaximumAge()) {
+									crop.setAge(crop.getAge() + 1);
+									block.setBlockData(crop);
+
+									block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.2, 0.2, 0.2, 0.2);
+								}
+							}
+							continue;
+						}
+					}
 					if (!blessedBlocks.contains(block)) {
 						block.setMetadata("spirits:blessed_source", new FixedMetadataValue(Spirits.instance, 0));
-
 						// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						block.getWorld().spawnParticle(Particle.SHRIEK, block.getLocation().clone().add(0.5, 0.85, 0.5), 1, 0.25, 0.25, 0.25, 0, 1);
 
 						blessedBlocks.add(block);
 
-						BlockData data = GeneralMethods.isSolid(block) ? quartz : lotv;
-						new TempBlock(block, data, duration, this);
+						BlockData data = GeneralMethods.isSolid(block) ? quartz : flowers.get(ThreadLocalRandom.current().nextInt(flowers.size()));
+						new TempBlock(block, data, duration, this).setRevertTask(() -> block.removeMetadata("spirits:blessed_source", Spirits.instance));
+					}
+					if (growGlowBerries) {
+						if (isAir(block.getRelative(BlockFace.DOWN).getType()) && Filter.filterGeneralSolidBlock(block)) {
+							block.getRelative(BlockFace.DOWN).setType(Material.CAVE_VINES);
+						}
 					}
 				}
 			}
@@ -281,7 +305,6 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	@Override
 	public void remove() {
 		super.remove();
-		blessedBlocks.iterator().forEachRemaining(b -> b.removeMetadata("spirits:blessed_source", Spirits.instance));
 		blessedEntities.iterator().forEachRemaining(e -> e.removeMetadata("spirits:blessed", Spirits.instance));
 	}
 	

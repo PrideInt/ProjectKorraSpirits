@@ -290,13 +290,13 @@ public class SpiritsListener implements Listener {
 						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 							event.setDamage(0);
 							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 2, 0.5F);
-							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "Transience phased the damage away.", player);
+							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
 						}
 					}
 					if (event.getCause() == DamageCause.FALLING_BLOCK || event.getCause() == DamageCause.CRAMMING || event.getCause() == DamageCause.SUFFOCATION) {
 						event.setDamage(0);
 						player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
-						ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "Transience phased the damage away.", player);
+						ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
 					} else if (event.getCause() == DamageCause.DROWNING) {
 						event.setCancelled(true);
 					}
@@ -483,7 +483,7 @@ class MainListener implements Listener {
 			if (entity.getType() == EntityType.PLAYER) {
 				Player player = (Player) entity;
 
-				if (player.getHealth() - event.getFinalDamage() <= 0) {
+				if (!event.isCancelled() && player.getHealth() - event.getFinalDamage() <= 0) {
 					if (StorageCache.totemStackCache().containsKey(player.getUniqueId())) {
 						event.setCancelled(true);
 
@@ -581,15 +581,21 @@ class MainListener implements Listener {
 			if (Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
 				if (item.getType() == Material.TOTEM_OF_UNDYING) {
 					int stack = StorageCache.totemStackCache().containsKey(player.getUniqueId()) ? StorageCache.totemStackCache().get(player.getUniqueId()) + 1 : 1;
-					StorageCache.updateTotems(player.getUniqueId(), stack);
 
-					int amount = item.getAmount();
-					ItemStack totem = amount > 1 ? new ItemStack(item.getType(), amount - 1) : new ItemStack(Material.AIR);
+					if (player.isSneaking()) {
+						StorageCache.updateTotems(player.getUniqueId(), stack);
 
-					if (event.getHand() == EquipmentSlot.HAND) {
-						player.getInventory().setItemInMainHand(totem);
+						int amount = item.getAmount();
+						ItemStack totem = amount > 1 ? new ItemStack(item.getType(), amount - 1) : new ItemStack(Material.AIR);
+
+						if (event.getHand() == EquipmentSlot.HAND) {
+							player.getInventory().setItemInMainHand(totem);
+						} else {
+							player.getInventory().setItemInOffHand(totem);
+						}
+						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + stack + " *", player);
 					} else {
-						player.getInventory().setItemInOffHand(totem);
+						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + (stack - 1) + " *", player);
 					}
 				}
 			}

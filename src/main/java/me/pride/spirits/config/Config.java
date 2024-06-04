@@ -47,6 +47,8 @@ public class Config {
 		config.addDefault("Light.Abilities.Blessing.BlessBlockPerRate", 3);
 		// config.addDefault("Light.Abilities.Blessing.LetBlessingFinish", false);
 		config.addDefault("Light.Abilities.Blessing.BlessRegularSpirits", true);
+		config.addDefault("Light.Abilities.Blessing.GrowCrops", true);
+		config.addDefault("Light.Abilities.Blessing.GrowGlowBerries", true);
 
 		/* Protect */
 		config.addDefault("Light.Abilities.Protect.Enabled", true);
