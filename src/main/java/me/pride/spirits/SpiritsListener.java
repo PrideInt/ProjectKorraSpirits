@@ -10,6 +10,7 @@ import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Blessing;
+import me.pride.spirits.abilities.light.Blessing.BlessType;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.light.Protect.ProtectType;
 import me.pride.spirits.abilities.light.passives.Lightborn;
@@ -131,7 +132,7 @@ public class SpiritsListener implements Listener {
 						}
 						break;
 					}
-					case "Blessing" -> { new Blessing(player);
+					case "Blessing" -> { new Blessing(player, BlessType.CLICK);
 						break;
 					}
 				}
@@ -174,6 +175,9 @@ public class SpiritsListener implements Listener {
 			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
 					case "Protect" -> { new Protect(player, ProtectType.PROTECT);
+						break;
+					}
+					case "Blessing" -> { new Blessing(player, BlessType.SNEAK);
 						break;
 					}
 				}
