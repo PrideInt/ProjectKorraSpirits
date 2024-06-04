@@ -21,6 +21,16 @@ public class Config {
 		config.addDefault("Dark.Abilities.Commandeer.Cooldown", 3000);
 		config.addDefault("Dark.Abilities.Commandeer.SelectRange", 12);
 		config.addDefault("Dark.Abilities.Commandeer.Health", 4);
+
+		/* Obelisk */
+		config.addDefault("Dark.Abilities.Obelisk.Enabled", true);
+		config.addDefault("Dark.Abilities.Obelisk.Cooldown", 3000);
+		config.addDefault("Dark.Abilities.Obelisk.SelectRange", 8);
+		config.addDefault("Dark.Abilities.Obelisk.FindTargetRange", 20);
+		config.addDefault("Dark.Abilities.Obelisk.ObeliskRange", 20);
+		config.addDefault("Dark.Abilities.Obelisk.Speed", 1.2);
+		config.addDefault("Dark.Abilities.Obelisk.Damage", 3);
+		config.addDefault("Dark.Abilities.Obelisk.Knockback", 2);
 		
 		/* Corruption */
 		config.addDefault("Dark.Combos.Corruption.Enabled", true);
@@ -32,7 +42,7 @@ public class Config {
 		config.addDefault("Dark.Combos.Corruption.Duration", 10000);
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Enabled", true);
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Speed", 0.05);
-		
+
 		/*
 		 *   	- Light -
 		 */

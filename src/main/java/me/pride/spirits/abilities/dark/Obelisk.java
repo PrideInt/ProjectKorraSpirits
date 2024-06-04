@@ -8,6 +8,7 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
+import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.*;
@@ -16,26 +17,37 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
-	
-	private int STATE = 0;
+
+	public enum ObeliskState {
+		FOUND_SOURCE, SEARCHING, RELEASED;
+	}
+	private ObeliskState state;
 	
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
 	@Attribute(Attribute.SELECT_RANGE)
-	private double select_range;
+	private double selectRange;
 	@Attribute(Attribute.SELECT_RANGE)
-	private double find_range;
+	private double findRange;
 	@Attribute(Attribute.RANGE)
 	private double range;
+	@Attribute(Attribute.SPEED)
+	private double speed;
+	@Attribute(Attribute.DAMAGE)
+	private double damage;
+	@Attribute(Attribute.KNOCKBACK)
+	private double knockback;
 	
 	private Block target;
-	private Location origin, location, destination;
+	private Location origin, location;
+	private Vector direction;
 	
 	public Obelisk(Player player) {
 		super(player);
@@ -45,16 +57,16 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
-		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
-		select_range = Spirits.instance.getConfig().getDouble(path + "SelectRange");
-		find_range = Spirits.instance.getConfig().getDouble(path + "FindTargetRange");
-		range = Spirits.instance.getConfig().getDouble(path + "ObeliskRange");
+		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
+		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
+		this.findRange = Spirits.instance.getConfig().getDouble(path + "FindTargetRange");
+		this.range = Spirits.instance.getConfig().getDouble(path + "ObeliskRange");
+		this.speed = Spirits.instance.getConfig().getDouble(path + "Speed");
+		this.damage = Spirits.instance.getConfig().getDouble(path + "Damage");
+		this.knockback = Spirits.instance.getConfig().getDouble(path + "Knockback");
 		
-		RayTraceResult result = player.getWorld().rayTraceBlocks(player.getLocation().clone(), player.getLocation().getDirection(), select_range, FluidCollisionMode.ALWAYS);
-		if (result == null) return;
-		
-		target = result.getHitBlock();
-		if (target == null) {
+		this.target = Tools.rayTraceBlock(player, selectRange);
+		if (this.target == null) {
 			return;
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
@@ -62,58 +74,68 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		if (!target.hasMetadata("spirits:corrupted_blocks")) {
 			return;
 		}
-		origin = target.getLocation().clone().add(0.5, 0.5, 0.5);
-		location = origin.clone();
+		this.state = ObeliskState.FOUND_SOURCE;
+
+		this.origin = this.target.getLocation().clone().add(0.5, 0.5, 0.5);
+		this.location = this.origin.clone();
 		
 		start();
 	}
 	
 	@Override
 	public void progress() {
-		switch (STATE) {
-			case 1 -> {
-				if (player.getLocation().distanceSquared(origin) > select_range * select_range) {
+		switch (state) {
+			case FOUND_SOURCE -> {
+				if (player.getLocation().distanceSquared(origin) > selectRange * selectRange) {
 					remove();
 					return;
 				}
 				break;
 			}
-			case 2 -> {
-				destination = target().clone();
+			case SEARCHING -> {
 				if (!player.isSneaking()) {
-					STATE = 3;
+					direction = player.getEyeLocation().getDirection();
+					state = ObeliskState.RELEASED;
 				}
 				break;
 			}
-			case 3 -> {
+			case RELEASED -> {
 				if (location.distanceSquared(origin) > range * range) {
+					bPlayer.addCooldown(this);
+					remove();
+					return;
+				} else if (RegionProtection.isRegionProtected(player, location)) {
+					bPlayer.addCooldown(this);
 					remove();
 					return;
 				}
-				location.add(GeneralMethods.getDirection(origin, destination).multiply(1));
+				location.add(direction.multiply(speed));
+
 				if (ThreadLocalRandom.current().nextInt(20) == 0) {
-					// play sound
+					location.getWorld().playSound(location, Sound.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, 1, 0.5F);
 				}
 				obelisk(location, block -> {
-					if (!isTransparent(block)) {
-						player.getWorld().playSound(block.getLocation(), Sound.BLOCK_STONE_BREAK, 1, 1);
-						player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.125, 0.125, 0.125, 0, block.getBlockData());
+					if (!Filter.filterIndestructible(block) && !RegionProtection.isRegionProtected(player, block.getLocation(), this)) {
+						if (GeneralMethods.isSolid(block)) {
+							player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.125, 0.125, 0.125, 0, block.getBlockData());
+						}
+						new TempBlock(block, Material.OBSIDIAN.createBlockData(), 10000, this);
 					}
-					new TempBlock(block, Material.OBSIDIAN.createBlockData());
 				});
 				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(location, 1.5)) {
-					if (entity instanceof LivingEntity && entity.getUniqueId() != player.getUniqueId()) {
-						DamageHandler.damageEntity(entity, 3, this);
-						GeneralMethods.setVelocity(this, entity, location.getDirection().multiply(1));
+					if (entity instanceof LivingEntity && Filter.filterGeneralEntity(entity, player, this)) {
+						DamageHandler.damageEntity(entity, damage, this);
+						entity.setVelocity(direction.multiply(knockback));
 					}
 				}
 				break;
 			}
 		}
 	}
-	
+
+	/*
 	public Location target() {
-		for (double i = 0; i < find_range; i += 0.5) {
+		for (double i = 0; i < findRange; i += 0.5) {
 			Location location = GeneralMethods.getTargetedLocation(player, i, getTransparentMaterials());
 			if (location == null) continue;
 			
@@ -123,30 +145,53 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 				}
 			}
 		}
-		return GeneralMethods.getTargetedLocation(player, find_range);
+		return GeneralMethods.getTargetedLocation(player, findRange);
 	}
+	 */
 	
 	private void obelisk(Location location, Consumer<Block> shape) {
-		for (Block block : GeneralMethods.getBlocksAroundPoint(location, 1.5)) {
+		for (Block block : GeneralMethods.getBlocksAroundPoint(location, 2)) {
 			if (RegionProtection.isRegionProtected(this, location)) continue;
 			
 			shape.accept(block);
 		}
 	}
-	public int state() { return STATE; }
-	public static int state(Player player) { return getAbility(player, Obelisk.class).state(); }
+	public ObeliskState state() {
+		return state;
+	}
+	public static ObeliskState state(Player player) {
+		return getAbility(player, Obelisk.class).state();
+	}
+	public boolean foundSource() {
+		return this.state == ObeliskState.FOUND_SOURCE;
+	}
+	public static boolean foundSource(Player player) {
+		return getAbility(player, Obelisk.class).foundSource();
+	}
+	public void startSearching() {
+		this.state = ObeliskState.SEARCHING;
+	}
+	public static void startSearching(Player player) {
+		getAbility(player, Obelisk.class).startSearching();
+	}
 	
-	public void startSearching() { STATE = 2; }
-	public static void startSearching(Player player) { getAbility(player, Obelisk.class).startSearching(); }
-	
-	public boolean foundSource() { return STATE == 1; }
-	public static boolean foundSource(Player player) { return getAbility(player, Obelisk.class).foundSource(); }
-	
-	public boolean searching() { return STATE == 2; }
-	public static boolean searching(Player player) { return getAbility(player, Obelisk.class).searching(); }
-	
-	public boolean released() { return STATE == 3; }
-	public static boolean released(Player player) { return getAbility(player, Obelisk.class).released(); }
+	public boolean searching() {
+		return this.state == ObeliskState.SEARCHING;
+	}
+	public static boolean searching(Player player) {
+		return getAbility(player, Obelisk.class).searching();
+	}
+	public boolean released() {
+		return state == ObeliskState.RELEASED;
+	}
+	public static boolean released(Player player) {
+		return getAbility(player, Obelisk.class).released();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Dark.Abilities.Obelisk.Enabled", true);
+	}
 	
 	@Override
 	public boolean isSneakAbility() {
@@ -157,12 +202,6 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	public boolean isHarmlessAbility() {
 		return false;
 	}
-	
-	@Override
-	public boolean isIgniteAbility() { return false; }
-	
-	@Override
-	public boolean isExplosiveAbility() { return false; }
 	
 	@Override
 	public long getCooldown() {
@@ -176,7 +215,17 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	
 	@Override
 	public Location getLocation() {
-		return null;
+		return location;
+	}
+
+	@Override
+	public String getAuthor() {
+		return Spirits.getAuthor(this.getElement());
+	}
+
+	@Override
+	public String getVersion() {
+		return Spirits.getVersion();
 	}
 	
 	@Override
@@ -184,19 +233,4 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	
 	@Override
 	public void stop() { }
-	
-	@Override
-	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean("Dark.Abilities.Obelisk.Enabled", true);
-	}
-	
-	@Override
-	public String getAuthor() {
-		return Spirits.getAuthor(this.getElement());
-	}
-	
-	@Override
-	public String getVersion() {
-		return Spirits.getVersion();
-	}
 }

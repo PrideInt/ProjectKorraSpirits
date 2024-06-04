@@ -68,7 +68,6 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	private List<Block> blocks;
 	private List<Integer> corrupted;
 	private Set<Spirit> spirits;
-	private static final Pair<String, MetadataValue> METADATA_VALUE = Pair.of("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
 	
 	public Corruption(Player player) {
 		super(player);
@@ -131,12 +130,12 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 				Block block = blocks.get(index);
 				BlockData corruptBlockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
 				
-				new TempBlock(block, corruptBlockData, revert_time).setRevertTask(() -> block.removeMetadata(METADATA_VALUE.getLeft(), Spirits.instance));
+				new TempBlock(block, corruptBlockData, revert_time).setRevertTask(() -> block.removeMetadata("spirits:corrupted_blocks", Spirits.instance));
 
 				spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 				player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				
-				block.setMetadata(METADATA_VALUE.getLeft(), METADATA_VALUE.getRight());
+				block.setMetadata("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
 				corrupted.add(index);
 			}
 			corruptSpeed = 0;
