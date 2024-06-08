@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.abilities.spirit.combos.Possess;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
@@ -41,7 +42,7 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
-		} else if (CoreAbility.hasAbility(player, Disappear.class)) {
+		} else if (CoreAbility.hasAbility(player, Disappear.class) || CoreAbility.hasAbility(player, Possess.class)) {
 			return;
 		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;

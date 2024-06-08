@@ -17,6 +17,7 @@ import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.light.passives.other.LightBlood;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.abilities.spirit.Rematerialize;
+import me.pride.spirits.abilities.spirit.combos.Possess;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
@@ -59,6 +60,7 @@ import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.CraftingInventory;
@@ -322,6 +324,15 @@ public class SpiritsListener implements Listener {
 					}
 				}
 			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerMovement(final PlayerMoveEvent event) {
+		Player player = event.getPlayer();
+
+		if (Possess.isPossessingImmovable(player)) {
+			event.setCancelled(true);
 		}
 	}
 }

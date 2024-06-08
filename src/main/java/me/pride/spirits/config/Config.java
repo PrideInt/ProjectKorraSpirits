@@ -118,6 +118,13 @@ public class Config {
 		config.addDefault("Spirit.Abilities.Rematerialize.MinSearchRadius", 5);
 		config.addDefault("Spirit.Abilities.Rematerialize.MaxSearchRadius", 20);
 		config.addDefault("Spirit.Abilities.Rematerialize.Delay", 35);
+
+		/* Possess */
+		config.addDefault("Spirit.Combos.Possess.Enabled", true);
+		config.addDefault("Spirit.Combos.Possess.Cooldown", 5000);
+		config.addDefault("Spirit.Combos.Possess.Duration", 6000);
+		config.addDefault("Spirit.Combos.Possess.SelectRange", 8);
+		config.addDefault("Spirit.Combos.Possess.ChangeSkins", true);
 		
 		/* Skyrocket */
 		config.addDefault("Spirit.Combos.Skyrocket.Enabled", true);
