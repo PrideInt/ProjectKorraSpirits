@@ -37,28 +37,24 @@ import com.projectkorra.projectkorra.util.TempBlock;
 import com.projectkorra.projectkorra.util.TempBlock.RevertTask;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffectType;
 
 public class Corruption extends DarkSpiritAbility implements AddonAbility, ComboAbility {
-	// TODO: make corrupted temp blocks not dupe, harm players near corrupted blocks
+	// TODO: make corrupted temp blocks not dupe
 	private final String path = Tools.path(this, Path.COMBOS);
 	
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
 	@Attribute(Attribute.RADIUS)
 	private double radius;
-	@Attribute(Attribute.SPEED)
-	private double speed;
-	@Attribute(Attribute.SPEED)
-	private double max_speed;
-	@Attribute(Attribute.SPEED)
-	private int corrupt_rate;
 	@Attribute(Attribute.DURATION)
 	private long duration;
 	@Attribute("RevertTime")
-	private long revert_time;
-	private boolean spawn_spirit;
-	@Attribute(Attribute.SPEED)
-	private double spawn_speed;
+	private long revertTime;
+	private double speed, maxSpeed;
+	private double spawnSpeed;
+	private int corruptRate;
+	private boolean spawnSpirit;
 	
 	private double corruptSpeed;
 	private double spawnSpiritSpeed;
@@ -66,7 +62,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	private Location origin;
 	
 	private List<Block> blocks;
-	private List<Integer> corrupted;
+	private Set<Block> corrupted;
 	private Set<Spirit> spirits;
 	
 	public Corruption(Player player) {
@@ -82,19 +78,21 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
 		radius = Spirits.instance.getConfig().getDouble(path + "CorruptRadius");
 		speed = Spirits.instance.getConfig().getDouble(path + "CorruptSpeed");
-		max_speed = Spirits.instance.getConfig().getDouble(path + "MaxCorruptSpeed");
-		corrupt_rate = Spirits.instance.getConfig().getInt(path + "CorruptRate");
+		maxSpeed = Spirits.instance.getConfig().getDouble(path + "MaxCorruptSpeed");
+		corruptRate = Spirits.instance.getConfig().getInt(path + "CorruptRate");
 		duration = Spirits.instance.getConfig().getLong(path + "Duration");
-		spawn_spirit = Spirits.instance.getConfig().getBoolean(path + "SpawnDarkSpirit.Enabled");
-		spawn_speed = Math.min(1.0, Spirits.instance.getConfig().getDouble(path + "SpawnDarkSpirit.Speed"));
+		spawnSpirit = Spirits.instance.getConfig().getBoolean(path + "SpawnDarkSpirit.Enabled");
+		spawnSpeed = Math.min(1.0, Spirits.instance.getConfig().getDouble(path + "SpawnDarkSpirit.Speed"));
 		
-		revert_time = duration;
+		revertTime = duration;
 		origin = player.getLocation().clone();
 		
 		blocks = GeneralMethods.getBlocksAroundPoint(origin, radius)
-				.stream().filter(b -> !isAir(b.getType()) && isAir(b.getRelative(BlockFace.UP).getType()) && !RegionProtection.isRegionProtected(this, b.getLocation()))
-				.collect(Collectors.toList());
-		corrupted = new ArrayList<>();
+					.stream()
+					.filter(b -> !isAir(b.getType()) && isAir(b.getRelative(BlockFace.UP).getType()) && !RegionProtection.isRegionProtected(this, b.getLocation()))
+					.collect(Collectors.toList());
+
+		corrupted = new HashSet<>();
 		spirits = new HashSet<>();
 		
 		start();
@@ -111,8 +109,8 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	}
 	
 	private void startCorruption() {
-		if (corrupt_rate > 1) {
-			for (int i = 0; i < corrupt_rate; i++) {
+		if (corruptRate > 1) {
+			for (int i = 0; i < corruptRate; i++) {
 				changeBlocks();
 			}
 		} else {
@@ -122,39 +120,47 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	}
 	
 	private void changeBlocks() {
-		corruptSpeed += speed;
-		if (corruptSpeed > max_speed) {
-			int index = ThreadLocalRandom.current().nextInt(blocks.size());
-			
-			if (!corrupted.contains(index)) {
-				Block block = blocks.get(index);
-				BlockData corruptBlockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
-				
-				new TempBlock(block, corruptBlockData, revert_time).setRevertTask(() -> block.removeMetadata("spirits:corrupted_blocks", Spirits.instance));
+		corruptSpeed = corruptSpeed > maxSpeed ? 0 : corruptSpeed + speed;
 
-				spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
-				player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+		if (corruptSpeed == 0) {
+			Block block = blocks.get(ThreadLocalRandom.current().nextInt(blocks.size()));
 
-				if (block.hasMetadata("spirits:blessed_source")) {
-					block.removeMetadata("spirits:blessed_source", Spirits.instance);
+			if (corrupted.contains(block) && corrupted.size() < blocks.size()) {
+				while (corrupted.contains(block)) {
+					block = blocks.get(ThreadLocalRandom.current().nextInt(blocks.size()));
 				}
-				block.setMetadata("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
-				corrupted.add(index);
 			}
-			corruptSpeed = 0;
+			corrupted.add(block);
+
+			BlockData blockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
+
+			Block block_ = block;
+			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata("spirits:corrupted_blocks", Spirits.instance));
+
+			spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
+			player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+
+			if (block.hasMetadata("spirits:blessed_source")) {
+				block.removeMetadata("spirits:blessed_source", Spirits.instance);
+			}
+			block.setMetadata("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
 		}
 	}
 	
 	private void corruption() {
-		for (int i = 0; i < blocks.size(); i++) {
-			if (corrupted.contains(i)) {
-				for (Entity entity : GeneralMethods.getEntitiesAroundPoint(blocks.get(i).getLocation(), 1.25)) {
-					if (entity instanceof LivingEntity) {
-						if (Filter.filterEntityFromAbility(entity, player, this) && Filter.filterEntityLight(entity)) {
-							if (!ReplaceableSpirit.isReplacedEntity(entity)) {
-								spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(entity).build());
-							}
+		for (Block corruptedBlock : corrupted) {
+			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(corruptedBlock.getLocation(), 1.25)) {
+				if (Filter.filterEntityDark(entity)) {
+					continue;
+				}
+				if (entity instanceof LivingEntity) {
+					PotionEffectType.POISON.createEffect(20, 1).apply((LivingEntity) entity);
+
+					if (Filter.filterGeneralEntity(entity, player, this) && Filter.filterEntityLight(entity)) {
+						if (ReplaceableSpirit.isReplacedEntity(entity)) {
+							continue;
 						}
+						spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), entity.getLocation()).replace(entity).build());
 					}
 				}
 			}
@@ -162,12 +168,11 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 	}
 	
 	private void spawnDarkSpirit(Location location) {
-		if (spawn_spirit) {
-			spawnSpiritSpeed += spawn_speed;
+		if (spawnSpirit) {
+			spawnSpiritSpeed = spawnSpiritSpeed > 1 ? 0 : spawnSpiritSpeed + spawnSpeed;
 			
-			if (spawnSpiritSpeed > 1) {
+			if (spawnSpiritSpeed == 0) {
 				spirits.add(SpiritBuilder.dark().spawn(player.getWorld(), location).build());
-				spawnSpiritSpeed = 0;
 			}
 		}
 	}

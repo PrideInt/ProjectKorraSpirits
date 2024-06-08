@@ -289,7 +289,7 @@ public class SpiritsListener implements Listener {
 					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
 						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 							event.setDamage(0);
-							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 2, 0.5F);
+							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
 							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
 						}
 					}
@@ -453,7 +453,7 @@ class MainListener implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamage(final EntityDamageEvent event) {
 		Entity entity = event.getEntity();
 
@@ -593,7 +593,7 @@ class MainListener implements Listener {
 						} else {
 							player.getInventory().setItemInOffHand(totem);
 						}
-						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 0.75F, 0.75F);
+						player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_FALL, 1, 0.75F);
 						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + stack + " *", player);
 					} else {
 						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + (stack - 1) + " *", player);

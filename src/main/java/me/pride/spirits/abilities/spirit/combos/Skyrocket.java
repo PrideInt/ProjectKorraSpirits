@@ -1,4 +1,4 @@
-package me.pride.spirits.abilities.neutral.combos;
+package me.pride.spirits.abilities.spirit.combos;
 
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
@@ -29,14 +29,14 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 	
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
+	@Attribute("RevertTime")
+	private long revertTime;
 	@Attribute("Launch")
 	private double launch;
 	@Attribute(Attribute.RANGE)
 	private double range;
 	@Attribute(Attribute.RADIUS)
 	private double radius;
-	@Attribute("RevertTime")
-	private long revert_time;
 	
 	private long delay;
 	
@@ -52,21 +52,20 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 		} else if (RegionProtection.isRegionProtected(this, player.getLocation())) {
 			return;
 		}
-		if (!bPlayer.isOnCooldown("Soar")) return;
-		
-		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
-		launch = Spirits.instance.getConfig().getDouble(path + "Launch");
-		range = Spirits.instance.getConfig().getDouble(path + "Range");
-		radius = Spirits.instance.getConfig().getDouble(path + "SlamRadius");
-		revert_time = Spirits.instance.getConfig().getLong(path + "RevertTime");
-		
-		delay = System.currentTimeMillis() + 2000;
-		origin = player.getLocation().clone();
-		player.setVelocity(player.getEyeLocation().getDirection().multiply(launch));
+		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
+		this.launch = Spirits.instance.getConfig().getDouble(path + "Launch");
+		this.range = Spirits.instance.getConfig().getDouble(path + "Range");
+		this.radius = Spirits.instance.getConfig().getDouble(path + "SlamRadius");
+		this.revertTime = Spirits.instance.getConfig().getLong(path + "RevertTime");
+
+		this.delay = System.currentTimeMillis() + 2000;
+		this.origin = player.getLocation().clone();
+
+		player.setVelocity(player.getEyeLocation().getDirection().multiply(this.launch));
 		
 		for (int i = 0; i < 360; i += 9) {
 			Vector circle = GeneralMethods.getOrthogonalVector(player.getEyeLocation().getDirection(), i, 3.0);
-			player.getWorld().spawnParticle(Particle.CLOUD, origin.clone().add(GeneralMethods.getOrthogonalVector(player.getEyeLocation().getDirection(), i, 0.2)), 0, circle.getX(), circle.getY(), circle.getZ(), 0.10);
+			player.getWorld().spawnParticle(Particle.CLOUD, this.origin.clone().add(GeneralMethods.getOrthogonalVector(player.getEyeLocation().getDirection(), i, 0.2)), 0, circle.getX(), circle.getY(), circle.getZ(), 0.10);
 		}
 		player.getWorld().playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 2F, 0.2F);
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.3F, 1F);
@@ -96,7 +95,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 					y = random.nextBoolean() ? y : -y;
 					z = random.nextBoolean() ? z : -z;
 					
-					new TempBlock(block, Material.AIR.createBlockData(), revert_time);
+					new TempBlock(block, Material.AIR.createBlockData(), revertTime);
 					
 					FallingBlock fallingBlock = player.getWorld().spawnFallingBlock(block.getLocation(), block.getBlockData());
 					fallingBlock.setDropItem(false);
@@ -122,7 +121,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 	
 	private boolean slamCheck(Location location) {
 		for (Block b : GeneralMethods.getBlocksAroundPoint(location, 1.35)) {
-			if (isTransparent(b)) continue;
+			if (GeneralMethods.isSolid(b)) continue;
 			
 			if (b != null) {
 				return true;
@@ -205,8 +204,8 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 	@Override
 	public ArrayList<AbilityInformation> getCombination() {
 		ArrayList<AbilityInformation> info = new ArrayList<>();
-		info.add(new AbilityInformation("Agility", ClickType.LEFT_CLICK));
-		info.add(new AbilityInformation("Agility", ClickType.LEFT_CLICK));
+		info.add(new AbilityInformation("Disappear", ClickType.LEFT_CLICK));
+		info.add(new AbilityInformation("Disappear", ClickType.LEFT_CLICK));
 		return info;
 	}
 	

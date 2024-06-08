@@ -11,6 +11,8 @@ import me.pride.spirits.util.objects.TetraConsumer;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.TreeType;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -229,5 +231,43 @@ public class Tools {
 
 	public static Set<PotionEffectType> getNegativeEffectsSet() {
 		return Set.of(getNegativeEffects());
+	}
+
+	public static TreeType getTreeType(Material material) {
+		switch (material) {
+			case ACACIA_SAPLING:
+				return TreeType.ACACIA;
+			case BIRCH_SAPLING:
+				return TreeType.BIRCH;
+			case CHERRY_SAPLING:
+				return TreeType.CHERRY;
+			case DARK_OAK_SAPLING:
+				return TreeType.DARK_OAK;
+			case JUNGLE_SAPLING:
+				return TreeType.SMALL_JUNGLE;
+			case MANGROVE_PROPAGULE:
+				return TreeType.MANGROVE;
+			case OAK_SAPLING:
+				return TreeType.TREE;
+			case SPRUCE_SAPLING:
+				return TreeType.REDWOOD;
+		}
+		return null;
+	}
+
+	public static TreeType getBigTreeType(Material material) {
+		switch (material) {
+			case BIRCH_SAPLING:
+				return TreeType.TALL_BIRCH;
+			case JUNGLE_SAPLING:
+				return TreeType.JUNGLE;
+			case MANGROVE_PROPAGULE:
+				return TreeType.TALL_MANGROVE;
+			case OAK_SAPLING:
+				return TreeType.BIG_TREE;
+			case SPRUCE_SAPLING:
+				return TreeType.TALL_REDWOOD;
+		}
+		return null;
 	}
 }

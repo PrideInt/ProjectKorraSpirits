@@ -5,7 +5,6 @@ import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.region.RegionProtection;
-import com.projectkorra.projectkorra.util.TempPotionEffect;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.util.Tools;
@@ -13,9 +12,12 @@ import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Disappear extends SpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
@@ -24,15 +26,20 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	private long cooldown;
 	@Attribute(Attribute.SELECT_RANGE)
 	private double selectRange;
+	@Attribute(Attribute.RADIUS)
+	private double invisibilityRadius;
 	@Attribute(Attribute.DURATION)
 	private long duration;
 	
 	private Location target;
+	private Set<Player> hiddenFromPlayers;
 	
 	public Disappear(Player player) {
 		super(player);
 		
 		if (!bPlayer.canBend(this)) {
+			return;
+		} else if (bPlayer.isOnCooldown(this)) {
 			return;
 		} else if (CoreAbility.hasAbility(player, Disappear.class)) {
 			return;
@@ -41,11 +48,25 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 		}
 		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
 		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
+		this.invisibilityRadius = Spirits.instance.getConfig().getDouble(path + "InvisibilityRadius");
 		this.duration = Spirits.instance.getConfig().getLong(path + "Duration");
-		
+
+		this.hiddenFromPlayers = new HashSet<>();
+
+		for (Entity entity : GeneralMethods.getEntitiesAroundPoint(player.getLocation(), invisibilityRadius)) {
+			if (entity instanceof Player && entity.getUniqueId() != player.getUniqueId()) {
+				Player p = (Player) entity;
+
+				p.hidePlayer(Spirits.instance, player);
+				this.hiddenFromPlayers.add(p);
+			}
+		}
+		player.getWorld().playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
 		player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CONDUIT_AMBIENT, 1, 1);
-		player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation(), 4, 0.125, 0.3, 0.125, 0.01);
-		
+
+		for (int i = 0; i < 3; i++) {
+			player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().clone().add(0, i, 0), 5, 0.25, 0.25, 0.25, 1);
+		}
 		start();
 	}
 	
@@ -64,8 +85,7 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 			remove();
 			return;
 		}
-		PotionEffectType.SLOW_FALLING.createEffect(10, 1).apply(player);
-		PotionEffectType.INVISIBILITY.createEffect(10, 1).apply(player);
+		PotionEffectType.LEVITATION.createEffect(10, 1).apply(player);
 		
 		target = GeneralMethods.getTargetedLocation(player, selectRange);
 		
@@ -75,8 +95,11 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 					remove();
 					return;
 				}
+				player.getWorld().playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
 				player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CONDUIT_AMBIENT, 1, 1);
-				player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation(), 4, 0.125, 0.3, 0.125, 0.01);
+				for (int i = 0; i < 3; i++) {
+					player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().clone().add(0, i, 0), 5, 0.25, 0.25, 0.25, 1);
+				}
 				player.teleport(target);
 			}
 			remove();
@@ -117,6 +140,9 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	@Override
 	public void remove() {
 		bPlayer.addCooldown(this);
+		for (Player p : hiddenFromPlayers) {
+			p.showPlayer(Spirits.instance, player);
+		}
 		super.remove();
 	}
 	

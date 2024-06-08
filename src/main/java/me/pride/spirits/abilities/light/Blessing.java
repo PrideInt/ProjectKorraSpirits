@@ -15,6 +15,7 @@ import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.TreeType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
@@ -60,6 +61,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	private boolean blessRegularSpirits;
 	private boolean growCrops;
 	private boolean growGlowBerries;
+	private boolean growTrees;
 
 	private boolean validated;
 	private boolean progressing;
@@ -95,6 +97,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 		this.blessRegularSpirits = Spirits.instance.getConfig().getBoolean(path + "BlessRegularSpirits");
 		this.growCrops = Spirits.instance.getConfig().getBoolean(path + "GrowCrops");
 		this.growGlowBerries = Spirits.instance.getConfig().getBoolean(path + "GrowGlowBerries");
+		this.growTrees = Spirits.instance.getConfig().getBoolean(path + "GrowTrees");
 
 		this.quartz = Material.QUARTZ_BLOCK.createBlockData();
 		this.blessedBlocks = new HashSet<>();
@@ -135,6 +138,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 				particleLocation.add(particleLocation.getDirection().multiply(i));
 			}
 			 */
+			this.target.getWorld().spawnParticle(Particle.FLASH, this.target, 1, 0, 0, 0, 0);
 			bPlayer.addCooldown(this);
 			start();
 		} else if (type == BlessType.SNEAK) {
@@ -183,6 +187,23 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 				for (int i = 0; i < blessPerRate; i++) {
 					Block block = blessedArea.get(ThreadLocalRandom.current().nextInt(blessedArea.size()));
 
+					if (growTrees) {
+						if (block.getType().name().contains("SAPLING")) {
+							block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.2, 0.2, 0.2, 0.2);
+							block.setType(Material.AIR);
+
+							TreeType treeType = Tools.getBigTreeType(block.getType());
+							if (treeType == null) {
+								if (Tools.getTreeType(block.getType()) != null) {
+									treeType = Tools.getTreeType(block.getType());
+								} else {
+									treeType = TreeType.BIG_TREE;
+								}
+							}
+							block.getWorld().generateTree(block.getLocation(), treeType);
+							continue;
+						}
+					}
 					if (growCrops) {
 						if (Filter.filterCrops(block, true)) {
 							if (block.getBlockData() instanceof Ageable) {
@@ -193,6 +214,8 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 									block.setBlockData(crop);
 
 									block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.2, 0.2, 0.2, 0.2);
+								} else {
+									crop.setAge(crop.getMaximumAge());
 								}
 							}
 							continue;

@@ -59,6 +59,7 @@ public class Config {
 		config.addDefault("Light.Abilities.Blessing.BlessRegularSpirits", true);
 		config.addDefault("Light.Abilities.Blessing.GrowCrops", true);
 		config.addDefault("Light.Abilities.Blessing.GrowGlowBerries", true);
+		config.addDefault("Light.Abilities.Blessing.GrowTrees", true);
 
 		/* Protect */
 		config.addDefault("Light.Abilities.Protect.Enabled", true);

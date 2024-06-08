@@ -44,6 +44,9 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 	private double damage;
 	@Attribute(Attribute.KNOCKBACK)
 	private double knockback;
+
+	private double radius;
+	private double spikeDecrease;
 	
 	private Block target;
 	private Location origin, location;
@@ -78,6 +81,9 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 
 		this.origin = this.target.getLocation().clone().add(0.5, 0.5, 0.5);
 		this.location = this.origin.clone();
+
+		this.radius = 3;
+		this.spikeDecrease = (3 - 1.25) / (range / speed);
 		
 		start();
 	}
@@ -94,7 +100,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 			}
 			case SEARCHING -> {
 				if (!player.isSneaking()) {
-					direction = player.getEyeLocation().getDirection();
+					direction = GeneralMethods.getDirection(origin, target()).normalize();
 					state = ObeliskState.RELEASED;
 				}
 				break;
@@ -111,10 +117,10 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 				}
 				location.add(direction.multiply(speed));
 
-				if (ThreadLocalRandom.current().nextInt(20) == 0) {
+				if (ThreadLocalRandom.current().nextInt(3) == 0) {
 					location.getWorld().playSound(location, Sound.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, 1, 0.5F);
 				}
-				obelisk(location, block -> {
+				obelisk(location, radius, block -> {
 					if (!Filter.filterIndestructible(block) && !RegionProtection.isRegionProtected(player, block.getLocation(), this)) {
 						if (GeneralMethods.isSolid(block)) {
 							player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.125, 0.125, 0.125, 0, block.getBlockData());
@@ -128,12 +134,12 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 						entity.setVelocity(direction.multiply(knockback));
 					}
 				}
+				radius -= spikeDecrease;
 				break;
 			}
 		}
 	}
 
-	/*
 	public Location target() {
 		for (double i = 0; i < findRange; i += 0.5) {
 			Location location = GeneralMethods.getTargetedLocation(player, i, getTransparentMaterials());
@@ -147,10 +153,9 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		}
 		return GeneralMethods.getTargetedLocation(player, findRange);
 	}
-	 */
 	
-	private void obelisk(Location location, Consumer<Block> shape) {
-		for (Block block : GeneralMethods.getBlocksAroundPoint(location, 2)) {
+	private void obelisk(Location location, double radius, Consumer<Block> shape) {
+		for (Block block : GeneralMethods.getBlocksAroundPoint(location, radius)) {
 			if (RegionProtection.isRegionProtected(this, location)) continue;
 			
 			shape.accept(block);
