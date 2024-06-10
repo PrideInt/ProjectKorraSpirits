@@ -135,13 +135,12 @@ public class AncientSoulweaver {
 			Behaviors actions = soulweaver.actions();
 			Warden entity = soulweaver.entity();
 			
-			entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
-			
 			switch (soulweaver.phase()) {
 				case GRACE -> {
 					if (System.currentTimeMillis() > soulweaver.gracePeriod()) {
 						soulweaver.setPhase(Phase.PROTECTOR);
 					}
+					entity.getWorld().spawnParticle(Particle.FLASH, entity.getLocation().clone().add(0, 1, 0), 1, 0, 0, 0);
 					break;
 				}
 				case PROTECTOR -> {

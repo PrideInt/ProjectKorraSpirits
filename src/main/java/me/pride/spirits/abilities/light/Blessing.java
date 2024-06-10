@@ -221,6 +221,13 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 							continue;
 						}
 					}
+					if (growGlowBerries) {
+						if (ThreadLocalRandom.current().nextInt(5) == 0) {
+							if (isAir(block.getRelative(BlockFace.DOWN).getType()) && Filter.filterGeneralSolidBlock(block)) {
+								block.getRelative(BlockFace.DOWN).setType(Material.CAVE_VINES);
+							}
+						}
+					}
 					if (!blessedBlocks.contains(block)) {
 						if (block.hasMetadata("spirits:corrupted_blocks")) {
 							block.removeMetadata("spirits:corrupted_blocks", Spirits.instance);
@@ -234,11 +241,6 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 
 						BlockData data = GeneralMethods.isSolid(block) ? quartz : flowers.get(ThreadLocalRandom.current().nextInt(flowers.size()));
 						new TempBlock(block, data, duration, this).setRevertTask(() -> block.removeMetadata("spirits:blessed_source", Spirits.instance));
-					}
-					if (growGlowBerries) {
-						if (isAir(block.getRelative(BlockFace.DOWN).getType()) && Filter.filterGeneralSolidBlock(block)) {
-							block.getRelative(BlockFace.DOWN).setType(Material.CAVE_VINES);
-						}
 					}
 				}
 			}

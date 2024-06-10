@@ -58,7 +58,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 		this.radius = Spirits.instance.getConfig().getDouble(path + "SlamRadius");
 		this.revertTime = Spirits.instance.getConfig().getLong(path + "RevertTime");
 
-		this.delay = System.currentTimeMillis() + 2000;
+		this.delay = System.currentTimeMillis() + 500;
 		this.origin = player.getLocation().clone();
 
 		player.setVelocity(player.getEyeLocation().getDirection().multiply(this.launch));

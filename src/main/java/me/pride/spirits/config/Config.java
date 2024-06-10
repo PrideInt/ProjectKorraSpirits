@@ -9,7 +9,8 @@ public class Config {
 		
 		config.addDefault("Spirecite.Enabled", true);
 		config.addDefault("Spirecite.WardenDrops", true);
-		config.addDefault("Spirecite.Chance", 0.05);
+		config.addDefault("Spirecite.Chance", 5);
+		config.addDefault("Spirecite.FindSoullessAtriumChance", 5);
 
 		config.addDefault("Light.CanStackTotems", true);
 		
@@ -83,10 +84,19 @@ public class Config {
 		config.addDefault("Light.Combos.Sanctuary.SizeIncrement", 0.3);
 		config.addDefault("Light.Combos.Sanctuary.MaxSize", 12);
 		config.addDefault("Light.Combos.Sanctuary.MaxPulses", 5);
+		config.addDefault("Light.Combos.Sanctuary.Height", 4);
 		config.addDefault("Light.Combos.Sanctuary.Damage", 3);
 		config.addDefault("Light.Combos.Sanctuary.Repel", 0.3);
 		config.addDefault("Light.Combos.Sanctuary.Resistance.EffectDuration", 3);
 		config.addDefault("Light.Combos.Sanctuary.Resistance.EffectAmplifier", 1);
+
+		/* Sanctuary */
+		config.addDefault("Light.Combos.Ivorytower.Enabled", true);
+		config.addDefault("Light.Combos.Ivorytower.Cooldown", 8000);
+		config.addDefault("Light.Combos.Ivorytower.Radius", 20);
+		config.addDefault("Light.Combos.Ivorytower.TowerRadius", 1.5);
+		config.addDefault("Light.Combos.Ivorytower.TowerMaxHeight", 15);
+		config.addDefault("Light.Combos.Ivorytower.TowerCount", 5);
 
 		/* Lightborn */
 		config.addDefault("Light.Passives.Lightborn.Enabled", true);

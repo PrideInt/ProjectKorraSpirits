@@ -32,23 +32,25 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 	@Attribute(Attribute.COOLDOWN)
 	private long cooldown;
 	@Attribute(Attribute.RADIUS)
-	private double max_size;
+	private double maxSize;
 	private double increment;
-	private int max_pulses;
 	@Attribute(Attribute.DAMAGE)
 	private double damage;
 	@Attribute(Attribute.KNOCKBACK)
 	private double repel;
 	@Attribute("EffectDuration")
-	private int res_duration;
+	private int resDuration;
 	@Attribute("EffectAmplifier")
-	private int res_amplifier;
+	private int resAmplifier;
+	private int maxPulses;
+	@Attribute(Attribute.HEIGHT)
+	private int height;
 	
 	private double size;
 	private int pulses;
 	
-	private Location[] origins = new Location[4];
-	private List<Location> locations = new ArrayList<>();
+	private Location[] origins;
+	private List<Location> locations;
 	
 	public Sanctuary(Player player) {
 		super(player);
@@ -57,20 +59,24 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 			return;
 		} else if (bPlayer.isOnCooldown(this)) {
 			return;
-		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
-		cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
-		max_size = Spirits.instance.getConfig().getDouble(path + "MaxSize");
-		increment = Spirits.instance.getConfig().getDouble(path + "SizeIncrement");
-		max_pulses = Spirits.instance.getConfig().getInt(path + "MaxPulses");
-		damage = Spirits.instance.getConfig().getDouble(path + "Damage");
-		repel = Spirits.instance.getConfig().getDouble(path + "Repel");
-		res_duration = Spirits.instance.getConfig().getInt(path + "Resistance.Duration");
-		res_amplifier = Spirits.instance.getConfig().getInt(path + "Resistance.Amplifier");
-		
+		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
+		this.maxSize = Spirits.instance.getConfig().getDouble(path + "MaxSize");
+		this.increment = Spirits.instance.getConfig().getDouble(path + "SizeIncrement");
+		this.damage = Spirits.instance.getConfig().getDouble(path + "Damage");
+		this.repel = Spirits.instance.getConfig().getDouble(path + "Repel");
+		this.resDuration = Spirits.instance.getConfig().getInt(path + "Resistance.Duration");
+		this.resAmplifier = Spirits.instance.getConfig().getInt(path + "Resistance.Amplifier");
+		this.maxPulses = Spirits.instance.getConfig().getInt(path + "MaxPulses");
+		this.height = Spirits.instance.getConfig().getInt(path + "Height");
+
+		this.origins = new Location[this.height];
+		this.locations = new ArrayList<>();
+
 		for (int i = 0; i <= 3; i++) {
-			origins[i] = player.getLocation().clone().add(0, i, 0);
+			this.origins[i] = player.getLocation().clone().add(0, i, 0);
 		}
 		bPlayer.addCooldown(this);
 		start();
@@ -82,15 +88,14 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 			remove();
 			return;
 		}
-		size += increment;
+		size = size > maxSize ? 0 : size + increment;
 		
-		if (size > max_size) {
+		if (size == 0) {
 			pulses++;
-			if (pulses >= max_pulses) {
+			if (pulses >= maxPulses) {
 				remove();
 				return;
 			}
-			size = 0;
 		}
 		for (Location location : origins) {
 			Tools.createCircle(location, size, 360, l -> {
@@ -101,10 +106,11 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 				locations.add(l);
 				
 				Tools.trackEntitySpirit(l, 1, e -> Filter.filterEntityFromAbility(e, player, this), (entity, light, dark, neutral) -> {
-					if (GeneralMethods.locationEqualsIgnoreDirection(l, entity.getLocation())) return;
-					
+					if (GeneralMethods.locationEqualsIgnoreDirection(l, entity.getLocation())) {
+						return;
+					}
 					if (light) {
-						new TempPotionEffect(entity, new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, Math.toIntExact((res_duration * 1000) / 50), res_amplifier));
+						new TempPotionEffect(entity, new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, resDuration, resAmplifier));
 					} else if (dark) {
 						DamageHandler.damageEntity(entity, damage, this);
 						GeneralMethods.setVelocity(this, entity, entity.getVelocity().add(GeneralMethods.getDirection(l, entity.getLocation()).multiply(repel)).setY(0.5));
@@ -115,6 +121,11 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 			});
 		}
 		locations.clear();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Light.Combos.Sanctuary.Enabled");
 	}
 	
 	@Override
@@ -148,17 +159,6 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 	}
 	
 	@Override
-	public void load() { }
-	
-	@Override
-	public void stop() { }
-	
-	@Override
-	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean("Light.Combos.Sanctuary.Enabled", true);
-	}
-	
-	@Override
 	public String getAuthor() {
 		return Spirits.getAuthor(this.getElement());
 	}
@@ -177,7 +177,13 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 	public String getInstructions() {
 		return ChatColor.GOLD + Spirits.instance.getConfig().getString(path + "Instructions");
 	}
-	
+
+	@Override
+	public void load() { }
+
+	@Override
+	public void stop() { }
+
 	@Override
 	public Object createNewComboInstance(Player player) {
 		return new Sanctuary(player);

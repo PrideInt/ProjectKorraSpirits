@@ -13,6 +13,7 @@ import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 public class LightBlood extends LightSpiritAbility implements AddonAbility {
@@ -59,8 +60,11 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 				if (heal <= entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue()) {
 					entity.setHealth(heal);
 				}
+				entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, 1, 1);
 			} else if (dark) {
 				DamageHandler.damageEntity(entity, damage, this);
+
+				entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_PLACE, 1, 1);
 			}
 			remove();
 			return;
