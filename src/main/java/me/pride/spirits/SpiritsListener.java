@@ -88,6 +88,10 @@ public class SpiritsListener implements Listener {
 	public void onSwing(final PlayerSwingEvent event) {
 		Player player = event.getPlayer();
 		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+		if (CoreAbility.hasAbility(player, Possess.class)) {
+			Possess.getPossessedFrom(player).ifPresent(possessed -> possessed.swingMainHand());
+		}
 		
 		if (bPlayer == null) return;
 		

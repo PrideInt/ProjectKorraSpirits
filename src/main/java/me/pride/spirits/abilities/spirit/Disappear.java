@@ -13,12 +13,8 @@ import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class Disappear extends SpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
@@ -27,13 +23,10 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	private long cooldown;
 	@Attribute(Attribute.SELECT_RANGE)
 	private double selectRange;
-	@Attribute(Attribute.RADIUS)
-	private double invisibilityRadius;
 	@Attribute(Attribute.DURATION)
 	private long duration;
 	
 	private Location target;
-	private Set<Player> hiddenFromPlayers;
 	
 	public Disappear(Player player) {
 		super(player);
@@ -49,21 +42,12 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 		}
 		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
 		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
-		this.invisibilityRadius = Spirits.instance.getConfig().getDouble(path + "InvisibilityRadius");
 		this.duration = Spirits.instance.getConfig().getLong(path + "Duration");
 
-		this.hiddenFromPlayers = new HashSet<>();
-
-		for (Entity entity : GeneralMethods.getEntitiesAroundPoint(player.getLocation(), invisibilityRadius)) {
-			if (entity instanceof Player && entity.getUniqueId() != player.getUniqueId()) {
-				Player p = (Player) entity;
-
-				p.hidePlayer(Spirits.instance, player);
-				this.hiddenFromPlayers.add(p);
-			}
-		}
 		player.getWorld().playSound(player.getLocation(), Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 1);
 		player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CONDUIT_AMBIENT, 1, 1);
+
+		player.setInvisible(true);
 
 		for (int i = 0; i < 3; i++) {
 			player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().clone().add(0, i, 0), 5, 0.25, 0.25, 0.25, 1);
@@ -141,9 +125,7 @@ public class Disappear extends SpiritAbility implements AddonAbility {
 	@Override
 	public void remove() {
 		bPlayer.addCooldown(this);
-		for (Player p : hiddenFromPlayers) {
-			p.showPlayer(Spirits.instance, player);
-		}
+		player.setInvisible(false);
 		super.remove();
 	}
 	

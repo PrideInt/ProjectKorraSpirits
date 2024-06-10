@@ -110,16 +110,20 @@ public class Tools {
 		return rayTraceBlock(player.getWorld(), player.getEyeLocation(), player.getEyeLocation().getDirection(), range);
 	}
 
-	public static Entity rayTraceEntity(World world, Player player, Location start, Vector direction, double range) {
-		RayTraceResult result = world.rayTraceEntities(start.clone(), direction, range, 1.2, e -> e instanceof LivingEntity && e.getUniqueId() != player.getUniqueId());
+	public static Entity rayTraceEntity(World world, Player player, Location start, Vector direction, double range, double radius) {
+		RayTraceResult result = world.rayTraceEntities(start.clone(), direction, range, radius, e -> e.getUniqueId() != player.getUniqueId());
 		if (result != null) {
 			return result.getHitEntity();
 		}
 		return null;
 	}
 
+	public static Entity rayTraceEntity(Player player, double range, double radius) {
+		return rayTraceEntity(player.getWorld(), player, player.getEyeLocation(), player.getEyeLocation().getDirection(), range, radius);
+	}
+
 	public static Entity rayTraceEntity(Player player, double range) {
-		return rayTraceEntity(player.getWorld(), player, player.getEyeLocation(), player.getEyeLocation().getDirection(), range);
+		return rayTraceEntity(player.getWorld(), player, player.getEyeLocation(), player.getEyeLocation().getDirection(), range, 1.2);
 	}
 
 	public static RayTraceResult rayTrace(World world, Location start, Vector direction, double range, double raySize, Predicate<Entity> predicate) {
