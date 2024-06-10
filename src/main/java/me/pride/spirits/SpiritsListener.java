@@ -25,6 +25,7 @@ import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.game.AncientSoulweaver;
+import me.pride.spirits.game.Atrium;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
 import me.pride.spirits.storage.StorageCache;
@@ -40,6 +41,7 @@ import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.boss.BarColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -270,11 +272,12 @@ public class SpiritsListener implements Listener {
 
 					if (Lightborn.getHit(player) == Spirits.instance.getConfig().getInt("Light.Passives.Lightborn.Bleed.HitsToBleed")) {
 						new LightBlood(player);
+
+						player.getWorld().playSound(player.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 1, 2);
 						Lightborn.setHit(player, 0);
 					}
 				}
 			}
-
 			if (Protect.isProtecting(player)) {
 				double lights = Lightborn.LIGHTS.get(player.getUniqueId());
 				double protection = Math.max(Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Protect.MinProtect") / 100.0, lights / 100.0);
@@ -335,7 +338,7 @@ public class SpiritsListener implements Listener {
 	public void onPlayerMovement(final PlayerMoveEvent event) {
 		Player player = event.getPlayer();
 
-		if (Possess.isPossessingImmovable(player)) {
+		if (Possess.isPossessingImmovable(player) || Possess.isPossessed(player)) {
 			event.setCancelled(true);
 		}
 	}
@@ -537,6 +540,8 @@ class MainListener implements Listener {
 			Player player = event.getPlayer();
 			
 			if (entity.getType() == EntityType.WARDEN) {
+				Warden warden = (Warden) entity;
+
 				// TODO: testing purposes only
 				if (player.isSneaking()) {
 					if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
@@ -547,8 +552,8 @@ class MainListener implements Listener {
 				}
 				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
 					new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000, true, 4000, player);
-					((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
-					new AncientSoulweaver((Warden) entity);
+					warden.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
+					new AncientSoulweaver(warden);
 				}
 			}
 		}
@@ -584,8 +589,32 @@ class MainListener implements Listener {
 		Player player = event.getPlayer();
 		Action action = event.getAction();
 
-		if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+		if (action != Action.RIGHT_CLICK_AIR) {
 			return;
+		}
+		if (action == Action.RIGHT_CLICK_BLOCK) {
+			/*
+			if (event.getClickedBlock().getType() == Material.CRAFTING_TABLE && event.getClickedBlock().hasMetadata("station:ancient")) {
+				StorageCache.removeLocationsFromCache(event.getClickedBlock().getWorld(), new int[]{ event.getClickedBlock().getX(), event.getClickedBlock().getY(), event.getClickedBlock().getZ() });
+			}
+			 */
+			Block block = event.getClickedBlock();
+
+			if (block.getType() == Material.CHEST) {
+				if (ThreadLocalRandom.current().nextInt(100) <= Spirits.instance.getConfig().getInt("Spirecite.FindSoullessAtriumChance")) {
+					if (player.getWorld().getBiome(player.getLocation()) == Biome.DEEP_DARK) {
+						StructureSearchResult result = player.getWorld().locateNearestStructure(player.getLocation(), Structure.ANCIENT_CITY, 2, false);
+
+						if (result != null) {
+							Chest chest = (Chest) block.getState();
+							chest.update();
+
+							chest.getInventory().setItem(chest.getInventory().getSize() / 2, Atrium.SOULLESS_ATRIUM);
+							return;
+						}
+					}
+				}
+			}
 		}
 		if (event.getHand() == EquipmentSlot.HAND || event.getHand() == EquipmentSlot.OFF_HAND) {
 			ItemStack item = event.getItem();

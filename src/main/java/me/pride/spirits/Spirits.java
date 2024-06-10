@@ -8,6 +8,7 @@ import me.pride.spirits.api.builder.SpiritBuilder;
 import me.pride.spirits.api.record.SpiritRecord;
 import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
+import me.pride.spirits.game.Atrium;
 import me.pride.spirits.game.Spirecite;
 import me.pride.spirits.game.Station;
 import me.pride.spirits.storage.SQLite;
@@ -52,6 +53,7 @@ public class Spirits extends JavaPlugin {
         if (getConfig().getBoolean("Spirecite.Enabled")) {
             Spirecite.setup();
             Station.setup();
+            Atrium.setup();
         }
         CoreAbility.registerPluginAbilities(this, "me.pride.spirits.abilities");
 
