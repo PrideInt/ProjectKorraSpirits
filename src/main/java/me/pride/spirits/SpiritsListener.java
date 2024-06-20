@@ -61,6 +61,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -340,6 +341,22 @@ public class SpiritsListener implements Listener {
 
 		if (Possess.isPossessingImmovable(player) || Possess.isPossessed(player)) {
 			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerSlotChange(final PlayerItemHeldEvent event) {
+		final Player player = event.getPlayer();
+		int slot = event.getNewSlot() + 1;
+
+		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+		if (bPlayer != null) {
+			String ability = bPlayer.getAbilities().get(slot);
+
+			if (CoreAbility.hasAbility(player, Commandeer.class) && !ability.equalsIgnoreCase("Commandeer")) {
+				CoreAbility.getAbility(player, Commandeer.class).remove();
+			}
 		}
 	}
 }

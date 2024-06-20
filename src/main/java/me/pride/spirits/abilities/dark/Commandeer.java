@@ -39,11 +39,11 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	private CommandeerMode mode;
 	
 	@Attribute(Attribute.COOLDOWN)
-	private long item_cooldown, health_cooldown, effects_cooldown;
+	private long itemCooldown, healthCooldown, effectsCooldown;
 	@Attribute(Attribute.SELECT_RANGE)
-	private double select_range;
-	@Attribute("Health")
-	private double health;
+	private double selectRange;
+	@Attribute("HealthSteal")
+	private double healthSteal;
 	
 	private double bold;
 	
@@ -54,14 +54,14 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		
 		if (!bPlayer.canBend(this)) {
 			return;
-		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
-		this.item_cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Item");
-		this.health_cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Health");
-		this.effects_cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Effects");
-		this.select_range = Spirits.instance.getConfig().getDouble(path + "SelectRange");
-		this.health = Spirits.instance.getConfig().getDouble(path + "HealthSteal");
+		this.itemCooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Item");
+		this.healthCooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Health");
+		this.effectsCooldown = Spirits.instance.getConfig().getLong(path + "Cooldown.Effects");
+		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
+		this.healthSteal = Spirits.instance.getConfig().getDouble(path + "HealthSteal");
 		
 		this.mode = CommandeerMode.ITEM;
 		
@@ -79,6 +79,7 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 			remove();
 			return;
 		}
+		sendActionBar();
 	}
 	
 	private void sendActionBar() {
@@ -93,7 +94,7 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		} else {
 			type = mode.modeName();
 		}
-		ActionBar.sendActionBar(subColour + ">> " + colour + type + subColour + " <<", player);
+		ActionBar.sendActionBar(subColour + "* " + colour + type + subColour + " *", player);
 	}
 	
 	private double health(boolean add, double health, LivingEntity entity) {
@@ -105,7 +106,7 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	
 	private void stealHealth() {
 		Location location = player.getLocation().add(0, 1, 0), dest = target.getLocation().add(0, 1, 0);
-		double posHealth = health(true, health, player), negHealth = health(false, health, target);
+		double posHealth = health(true, healthSteal, player), negHealth = health(false, healthSteal, target);
 		
 		player.setHealth(posHealth); target.setHealth(negHealth);
 	}
@@ -142,8 +143,11 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	}
 	
 	public void take() {
-		Optional<LivingEntity> take = Optional.of((LivingEntity) GeneralMethods.getTargetedEntity(player, select_range));
-		take.ifPresent(entity -> this.target = entity);
+		LivingEntity entity = (LivingEntity) Tools.rayTraceEntity(player, selectRange);
+
+		if (entity != null) {
+			this.target = entity;
+		}
 	}
 	public static void take(Player player) { getAbility(player, Commandeer.class).take(); }
 	
@@ -179,7 +183,15 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	
 	@Override
 	public long getCooldown() {
-		return this.mode == CommandeerMode.ITEM ? (this.mode == CommandeerMode.HEALTH ? this.health_cooldown : this.effects_cooldown) : this.item_cooldown;
+		switch (mode) {
+			case ITEM:
+				return itemCooldown;
+			case HEALTH:
+				return healthCooldown;
+			case EFFECTS:
+				return effectsCooldown;
+		}
+		return 0;
 	}
 	
 	@Override

@@ -19,9 +19,11 @@ public class Config {
 		 */
 		/* Commandeer */
 		config.addDefault("Dark.Abilities.Commandeer.Enabled", true);
-		config.addDefault("Dark.Abilities.Commandeer.Cooldown", 3000);
+		config.addDefault("Dark.Abilities.Commandeer.Cooldown.Item", 3000);
+		config.addDefault("Dark.Abilities.Commandeer.Cooldown.Health", 6000);
+		config.addDefault("Dark.Abilities.Commandeer.Cooldown.Effects", 3000);
 		config.addDefault("Dark.Abilities.Commandeer.SelectRange", 12);
-		config.addDefault("Dark.Abilities.Commandeer.Health", 4);
+		config.addDefault("Dark.Abilities.Commandeer.HealthSteal", 4);
 
 		/* Obelisk */
 		config.addDefault("Dark.Abilities.Obelisk.Enabled", true);
