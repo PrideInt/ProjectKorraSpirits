@@ -62,6 +62,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	private boolean growCrops;
 	private boolean growGlowBerries;
 	private boolean growTrees;
+	private boolean shriekParticles;
 
 	private boolean validated;
 	private boolean progressing;
@@ -98,6 +99,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 		this.growCrops = Spirits.instance.getConfig().getBoolean(path + "GrowCrops");
 		this.growGlowBerries = Spirits.instance.getConfig().getBoolean(path + "GrowGlowBerries");
 		this.growTrees = Spirits.instance.getConfig().getBoolean(path + "GrowTrees");
+		this.shriekParticles = Spirits.instance.getConfig().getBoolean(path + "ShriekParticles");
 
 		this.quartz = Material.QUARTZ_BLOCK.createBlockData();
 		this.blessedBlocks = new HashSet<>();
@@ -235,8 +237,9 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 						block.setMetadata("spirits:blessed_source", new FixedMetadataValue(Spirits.instance, 0));
 						// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
-						block.getWorld().spawnParticle(Particle.SHRIEK, block.getLocation().clone().add(0.5, 0.85, 0.5), 1, 0.25, 0.25, 0.25, 0, 1);
-
+						if (shriekParticles) {
+							block.getWorld().spawnParticle(Particle.SHRIEK, block.getLocation().clone().add(0.5, 0.85, 0.5), 1, 0.25, 0.25, 0.25, 0, 1);
+						}
 						blessedBlocks.add(block);
 
 						BlockData data = GeneralMethods.isSolid(block) ? quartz : flowers.get(ThreadLocalRandom.current().nextInt(flowers.size()));

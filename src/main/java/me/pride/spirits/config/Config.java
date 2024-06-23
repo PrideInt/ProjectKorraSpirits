@@ -63,6 +63,7 @@ public class Config {
 		config.addDefault("Light.Abilities.Blessing.GrowCrops", true);
 		config.addDefault("Light.Abilities.Blessing.GrowGlowBerries", true);
 		config.addDefault("Light.Abilities.Blessing.GrowTrees", true);
+		config.addDefault("Light.Abilities.Blessing.ShriekParticles", false);
 
 		/* Protect */
 		config.addDefault("Light.Abilities.Protect.Enabled", true);
