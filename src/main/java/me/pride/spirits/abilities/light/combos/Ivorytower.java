@@ -17,6 +17,7 @@ import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -62,12 +63,21 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 		this.towerCount = Spirits.instance.getConfig().getInt(path + "TowerCount");
 		
 		this.sources = GeneralMethods.getBlocksAroundPoint(player.getLocation(), this.radius).stream().filter(b -> b.hasMetadata("spirits:blessed_source")).collect(Collectors.toList());
+
+		if (this.sources.isEmpty()) {
+			return;
+		}
 		this.towers = new HashSet<>();
 
 		this.delay = System.currentTimeMillis() + 1000;
 		
 		for (int i = 0; i < this.towerCount; i++) {
-			this.towers.add(new Tower(this.height, this.size, this.sources.get(ThreadLocalRandom.current().nextInt(this.sources.size())).getLocation().clone().add(0.5, 0.5, 0.5), this));
+			double height = ThreadLocalRandom.current().nextDouble(3, this.height);
+			boolean single = ThreadLocalRandom.current().nextBoolean();
+
+			Location origin = this.sources.get(ThreadLocalRandom.current().nextInt(this.sources.size())).getLocation().clone().add(0.5, 0.5, 0.5);
+
+			this.towers.add(new Tower(height, this.size, single, origin, this));
 		}
 		start();
 		bPlayer.addCooldown(this);
@@ -77,11 +87,13 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 	public void progress() {
 		towers.removeIf(tower -> {
 			if (!tower.update() || !player.isSneaking()) {
-				Set<TempBlock> next = tower.tower().peek();
+				if (!tower.tower().isEmpty()) {
+					Set<TempBlock> next = tower.tower().peek();
 
-				if (next != null) {
-					next.forEach(tempBlock -> tempBlock.revertBlock());
-					tower.tower().pop();
+					if (next != null) {
+						next.forEach(tempBlock -> tempBlock.revertBlock());
+						tower.tower().pop();
+					}
 				}
 			}
 			return System.currentTimeMillis() > delay && tower.tower().size() <= 0;
@@ -159,15 +171,17 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 	class Tower {
 		private double height;
 		private double size;
+		private boolean single;
 		private CoreAbility ability;
 		
 		private Location origin, location, destination;
 		private Vector vector;
 		private Stack<Set<TempBlock>> tower;
 		
-		public Tower(double height, double size, Location origin, CoreAbility ability) {
+		public Tower(double height, double size, boolean single, Location origin, CoreAbility ability) {
 			this.height = height;
 			this.size = size;
+			this.single = single;
 			this.origin = origin.clone();
 			this.ability = ability;
 			
@@ -182,9 +196,15 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 			}
 			this.location.add(this.vector.multiply(1));
 
+			this.location.getWorld().playSound(this.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1, 1.5F);
+
 			Set<TempBlock> blocks = new HashSet<>();
-			for (Block block : GeneralMethods.getBlocksAroundPoint(this.location, this.size)) {
-				blocks.add(new TempBlock(block, Material.QUARTZ_BLOCK.createBlockData()));
+			if (single) {
+				blocks.add(new TempBlock(this.location.getBlock(), Material.QUARTZ_BLOCK.createBlockData()));
+			} else {
+				for (Block block : GeneralMethods.getBlocksAroundPoint(this.location, this.size)) {
+					blocks.add(new TempBlock(block, Material.QUARTZ_BLOCK.createBlockData()));
+				}
 			}
 			this.tower.push(blocks);
 
