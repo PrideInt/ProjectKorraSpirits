@@ -39,10 +39,14 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Protect extends LightSpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
+
+	private static final Map<Player, Double> STOCKPILE = new HashMap<>();
 
 	public enum ProtectType {
 		PROTECT, DEFLECT
@@ -68,7 +72,6 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	// Protect
 	private int slowAmplifier;
 
-	private double stockpile;
 	private boolean validated;
 
 	private double sizeIncrease;
@@ -89,7 +92,9 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
 			return;
 		}
-		this.stockpile = 1;
+		if (!STOCKPILE.containsKey(player)) {
+			STOCKPILE.put(player, 1.0);
+		}
 		this.origin = player.getLocation().clone().add(0, 1, 0);
 		this.location = this.origin.clone();
 		this.validated = true;
@@ -248,19 +253,28 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		}
 	}
 
-	public static double getStockpile(Player player) {
+	public static void setStockpile(Player player, double stockpile) {
 		if (CoreAbility.hasAbility(player, Protect.class)) {
-			return CoreAbility.getAbility(player, Protect.class).getStockpile();
+			CoreAbility.getAbility(player, Protect.class).setStockpile(stockpile);
 		}
-		return 1;
+	}
+
+	public static double getStockpile(Player player) {
+		return STOCKPILE.get(player);
 	}
 
 	public void stockpile(double stockpile) {
-		this.stockpile = stockpile;
+		if (STOCKPILE.get(player) > 2.5) {
+			return;
+		} else if (stockpile > 2.5) {
+			STOCKPILE.put(player, 2.5);
+			return;
+		}
+		STOCKPILE.put(player, stockpile);
 	}
 
-	public double getStockpile() {
-		return stockpile;
+	public void setStockpile(double stockpile) {
+		STOCKPILE.put(player, stockpile);
 	}
 
 	public ProtectType getType() {

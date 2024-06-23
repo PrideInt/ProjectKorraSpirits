@@ -127,14 +127,15 @@ public class SpiritsListener implements Listener {
 
 								double minRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MinRange");
 								double maxRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxRange");
+								double range = ThreadLocalRandom.current().nextDouble(minRange + stockpile, maxRange + stockpile) + stockpile;
 
 								double damage = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Damage") * stockpile;
 								double knockback = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Knockback") * stockpile;
-								double range = ThreadLocalRandom.current().nextDouble(minRange * stockpile, maxRange * stockpile) * stockpile;
 								double maxSize = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxSize") * stockpile;
 
 								new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
 								new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+								Protect.setStockpile(player, 1.0);
 							}
 						} else {
 							new Protect(player, ProtectType.DEFLECT);
@@ -288,7 +289,8 @@ public class SpiritsListener implements Listener {
 				event.setDamage(offset);
 
 				Lightborn.LIGHTS.put(player.getUniqueId(), lights / 2.0);
-				Protect.stockpile(player, Protect.getStockpile(player) + lights / 100.0);
+				Protect.stockpile(player, Protect.getStockpile(player) + (lights / 200.0));
+
 				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "Light Energy: " + (int) (lights / 2.0) + " %", player);
 
 				player.getWorld().spawnParticle(Particle.FLASH, player.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-1.5, 1.5), ThreadLocalRandom.current().nextDouble(0.8, 2), ThreadLocalRandom.current().nextDouble(-1.5, 1.5)), 1, 0.25, 0.25, 0.25);
