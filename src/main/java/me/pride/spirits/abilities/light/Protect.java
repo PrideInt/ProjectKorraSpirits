@@ -26,6 +26,7 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
+import me.pride.spirits.util.objects.TetraConsumer;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -255,6 +256,12 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		}
 	}
 
+	public static void getStockpiles(Player player, TetraConsumer<Double, Double, Double, Double> consumer) {
+		if (CoreAbility.hasAbility(player, Protect.class)) {
+			CoreAbility.getAbility(player, Protect.class).getStockpiles(consumer);
+		}
+	}
+
 	public static double getStockpile(Player player) {
 		return STOCKPILE.get(player);
 	}
@@ -271,6 +278,20 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 	public void setStockpile(double stockpile) {
 		STOCKPILE.put(player, stockpile);
+	}
+
+	public void getStockpiles(TetraConsumer<Double, Double, Double, Double> consumer) {
+		double stockpile = Protect.getStockpile(player);
+
+		double minRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MinRange");
+		double maxRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxRange");
+		double range = ThreadLocalRandom.current().nextDouble(minRange + stockpile, maxRange + stockpile) + stockpile;
+
+		double damage = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Damage") * stockpile;
+		double knockback = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Knockback") * stockpile;
+		double maxSize = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxSize") * stockpile;
+
+		consumer.accept(range, damage, knockback, maxSize);
 	}
 
 	public ProtectType getType() {

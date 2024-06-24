@@ -14,6 +14,7 @@ import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -73,12 +74,13 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 			 * Every rate, a light spirit will have a chance to shed their negative potion effects.
 			 */
 			if (shed) {
-				rate = rate > shedRate ? 0 : rate + 1;
-				if (rate == 0) {
-					if (ThreadLocalRandom.current().nextInt(100) < shedChance) {
-						for (PotionEffect active : player.getActivePotionEffects()) {
-							if (Tools.getNegativeEffectsSet().contains(active.getType())) {
-								player.removePotionEffect(active.getType());
+				for (PotionEffect active : player.getActivePotionEffects()) {
+					if (Tools.getNegativeEffectsSet().contains(active.getType())) {
+						rate = rate > shedRate ? 0 : rate + 1;
+						if (rate == 0) {
+							if (ThreadLocalRandom.current().nextInt(100) < shedChance) {
+								player.removePotionEffect(player.getActivePotionEffects().stream().toList().get(ThreadLocalRandom.current().nextInt(player.getActivePotionEffects().size())).getType());
+								player.getWorld().playSound(player.getLocation(), Sound.ITEM_BONE_MEAL_USE, 0.5F, 1.0F);
 								break;
 							}
 						}
@@ -100,14 +102,12 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 									if (attribute.equalsIgnoreCase("damage")) {
 										try {
 											ability.addAttributeModifier(attribute, amplifier, AttributeModifier.MULTIPLICATION);
-										} catch (Exception e) {
-										}
+										} catch (Exception e) { }
 									}
 								}
 							}
 						}
-					} catch (Exception e) {
-					}
+					} catch (Exception e) { }
 				}
 			}
 

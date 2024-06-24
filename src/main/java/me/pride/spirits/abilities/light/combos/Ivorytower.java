@@ -66,7 +66,7 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 		this.height = Spirits.instance.getConfig().getDouble(path + "TowerMaxHeight");
 		this.towerCount = Spirits.instance.getConfig().getInt(path + "TowerCount");
 		
-		this.sources = GeneralMethods.getBlocksAroundPoint(player.getLocation(), this.radius).stream().filter(b -> b.hasMetadata("spirits:blessed_source")).collect(Collectors.toList());
+		this.sources = GeneralMethods.getBlocksAroundPoint(player.getLocation(), this.radius).stream().filter(b -> b.hasMetadata("spirits:blessed_source") && GeneralMethods.isSolid(b)).collect(Collectors.toList());
 
 		if (this.sources.isEmpty()) {
 			return;
