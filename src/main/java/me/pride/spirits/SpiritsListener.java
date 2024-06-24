@@ -13,6 +13,7 @@ import me.pride.spirits.abilities.light.Blessing;
 import me.pride.spirits.abilities.light.Blessing.BlessType;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.light.Protect.ProtectType;
+import me.pride.spirits.abilities.light.Restore;
 import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.light.passives.other.LightBlood;
 import me.pride.spirits.abilities.spirit.Disappear;
@@ -123,18 +124,11 @@ public class SpiritsListener implements Listener {
 						if (CoreAbility.hasAbility(player, Protect.class)) {
 							if (Protect.isProtecting(player)) {
 								Protect.removeWithoutCooldown(player);
-								double stockpile = Protect.getStockpile(player);
 
-								double minRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MinRange");
-								double maxRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxRange");
-								double range = ThreadLocalRandom.current().nextDouble(minRange + stockpile, maxRange + stockpile) + stockpile;
-
-								double damage = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Damage") * stockpile;
-								double knockback = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.Knockback") * stockpile;
-								double maxSize = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MaxSize") * stockpile;
-
-								new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
-								new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+								Protect.getStockpiles(player, (range, damage, knockback, maxSize) -> {
+									new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+									new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+								});
 								Protect.setStockpile(player, 1.0);
 							}
 						} else {
@@ -188,6 +182,9 @@ public class SpiritsListener implements Listener {
 						break;
 					}
 					case "Blessing" -> { new Blessing(player, BlessType.SNEAK);
+						break;
+					}
+					case "Restore" -> { new Restore(player);
 						break;
 					}
 				}

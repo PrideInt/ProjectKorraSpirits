@@ -81,6 +81,14 @@ public class Config {
 		config.addDefault("Light.Abilities.Protect.Protect.MinProtect", 10);
 		config.addDefault("Light.Abilities.Protect.Protect.SlowAmplifier", 2);
 
+		/* Restore */
+		config.addDefault("Light.Abilities.Restore.Enabled", true);
+		config.addDefault("Light.Abilities.Restore.Cooldown", 8000);
+		config.addDefault("Light.Abilities.Restore.SelectRange", 6);
+		config.addDefault("Light.Abilities.Restore.Restore", 1);
+		config.addDefault("Light.Abilities.Restore.RestoreRate", 30);
+		config.addDefault("Light.Abilities.Restore.HealthFlashAnimation", true);
+
 		/* Sanctuary */
 		config.addDefault("Light.Combos.Sanctuary.Enabled", true);
 		config.addDefault("Light.Combos.Sanctuary.Cooldown", 8000);
