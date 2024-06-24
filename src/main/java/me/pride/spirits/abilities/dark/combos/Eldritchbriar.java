@@ -31,16 +31,6 @@ public class Eldritchbriar extends DarkSpiritAbility implements AddonAbility, Co
 	}
 	
 	@Override
-	public boolean isIgniteAbility() {
-		return false;
-	}
-	
-	@Override
-	public boolean isExplosiveAbility() {
-		return false;
-	}
-	
-	@Override
 	public long getCooldown() {
 		return 0;
 	}
@@ -54,22 +44,22 @@ public class Eldritchbriar extends DarkSpiritAbility implements AddonAbility, Co
 	public Location getLocation() {
 		return null;
 	}
+
+	@Override
+	public String getAuthor() {
+		return Spirits.getAuthor(this.getElement());
+	}
+
+	@Override
+	public String getVersion() {
+		return Spirits.getVersion();
+	}
 	
 	@Override
 	public void load() { }
 	
 	@Override
 	public void stop() { }
-	
-	@Override
-	public String getAuthor() {
-		return Spirits.getAuthor(this.getElement());
-	}
-	
-	@Override
-	public String getVersion() {
-		return Spirits.getVersion();
-	}
 	
 	@Override
 	public Object createNewComboInstance(Player player) {

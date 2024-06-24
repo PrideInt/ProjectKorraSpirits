@@ -2,7 +2,12 @@ package me.pride.spirits.game.behavior;
 
 import me.pride.spirits.game.AncientSoulweaver;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public abstract class Action extends BehaviorAction {
 	private static final Map<Action, Long> ACTION_COOLDOWNS = new HashMap<>();

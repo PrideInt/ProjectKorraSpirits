@@ -5,7 +5,6 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.builder.SpiritBuilder;
-import me.pride.spirits.api.record.SpiritRecord;
 import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Atrium;

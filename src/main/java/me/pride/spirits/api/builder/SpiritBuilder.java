@@ -1,6 +1,11 @@
 package me.pride.spirits.api.builder;
 
-import me.pride.spirits.api.*;
+import me.pride.spirits.api.DarkSpirit;
+import me.pride.spirits.api.LightSpirit;
+import me.pride.spirits.api.NeutralSpirit;
+import me.pride.spirits.api.ReplaceableSpirit;
+import me.pride.spirits.api.Spirit;
+import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.exception.InvalidSpiritTypeException;
 import org.bukkit.Location;
 import org.bukkit.World;

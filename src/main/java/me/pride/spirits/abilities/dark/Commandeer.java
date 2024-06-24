@@ -22,8 +22,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.Optional;
-
 public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
 	

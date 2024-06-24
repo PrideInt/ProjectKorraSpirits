@@ -4,7 +4,7 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.configuration.ConfigManager;
 import net.md_5.bungee.api.ChatColor;
 
-import java.awt.*;
+import java.awt.Color;
 
 /* ChatColor gradient in chat utilizing mathematical interpolation; resource by Schottky https://www.spigotmc.org/threads/gradient-chat-particles.470496/
  */
