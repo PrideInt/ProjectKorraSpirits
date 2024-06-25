@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
@@ -76,7 +77,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
-		if (!target.hasMetadata("spirits:corrupted_blocks")) {
+		if (!target.hasMetadata(Spirit.CORRUPTED_SOURCE)) {
 			return;
 		}
 		this.state = ObeliskState.FOUND_SOURCE;

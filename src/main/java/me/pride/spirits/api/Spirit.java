@@ -294,4 +294,7 @@ public abstract class Spirit {
 	public static final String LIGHT_SPIRIT_NAME = SpiritElement.LIGHT_SPIRIT.getColor() + "" + ChatColor.BOLD + "Light spirit";
 	public static final String DARK_SPIRIT_NAME = SpiritElement.DARK_SPIRIT.getColor() + "" + ChatColor.BOLD + "Dark spirit";
 	public static final String SPIRIT_NAME = SpiritElement.SPIRIT.getColor() + "" + ChatColor.BOLD + "Spirit";
+	public static final String BLESSED_SOURCE = "spirits:blessed_source";
+	public static final String BLESSED_ENTITY = "spirits:blessed_entity";
+	public static final String CORRUPTED_SOURCE = "spirits:corrupted_source";
 }

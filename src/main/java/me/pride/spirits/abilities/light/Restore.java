@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.DarkSpirit;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
@@ -84,7 +85,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		}
 		Block block = Tools.rayTraceBlock(player, this.selectRange);
 		if (block != null) {
-			if (block.hasMetadata("spirits:blessed_source") || Filter.filterFlowers(block)) {
+			if (block.hasMetadata(Spirit.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
 				this.restoreForm = RestoreForm.SOURCING;
 				for (int i = 0; i < 2; i++) {
 					double x, z;

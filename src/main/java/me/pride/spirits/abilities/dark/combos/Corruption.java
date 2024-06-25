@@ -132,15 +132,15 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			BlockData blockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
 
 			Block block_ = block;
-			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata("spirits:corrupted_blocks", Spirits.instance));
+			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata(Spirit.CORRUPTED_SOURCE, Spirits.instance));
 
 			spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 			player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 
-			if (block.hasMetadata("spirits:blessed_source")) {
-				block.removeMetadata("spirits:blessed_source", Spirits.instance);
+			if (block.hasMetadata(Spirit.BLESSED_SOURCE)) {
+				block.removeMetadata(Spirit.BLESSED_SOURCE, Spirits.instance);
 			}
-			block.setMetadata("spirits:corrupted_blocks", new FixedMetadataValue(Spirits.instance, 0));
+			block.setMetadata(Spirit.CORRUPTED_SOURCE, new FixedMetadataValue(Spirits.instance, 0));
 		}
 	}
 	

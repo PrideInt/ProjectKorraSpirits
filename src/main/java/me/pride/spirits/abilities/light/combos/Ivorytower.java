@@ -12,6 +12,7 @@ import com.projectkorra.projectkorra.util.ClickType;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.TempBlock;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
@@ -66,7 +67,7 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 		this.height = Spirits.instance.getConfig().getDouble(path + "TowerMaxHeight");
 		this.towerCount = Spirits.instance.getConfig().getInt(path + "TowerCount");
 		
-		this.sources = GeneralMethods.getBlocksAroundPoint(player.getLocation(), this.radius).stream().filter(b -> b.hasMetadata("spirits:blessed_source") && GeneralMethods.isSolid(b)).collect(Collectors.toList());
+		this.sources = GeneralMethods.getBlocksAroundPoint(player.getLocation(), this.radius).stream().filter(b -> b.hasMetadata(Spirit.BLESSED_SOURCE) && GeneralMethods.isSolid(b)).collect(Collectors.toList());
 
 		if (this.sources.isEmpty()) {
 			return;
