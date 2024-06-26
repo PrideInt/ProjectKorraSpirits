@@ -10,4 +10,9 @@ public class AirSpirit extends SummonedSpirit {
 	public AirSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, location, name, entityType, spiritType, revertTime);
 	}
+
+	@Override
+	public boolean progress() {
+		return true;
+	}
 }

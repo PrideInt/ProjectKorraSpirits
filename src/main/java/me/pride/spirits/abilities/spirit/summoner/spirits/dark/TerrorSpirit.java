@@ -6,8 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 
-public class TerrorDarkSpirit extends SummonedSpirit {
-	public TerrorDarkSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
+public class TerrorSpirit extends SummonedSpirit {
+	public TerrorSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, location, name, entityType, spiritType, revertTime);
+	}
+
+	@Override
+	public boolean progress() {
+		return true;
 	}
 }

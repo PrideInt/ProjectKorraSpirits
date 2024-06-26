@@ -1,6 +1,7 @@
 package me.pride.spirits;
 
 import me.pride.spirits.abilities.light.Blessing;
+import me.pride.spirits.abilities.spirit.summoner.SummonedSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.util.BendingBossBar;
@@ -12,9 +13,13 @@ public class SpiritsManager implements Runnable {
 	public void run() {
 		Spirit.handle();
 		SpiritWorld.handle();
+		SummonedSpirit.handle();
+
 		BendingBossBar.updateTimer();
+
 		AncientSoulweaver.manageAI();
 		Action.manageActionsAndCooldowns();
+
 		Blessing.handleBlessings();
 	}
 }
