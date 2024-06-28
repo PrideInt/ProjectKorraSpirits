@@ -87,10 +87,10 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		if (block != null) {
 			if (block.hasMetadata(Spirit.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
 				this.restoreForm = RestoreForm.SOURCING;
-				for (int i = 0; i < 2; i++) {
+				for (int i = 0; i < 5; i++) {
 					double x, z;
-					x = ThreadLocalRandom.current().nextDouble(0, 0.5);
-					z = ThreadLocalRandom.current().nextDouble(0, 0.5);
+					x = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
+					z = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
 
 					this.particles.add(new RestoreParticles(block.getLocation().clone().add(x, 0.5, z), player.getLocation().clone().add(0, 1, 0)));
 				}
@@ -131,7 +131,9 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 
 		if (particleRate == 0) {
 			generateParticleRate = 0;
-			particles.add(new RestoreParticles(target.getLocation().clone().add(0, 1, 0)));
+			for (int i = 0; i < 3; i++) {
+				particles.add(new RestoreParticles(target.getLocation().clone().add(0, 1, 0)));
+			}
 		}
 		particles.removeIf(particle -> !particle.handle());
 	}
@@ -268,8 +270,8 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 
 			this.location = this.origin.clone();
 		}
-		public RestoreParticles(Location origin, Particle particle) {
-			this(origin, origin.clone().add(ThreadLocalRandom.current().nextDouble(-1.0, 1.0), ThreadLocalRandom.current().nextDouble(-1.0, 2.0), ThreadLocalRandom.current().nextDouble(-1.0, 1.0)), particle);
+		public RestoreParticles(Location destination, Particle particle) {
+			this(destination.clone().add(ThreadLocalRandom.current().nextDouble(-1.0, 1.0), ThreadLocalRandom.current().nextDouble(-1.0, 2.0), ThreadLocalRandom.current().nextDouble(-1.0, 1.0)), destination, particle);
 		}
 		public RestoreParticles(Location origin, Location destination) {
 			this(origin, destination, Particle.GLOW);
