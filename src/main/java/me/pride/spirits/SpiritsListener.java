@@ -18,6 +18,7 @@ import me.pride.spirits.abilities.light.passives.Lightborn;
 import me.pride.spirits.abilities.light.passives.other.LightBlood;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.abilities.spirit.Rematerialize;
+import me.pride.spirits.abilities.spirit.Summon;
 import me.pride.spirits.abilities.spirit.combos.Possess;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
@@ -104,21 +105,7 @@ public class SpiritsListener implements Listener {
 		if (coreAbil == null) return;
 		
 		if (bPlayer.canBendIgnoreCooldowns(coreAbil)) {
-			if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {
-				switch (bPlayer.getBoundAbilityName()) {
-					case "Commandeer" -> {
-						if (CoreAbility.hasAbility(player, Commandeer.class)) {
-							Commandeer.switchMode(player);
-						} else {
-							new Commandeer(player);
-						}
-						break;
-					}
-					case "Obelisk" -> { new Obelisk(player);
-						break;
-					}
-				}
-			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
+			if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
 					case "Protect" -> {
 						if (CoreAbility.hasAbility(player, Protect.class)) {
@@ -137,6 +124,26 @@ public class SpiritsListener implements Listener {
 						break;
 					}
 					case "Blessing" -> { new Blessing(player, BlessType.CLICK);
+						break;
+					}
+				}
+			} else if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {
+				switch (bPlayer.getBoundAbilityName()) {
+					case "Commandeer" -> {
+						if (CoreAbility.hasAbility(player, Commandeer.class)) {
+							Commandeer.switchMode(player);
+						} else {
+							new Commandeer(player);
+						}
+						break;
+					}
+					case "Obelisk" -> { new Obelisk(player);
+						break;
+					}
+				}
+			} else if (coreAbil instanceof SpiritAbility && bPlayer.isElementToggled(SpiritElement.SPIRIT)) {
+				switch (bPlayer.getBoundAbilityName()) {
+					case "Summon" -> { new Summon(player);
 						break;
 					}
 				}
@@ -159,7 +166,19 @@ public class SpiritsListener implements Listener {
 		if (coreAbil == null) return;
 		
 		if (bPlayer.canBendIgnoreCooldowns(coreAbil)) {
-			if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {
+			if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
+				switch (bPlayer.getBoundAbilityName()) {
+					case "Protect" -> { new Protect(player, ProtectType.PROTECT);
+						break;
+					}
+					case "Blessing" -> { new Blessing(player, BlessType.SNEAK);
+						break;
+					}
+					case "Restore" -> { new Restore(player);
+						break;
+					}
+				}
+			} else if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {
 				switch (bPlayer.getBoundAbilityName()) {
 					case "Commandeer" -> {
 						if (CoreAbility.hasAbility(player, Commandeer.class)) {
@@ -173,18 +192,6 @@ public class SpiritsListener implements Listener {
 								Obelisk.startSearching(player);
 							}
 						}
-						break;
-					}
-				}
-			} else if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
-				switch (bPlayer.getBoundAbilityName()) {
-					case "Protect" -> { new Protect(player, ProtectType.PROTECT);
-						break;
-					}
-					case "Blessing" -> { new Blessing(player, BlessType.SNEAK);
-						break;
-					}
-					case "Restore" -> { new Restore(player);
 						break;
 					}
 				}

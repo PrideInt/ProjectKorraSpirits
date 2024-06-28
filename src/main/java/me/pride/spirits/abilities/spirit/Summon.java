@@ -3,6 +3,8 @@ package me.pride.spirits.abilities.spirit;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.MultiAbility;
+import com.projectkorra.projectkorra.ability.util.MultiAbilityManager;
+import com.projectkorra.projectkorra.ability.util.MultiAbilityManager.MultiAbilityInfo;
 import com.projectkorra.projectkorra.ability.util.MultiAbilityManager.MultiAbilityInfoSub;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import me.pride.spirits.Spirits;
@@ -24,15 +26,25 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 
 		if (!bPlayer.canBendIgnoreBinds(this)) {
 			return;
+		} else if (hasAbility(player, Summon.class)) {
+			return;
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
+		// We want to make the Summon multiability different for each player
+		MultiAbilityManager.multiAbilityList.removeIf(multiAbilityInfo -> multiAbilityInfo.getName().equals("Summon"));
+
+		MultiAbilityManager.multiAbilityList.add(new MultiAbilityInfo("Summon", getMultiAbilities()));
+		MultiAbilityManager.bindMultiAbility(player, "Summon");
 		start();
 	}
 
 	@Override
 	public void progress() {
-
+		if (!player.isOnline() || player.isDead()) {
+			remove();
+			return;
+		}
 	}
 
 	@Override
@@ -78,6 +90,11 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 
 	@Override
 	public ArrayList<MultiAbilityInfoSub> getMultiAbilities() {
+		ArrayList<MultiAbilityInfoSub> multis = new ArrayList<>();
+
+		if (bPlayer == null) {
+			return multis;
+		}
 		Element element = SpiritElement.SPIRIT;
 
 		List<Element> elements = bPlayer.getElements();
@@ -86,7 +103,6 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 		} else if (elements.contains(SpiritElement.DARK_SPIRIT) && !elements.contains(SpiritElement.LIGHT_SPIRIT)) {
 			element = SpiritElement.DARK_SPIRIT;
 		}
-		ArrayList<MultiAbilityInfoSub> multis = new ArrayList<>();
 		multis.add(new MultiAbilityInfoSub(AirSpirit.getName(element), SpiritElement.SPIRIT));
 		multis.add(new MultiAbilityInfoSub(EarthSpirit.getName(element), SpiritElement.SPIRIT));
 		multis.add(new MultiAbilityInfoSub(FireSpirit.getName(element), SpiritElement.SPIRIT));
