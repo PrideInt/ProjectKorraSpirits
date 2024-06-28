@@ -49,6 +49,8 @@ public abstract class Spirit {
 
 	// private int id;
 
+	public Spirit() { }
+
 	public Spirit(World world, Location location) {
 		this.world = world;
 		this.location = location.clone();
@@ -58,7 +60,7 @@ public abstract class Spirit {
 		// this.spirit = this;
 		this.world = world;
 		this.entity = entity;
-		SPIRIT_CACHE.put(entity.getUniqueId(), this);
+		// SPIRIT_CACHE.put(entity.getUniqueId(), this);
 	}
 
 	/**

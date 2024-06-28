@@ -1,5 +1,6 @@
 package me.pride.spirits.abilities.spirit.summoner;
 
+import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.record.SpiritRecord;
@@ -16,8 +17,17 @@ public abstract class SummonedSpirit extends Spirit {
 	private SpiritRecord record;
 
 	public SummonedSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
-		super(world, location);
+		super();
 
+		if (spiritType == null) {
+			spiritType = defaultSpiritType();
+		}
+		if (entityType == null) {
+			entityType = defaultEntityType();
+		}
+		if (name == null) {
+			name = "Summoned Spirit";
+		}
 		this.record = new SpiritRecord(name, entityType, spiritType, revertTime);
 	}
 
@@ -26,19 +36,20 @@ public abstract class SummonedSpirit extends Spirit {
 	}
 
 	public abstract boolean progress();
+	public abstract SpiritType defaultSpiritType();
+	public abstract EntityType defaultEntityType();
+	public abstract EntityType defaultLightEntityType();
+	public abstract EntityType defaultDarkEntityType();
 
 	public String name() {
 		return record.name();
 	}
-
 	public EntityType entityType() {
 		return record.entityType();
 	}
-
 	public SpiritType spiritType() {
 		return record.spiritType();
 	}
-
 	public long revertTime() {
 		return record.revertTime();
 	}

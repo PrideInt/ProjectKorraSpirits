@@ -140,6 +140,11 @@ public class Config {
 		config.addDefault("Spirit.Abilities.Rematerialize.MaxSearchRadius", 20);
 		config.addDefault("Spirit.Abilities.Rematerialize.Delay", 35);
 
+		/* Summon */
+		config.addDefault("Spirit.Abilities.Summon.Enabled", true);
+		config.addDefault("Spirit.Abilities.Summon.Cooldown", 5000);
+		config.addDefault("Spirit.Abilities.Summon.ChargeTime", 3000);
+
 		/* Possess */
 		config.addDefault("Spirit.Combos.Possess.Enabled", true);
 		config.addDefault("Spirit.Combos.Possess.Cooldown", 5000);

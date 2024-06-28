@@ -9,6 +9,9 @@ import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 
 public class EarthSpirit extends SummonedSpirit {
+	public EarthSpirit() {
+		super(null, null, null, null, null, 0);
+	}
 	public EarthSpirit(World world, Location location, String name, EntityType entityType, SpiritType spiritType, long revertTime) {
 		super(world, location, name, entityType, spiritType, revertTime);
 	}
@@ -16,6 +19,22 @@ public class EarthSpirit extends SummonedSpirit {
 	@Override
 	public boolean progress() {
 		return true;
+	}
+	@Override
+	public SpiritType defaultSpiritType() {
+		return SpiritType.SPIRIT;
+	}
+	@Override
+	public EntityType defaultEntityType() {
+		return EntityType.COW;
+	}
+	@Override
+	public EntityType defaultLightEntityType() {
+		return EntityType.MUSHROOM_COW;
+	}
+	@Override
+	public EntityType defaultDarkEntityType() {
+		return EntityType.RAVAGER;
 	}
 
 	public static String getName(Element element) {
