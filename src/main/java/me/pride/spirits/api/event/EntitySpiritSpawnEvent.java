@@ -31,4 +31,7 @@ public class EntitySpiritSpawnEvent extends Event {
 	public HandlerList getHandlers() {
 		return HANDLER_LIST;
 	}
+	public static HandlerList getHandlerList() {
+		return HANDLER_LIST;
+	}
 }
