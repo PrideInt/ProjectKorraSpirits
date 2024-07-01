@@ -147,7 +147,13 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 							} else if (playerSpiritType == SpiritType.DARK) {
 								type = pair.getRight().defaultDarkEntityType();
 							}
-							pair.getRight().spawnEntity(player.getWorld(), player.getLocation(), type, pair.getRight().defaultSpiritType(), 10000, e -> {});
+
+							pair.getRight().spawnEntity(player.getWorld(), player.getLocation(), type, pair.getRight().defaultSpiritType(), 10000, e -> {
+								e.setCustomName(pair.getRight().getSpiritName(playerSpiritType));
+								e.setCustomNameVisible(true);
+
+								e.getWorld().spawnParticle(playerSpiritType.particles(), e.getLocation().clone().add(0, 0.8, 0), 3, 0.35, 0.35, 0.35, 0.05);
+							});
 						});
 
 				MultiAbilityManager.unbindMultiAbility(player);
@@ -231,7 +237,7 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 			multis.add(new MultiAbilityInfoSub("Taiguang", SpiritElement.LIGHT_SPIRIT));
 		} else if (element.equals(SpiritElement.DARK_SPIRIT)) {
 			multis.add(new MultiAbilityInfoSub("Darkness", SpiritElement.DARK_SPIRIT));
-			multis.add(new MultiAbilityInfoSub("Bongtoi", SpiritElement.LIGHT_SPIRIT));
+			multis.add(new MultiAbilityInfoSub("Bongtoi", SpiritElement.DARK_SPIRIT));
 		}
 		return multis;
 	}

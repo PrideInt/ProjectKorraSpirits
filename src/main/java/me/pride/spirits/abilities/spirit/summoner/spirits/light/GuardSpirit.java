@@ -2,6 +2,8 @@ package me.pride.spirits.abilities.spirit.summoner.spirits.light;
 
 import me.pride.spirits.abilities.spirit.summoner.SummonedSpirit;
 import me.pride.spirits.api.SpiritType;
+import me.pride.spirits.api.ability.SpiritElement;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -33,5 +35,13 @@ public class GuardSpirit extends SummonedSpirit {
 	@Override
 	public EntityType defaultDarkEntityType() {
 		return defaultEntityType();
+	}
+	@Override
+	public String getSpiritName(SpiritType type) {
+		return SpiritElement.LIGHT_SPIRIT.getColor() + "" + ChatColor.BOLD + getName();
+	}
+
+	public static String getName() {
+		return "Taiguang";
 	}
 }

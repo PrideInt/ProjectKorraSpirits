@@ -1,5 +1,6 @@
 package me.pride.spirits.abilities.spirit.summoner;
 
+import com.projectkorra.projectkorra.Element;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
@@ -40,6 +41,7 @@ public abstract class SummonedSpirit extends Spirit {
 	public abstract EntityType defaultEntityType();
 	public abstract EntityType defaultLightEntityType();
 	public abstract EntityType defaultDarkEntityType();
+	public abstract String getSpiritName(SpiritType type);
 
 	public String name() {
 		return record.name();
