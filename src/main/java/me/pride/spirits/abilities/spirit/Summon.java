@@ -18,6 +18,7 @@ import me.pride.spirits.abilities.spirit.summoner.spirits.neutral.AirSpirit;
 import me.pride.spirits.abilities.spirit.summoner.spirits.neutral.EarthSpirit;
 import me.pride.spirits.abilities.spirit.summoner.spirits.neutral.FireSpirit;
 import me.pride.spirits.abilities.spirit.summoner.spirits.neutral.WaterSpirit;
+import me.pride.spirits.abilities.spirit.summoner.util.Pathfollower;
 import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,10 +151,15 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 							}
 
 							pair.getRight().spawnEntity(player.getWorld(), player.getLocation(), type, pair.getRight().defaultSpiritType(), 10000, e -> {
+								new Pathfollower(player, e);
+
 								e.setCustomName(pair.getRight().getSpiritName(playerSpiritType));
 								e.setCustomNameVisible(true);
 
-								e.getWorld().spawnParticle(playerSpiritType.particles(), e.getLocation().clone().add(0, 0.8, 0), 3, 0.35, 0.35, 0.35, 0.05);
+								if (e instanceof Tameable) {
+									((Tameable) e).setOwner(player);
+								}
+								// e.getWorld().spawnParticle(playerSpiritType.particles(), e.getLocation().clone().add(0, 0.8, 0), 3, 0.35, 0.35, 0.35, 0.05);
 							});
 						});
 

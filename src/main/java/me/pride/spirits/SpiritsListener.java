@@ -20,12 +20,14 @@ import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.abilities.spirit.Rematerialize;
 import me.pride.spirits.abilities.spirit.Summon;
 import me.pride.spirits.abilities.spirit.combos.Possess;
+import me.pride.spirits.abilities.spirit.summoner.util.Pathfollower;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.api.event.EntitySpiritDestroyEvent;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Atrium;
 import me.pride.spirits.game.Spirecite;
@@ -348,6 +350,28 @@ public class SpiritsListener implements Listener {
 		if (Possess.isPossessingImmovable(player) || Possess.isPossessed(player)) {
 			event.setCancelled(true);
 		}
+		Pathfollower.of(player).ifPresent(paths -> paths.iterator().forEachRemaining(path -> {
+			double fromX, fromY, fromZ;
+			double toX, toY, toZ;
+
+			fromX = event.getFrom().getX();
+			fromY = event.getFrom().getY();
+			fromZ = event.getFrom().getZ();
+
+			toX = event.getTo().getX();
+			toY = event.getTo().getY();
+			toZ = event.getTo().getZ();
+
+			if (fromX != toX || fromY != toY || fromZ != toZ) {
+				// player.sendMessage("adding locations to pathfollower");
+				path.storeMakerLocations();
+			}
+		}));
+	}
+
+	@EventHandler
+	public void onSpiritDestroy(final EntitySpiritDestroyEvent event) {
+		Pathfollower.of(event.getEntity()).ifPresent(path -> path.remove());
 	}
 
 	@EventHandler
