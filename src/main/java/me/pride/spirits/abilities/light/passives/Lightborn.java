@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.ability.PassiveAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.attribute.AttributeModifier;
 import com.projectkorra.projectkorra.region.RegionProtection;
+import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.LightSpirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
@@ -28,8 +29,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Lightborn extends LightSpiritAbility implements AddonAbility, PassiveAbility {
 	private final String path = Tools.path(this, Path.PASSIVES);
 
-	public static final Map<UUID, Double> LIGHTS = new HashMap<>();
-
 	@Attribute("Chance")
 	private double shedChance;
 	private int shedRate;
@@ -40,6 +39,8 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 
 	private int rate;
 	private int hits;
+
+	private double lights;
 
 	public Lightborn(Player player) {
 		super(player);
@@ -53,72 +54,68 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 		this.shed = Spirits.instance.getConfig().getBoolean(path + "Shed");
 		this.amplify = Spirits.instance.getConfig().getBoolean(path + "Amplify");
 
-		LIGHTS.put(player.getUniqueId(), 0.0);
-
 		start();
 	}
 	
 	@Override
 	public void progress() {
-		if (!RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
-			if (!bPlayer.isToggled()) {
-				if (LIGHTS.containsKey(player.getUniqueId())) {
-					LIGHTS.remove(player.getUniqueId());
+		if (bPlayer.isToggled()) {
+			if (!RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
+				if (lights < 100.0) {
+					lights += 0.1;
 				}
-				// LIGHTS.computeIfPresent(player.getUniqueId(), (k, v) -> LIGHTS.remove(player.getUniqueId()));
-			}
-			if (LIGHTS.containsKey(player.getUniqueId()) && LIGHTS.get(player.getUniqueId()) < 100.0) {
-				LIGHTS.put(player.getUniqueId(), LIGHTS.get(player.getUniqueId()) + 0.1);
-			}
-			/*
-			 * Every rate, a light spirit will have a chance to shed their negative potion effects.
-			 */
-			if (shed) {
-				for (PotionEffect active : player.getActivePotionEffects()) {
-					if (Tools.getNegativeEffectsSet().contains(active.getType())) {
-						rate = rate > shedRate ? 0 : rate + 1;
-						if (rate == 0) {
-							if (ThreadLocalRandom.current().nextInt(100) < shedChance) {
-								player.removePotionEffect(player.getActivePotionEffects().stream().toList().get(ThreadLocalRandom.current().nextInt(player.getActivePotionEffects().size())).getType());
-								player.getWorld().playSound(player.getLocation(), Sound.ITEM_BONE_MEAL_USE, 0.5F, 1.0F);
-								break;
+				/**
+				 * Every rate, a light spirit will have a chance to shed their negative potion effects.
+				 */
+				if (shed) {
+					for (PotionEffect active : player.getActivePotionEffects()) {
+						if (Tools.getNegativeEffectsSet().contains(active.getType())) {
+							rate = rate > shedRate ? 0 : rate + 1;
+							if (rate == 0) {
+								if (ThreadLocalRandom.current().nextInt(100) < shedChance) {
+									player.removePotionEffect(player.getActivePotionEffects().stream().toList().get(ThreadLocalRandom.current().nextInt(player.getActivePotionEffects().size())).getType());
+									player.getWorld().playSound(player.getLocation(), Sound.ITEM_BONE_MEAL_USE, 0.5F, 1.0F);
+									break;
+								}
 							}
 						}
 					}
 				}
-			}
 
-			/*
-			 * Amplify the damage of light spirit abilities during the day.
-			 */
-			if (amplify) {
-				if (isDay(player.getWorld())) {
-					try {
-						for (CoreAbility ability : CoreAbility.getAbilitiesByElement(SpiritElement.LIGHT_SPIRIT)) {
-							for (Field field : ability.getClass().getDeclaredFields()) {
-								if (field.isAnnotationPresent(Attribute.class)) {
-									String attribute = field.getAnnotation(Attribute.class).value();
+				/**
+				 * Amplify the damage of light spirit abilities during the day.
+				 */
+				if (amplify) {
+					if (isDay(player.getWorld())) {
+						try {
+							for (CoreAbility ability : CoreAbility.getAbilitiesByElement(SpiritElement.LIGHT_SPIRIT)) {
+								for (Field field : ability.getClass().getDeclaredFields()) {
+									if (field.isAnnotationPresent(Attribute.class)) {
+										String attribute = field.getAnnotation(Attribute.class).value();
 
-									if (attribute.equalsIgnoreCase("damage")) {
-										try {
-											ability.addAttributeModifier(attribute, amplifier, AttributeModifier.MULTIPLICATION);
-										} catch (Exception e) { }
+										if (attribute.equalsIgnoreCase("damage")) {
+											try {
+												ability.addAttributeModifier(attribute, amplifier, AttributeModifier.MULTIPLICATION);
+											} catch (Exception e) {
+											}
+										}
 									}
 								}
 							}
+						} catch (Exception e) {
 						}
-					} catch (Exception e) { }
+					}
 				}
-			}
 
-			/*
-			 * Give regeneration to nearby light or passive entities.
-			 */
-			Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneralEntity(e, player, this), (entity, light, dark, neutral) -> {
-				if (light) {
-					PotionEffectType.REGENERATION.createEffect(30, 1).apply(entity);
-				}
-			});
+				/**
+				 * Give regeneration to nearby light or passive entities.
+				 */
+				Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneralEntity(e, player, this), (entity, light, dark, neutral) -> {
+					if (light) {
+						PotionEffectType.REGENERATION.createEffect(30, 1).apply(entity);
+					}
+				});
+			}
 		}
 	}
 
@@ -150,6 +147,27 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	public static void setHit(Player player, int hit) {
 		if (CoreAbility.hasAbility(player, Lightborn.class)) {
 			CoreAbility.getAbility(player, Lightborn.class).setHit(hit);
+		}
+	}
+
+	public double getLights() {
+		return lights;
+	}
+
+	public static double getLights(Player player) {
+		if (CoreAbility.hasAbility(player, Lightborn.class)) {
+			return CoreAbility.getAbility(player, Lightborn.class).getLights();
+		}
+		return 0;
+	}
+
+	public void setLights(double lights) {
+		this.lights = lights;
+	}
+
+	public static void setLights(Player player, double lights) {
+		if (CoreAbility.hasAbility(player, Lightborn.class)) {
+			CoreAbility.getAbility(player, Lightborn.class).setLights(lights);
 		}
 	}
 	

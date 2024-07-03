@@ -302,14 +302,14 @@ public class SpiritsListener implements Listener {
 			 * stockpiled deflection later on.
 			 */
 			if (Protect.isProtecting(player)) {
-				double lights = Lightborn.LIGHTS.get(player.getUniqueId());
+				double lights = Lightborn.getLights(player);
 				double protection = Math.max(Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Protect.MinProtect") / 100.0, lights / 100.0);
 
 				double offset = damage - (protection * damage);
 
 				event.setDamage(offset);
 
-				Lightborn.LIGHTS.put(player.getUniqueId(), lights / 2.0);
+				Lightborn.setLights(player, lights / 2.0);
 				Protect.stockpile(player, Protect.getStockpile(player) + (lights / 200.0));
 
 				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "Light Energy: " + (int) (lights / 2.0) + " %", player);
