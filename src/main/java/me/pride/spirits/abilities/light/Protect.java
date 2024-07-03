@@ -86,7 +86,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 			return;
 		} else if (CoreAbility.hasAbility(player, Protect.class)) {
 			return;
-		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
 		if (!STOCKPILE.containsKey(player)) {
@@ -129,13 +129,22 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		start();
 	}
 
-	// Stockpiled deflect blast
-	public Protect(Player player, Location origin, double damage, double knockback, double range, double maxSize) {
+	/**
+	 * Stockpiled deflect blast
+	 *
+	 * @param player
+	 * @param origin
+	 * @param range
+	 * @param damage
+	 * @param knockback
+	 * @param maxSize
+	 */
+	public Protect(Player player, Location origin, double range, double damage, double knockback, double maxSize) {
 		this(player);
 
 		if (!bPlayer.canBend(this)) {
 			return;
-		} else if (RegionProtection.isRegionProtected(player, player.getLocation())) {
+		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
 		this.cooldown = Spirits.instance.getConfig().getLong(path + "Deflect.Stockpile.Cooldown");
@@ -155,6 +164,8 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		this.type = ProtectType.DEFLECT;
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 0.5F, 1.75F);
+
+		player.sendMessage("test");
 
 		applyCollisions();
 
@@ -256,12 +267,6 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		}
 	}
 
-	public static void getStockpiles(Player player, TetraConsumer<Double, Double, Double, Double> consumer) {
-		if (CoreAbility.hasAbility(player, Protect.class)) {
-			CoreAbility.getAbility(player, Protect.class).getStockpiles(consumer);
-		}
-	}
-
 	public static double getStockpile(Player player) {
 		return STOCKPILE.get(player);
 	}
@@ -280,7 +285,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 		STOCKPILE.put(player, stockpile);
 	}
 
-	public void getStockpiles(TetraConsumer<Double, Double, Double, Double> consumer) {
+	public static void getStockpiles(Player player, TetraConsumer<Double, Double, Double, Double> consumer) {
 		double stockpile = Protect.getStockpile(player);
 
 		double minRange = Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Deflect.MinRange");
