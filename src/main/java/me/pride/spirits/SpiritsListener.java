@@ -115,8 +115,8 @@ public class SpiritsListener implements Listener {
 								Protect.removeWithoutCooldown(player);
 
 								Protect.getStockpiles(player, (range, damage, knockback, maxSize) -> {
-									new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
-									new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), damage, knockback, range, maxSize);
+									new Protect(player, GeneralMethods.getLeftSide(player.getLocation().clone().add(0, 1, 0), 0.7), range, damage, knockback, maxSize);
+									new Protect(player, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1, 0), 0.7), range, damage, knockback, maxSize);
 								});
 								Protect.setStockpile(player, 1.0);
 							}
@@ -216,9 +216,9 @@ public class SpiritsListener implements Listener {
 		if (event.getEntity() instanceof LivingEntity) {
 			if (((LivingEntity) event.getEntity()).getHealth() <= 0) return;
 		}
-		/*
-		If the transformed Spirit doesn't die before it reverts back, then we will apply the ratio of damage
-		that it took while transformed back to the original entity.
+		/**
+		 * If the transformed Spirit doesn't die before it reverts back, then we will apply the ratio of damage
+		 * that it took while transformed back to the original entity.
 		 */
 		if (ReplaceableSpirit.containsKey(entity)) {
 			Entity replaced = ReplaceableSpirit.fromEntity(entity).getReplacedDefinitions().getReplaced();
@@ -238,7 +238,10 @@ public class SpiritsListener implements Listener {
 	@EventHandler
 	public void onSpiritDeath(final EntityDeathEvent event) {
 		Entity entity = event.getEntity();
-		
+
+		/**
+		 * Upon the death of a Spirit, we will have particles display around the entity.
+		 */
 		if (Spirit.exists(entity)) {
 			Spirit.of(entity).ifPresent(spirit -> {
 				if (Filter.filterEntityLight(entity)) {
@@ -266,6 +269,9 @@ public class SpiritsListener implements Listener {
 			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 
 			if (bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Enabled")) {
+				/**
+				 * We will check if the player is a light spirit and has the Lightborn passive, and if so, we will apply vulnerability.
+				 */
 				if (Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Vulnerability")) {
 					double multiplier = Spirits.instance.getConfig().getDouble("Light.Passives.Lightborn.VulnerabilityMultiplier");
 					double offset = damage;
@@ -275,6 +281,9 @@ public class SpiritsListener implements Listener {
 					}
 					event.setDamage(offset);
 				}
+				/**
+				 * When the player takes a number of hits (damage), they will bleed.
+				 */
 				if (Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Bleed.Enabled")) {
 					Lightborn.addHit(player, 1);
 
@@ -286,6 +295,12 @@ public class SpiritsListener implements Listener {
 					}
 				}
 			}
+			/**
+			 * If the player is protecting with Protect, we apply damage reduction by Lightborn lights %.
+			 *
+			 * We will also stockpile the lights % that the player has used to protect for any Protect
+			 * stockpiled deflection later on.
+			 */
 			if (Protect.isProtecting(player)) {
 				double lights = Lightborn.LIGHTS.get(player.getUniqueId());
 				double protection = Math.max(Spirits.instance.getConfig().getDouble("Light.Abilities.Protect.Protect.MinProtect") / 100.0, lights / 100.0);
@@ -301,6 +316,9 @@ public class SpiritsListener implements Listener {
 
 				player.getWorld().spawnParticle(Particle.FLASH, player.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-1.5, 1.5), ThreadLocalRandom.current().nextDouble(0.8, 2), ThreadLocalRandom.current().nextDouble(-1.5, 1.5)), 1, 0.25, 0.25, 0.25);
 			} else if (bPlayer.hasElement(SpiritElement.SPIRIT)) {
+				/**
+				 * Transience passive. Negate all damage when the player is hit.
+				 */
 				if (Spirits.instance.getConfig().getBoolean("Spirit.Passives.Transient.Enabled")) {
 					int chance = Spirits.instance.getConfig().getInt("Spirit.Passives.Transient.PhaseMeleeDamageChance");
 
@@ -333,6 +351,9 @@ public class SpiritsListener implements Listener {
 
 			if (bPlayer.hasElement(SpiritElement.SPIRIT)) {
 				if (Spirits.instance.getConfig().getBoolean("Spirit.Passives.Transient.Enabled")) {
+					/**
+					 * Transience passive. Negate all damage when the player is hit by bending abilities.
+					 */
 					int chance = Spirits.instance.getConfig().getInt("Spirit.Passives.Transient.PhaseBendingDamageChance");
 
 					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
@@ -347,9 +368,16 @@ public class SpiritsListener implements Listener {
 	public void onPlayerMovement(final PlayerMoveEvent event) {
 		Player player = event.getPlayer();
 
+		/**
+		 * If the player is possessing an entity, we will cancel the event to prevent movement.
+		 */
 		if (Possess.isPossessingImmovable(player) || Possess.isPossessed(player)) {
 			event.setCancelled(true);
 		}
+		/**
+		 * If the player is moving (not moving cursor, but actually moving; x, y and z changes),
+		 * we will store the locations of the player's movement in all existing Pathfollowers.
+		 */
 		Pathfollower.of(player).ifPresent(paths -> paths.iterator().forEachRemaining(path -> {
 			double fromX, fromY, fromZ;
 			double toX, toY, toZ;
@@ -371,6 +399,10 @@ public class SpiritsListener implements Listener {
 
 	@EventHandler
 	public void onSpiritDestroy(final EntitySpiritDestroyEvent event) {
+		/**
+		 * When a Spirit is destroyed (dead, reverted, or anything that causes the Spirit
+		 * to be removed from cache), we will remove the Pathfollower assigned to the Spirit entity.
+		 */
 		Pathfollower.of(event.getEntity()).ifPresent(path -> path.remove());
 	}
 
@@ -381,6 +413,9 @@ public class SpiritsListener implements Listener {
 
 		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 
+		/**
+		 * Remove the Commandeer ability if the player switches to another slot or bind.
+		 */
 		if (bPlayer != null) {
 			String ability = bPlayer.getAbilities().get(slot);
 
@@ -394,6 +429,9 @@ public class SpiritsListener implements Listener {
 class MainListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onCraft(final PrepareItemCraftEvent event) {
+		/**
+		 * Crafting recipes for Spirecite items.
+		 */
 		Recipe recipe = event.getRecipe();
 		CraftingInventory table = event.getInventory();
 		ItemStack[] matrix = table.getMatrix();
@@ -444,9 +482,12 @@ class MainListener implements Listener {
 		if (block.getType() == Material.GOLD_ORE || block.getType() == Material.DEEPSLATE_GOLD_ORE) {
 			if (player.getGameMode() != GameMode.SURVIVAL) return;
 			if (player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH)) return;
-			
+
+			/**
+			 * Drop Spirecite fragments when breaking gold ore every chance.
+			 */
 			double chance = Spirits.instance.getConfig().getDouble("Spirecite.Chance");
-			chance = player.hasPotionEffect(PotionEffectType.LUCK) ? chance * 1.5 : chance;
+			chance = player.hasPotionEffect(PotionEffectType.LUCK) ? chance * 1.5 : chance; // If player has Luck effect, increase chance by 50%.
 			
 			if (random.nextInt(100) <= chance) {
 				Location center = block.getLocation().clone().add(0.5, 0.5, 0.5);
@@ -457,6 +498,10 @@ class MainListener implements Listener {
 				block.getWorld().dropItem(center.clone().add(x / 2.0, 0, z / 2.0).add(new Vector(0, 0.25, 0).multiply(0.1)), Spirecite.SPIRECITE_FRAGMENTS);
 			}
 		} else if (block.getType() == Material.CRAFTING_TABLE && block.hasMetadata("station:ancient")) {
+			/**
+			 * When an Ancient Station is broken, we will remove its location from the cache; this will update
+			 * in the JSON as well when server stops. This effectively removes and destroys the station from the world.
+			 */
 			StorageCache.removeLocationsFromCache(block.getWorld(), new int[]{ block.getX(), block.getY(), block.getZ() });
 		}
 	}
@@ -468,7 +513,12 @@ class MainListener implements Listener {
 
 		Block block = event.getBlockPlaced();
 		Player player = event.getPlayer();
-		
+
+		/**
+		 * Check to see if the block being placed is an Ancient Station, and if so, we will see if it's in an ancient city as well as
+		 * being in the deep dark biome. Additionally, if there are at least 3 Spirecite blocks nearby, then we will allow the
+		 * player to "construct" (place) the Ancient Station.
+		 */
 		if (meta.getPersistentDataContainer().has(new NamespacedKey(Spirits.instance, "ancient_station"), PersistentDataType.STRING)) {
 			Predicate<Player> condition = p -> {
 				if (p.getWorld().getBiome(p.getLocation()) == Biome.DEEP_DARK) {
@@ -496,6 +546,11 @@ class MainListener implements Listener {
 				return;
 			}
 		} else if (meta.getPersistentDataContainer().has(Spirecite.SPIRECITE_BLOCK_KEY, PersistentDataType.STRING)) {
+			/**
+			 * Set block metadata on the Spirecite block when placed.
+			 *
+			 * TODO: Should make this persistent. Will need to do more storage stuff.
+			 */
 			block.setMetadata("spirecite:block", new FixedMetadataValue(Spirits.instance, 0));
 		}
 	}
@@ -505,6 +560,12 @@ class MainListener implements Listener {
 		Entity entity = event.getEntity();
 		Player killer = event.getEntity().getKiller();
 
+		/**
+		 * Upon the death of an Ancient Soulweaver, we will drop random amounts of Spirecite (NOT fragments)
+		 * ranging from 2 to 5 pieces.
+		 *
+		 * We'll also remove the boss bar and the entity from the cache.
+		 */
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				ItemStack spirecite = Spirecite.SPIRECITE.clone();
@@ -525,7 +586,11 @@ class MainListener implements Listener {
 		if (Spirits.instance.getConfig().getBoolean("Spirecite.Enabled")) {
 			if (entity.getType() == EntityType.WARDEN && entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
 				Warden soulweaver = (Warden) entity;
-				
+
+				/**
+				 * When the Ancient Soulweaver is in its Healing Stasis mode, we will heal the entity by the amount of damage
+				 * that it has taken. Negates the damage taken AND heals the Ancient Soulweaver.
+				 */
 				if (soulweaver.hasMetadata("healingstasis")) {
 					double health = soulweaver.getHealth() + event.getDamage();
 					health = health > soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ? soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() : health;
@@ -544,6 +609,12 @@ class MainListener implements Listener {
 				});
 			}
 		}
+		/**
+		 * If the player has totem stacks in them (all light spirit players can stack totems), then we will
+		 * stop the player from dying as soon as they take a death blow. This will give them 1/4 of their health
+		 * back and apply regeneration, fire resistance, and absorption effects, plus resetting their drowning air,
+		 * fall distance and exhaustion.
+		 */
 		if (Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
 			if (entity.getType() == EntityType.PLAYER) {
 				Player player = (Player) entity;
@@ -557,7 +628,7 @@ class MainListener implements Listener {
 						PotionEffectType.FIRE_RESISTANCE.createEffect(200, 0).apply(player);
 						PotionEffectType.ABSORPTION.createEffect(100, 1).apply(player);
 
-						player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() / 3);
+						player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() / 4);
 						player.setFireTicks(0);
 						player.setFallDistance(0);
 						player.setExhaustion(0);
@@ -597,6 +668,7 @@ class MainListener implements Listener {
 					}
 					return;
 				}
+				// TODO: Soulless Atrium
 				if (!BendingBossBar.exists(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY)) {
 					new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000, true, 4000, player);
 					warden.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80, 0));
@@ -608,6 +680,10 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onAbilityStart(final AbilityStartEvent event) {
+		/**
+		 * If the player has been restricted by the Ancient Soulweaver, they will not
+		 * be able to use any abilities.
+		 */
 		if (event.getAbility().getPlayer().hasMetadata("soulweaver:restricted")) {
 			event.getAbility().remove();
 			event.setCancelled(true);
@@ -617,6 +693,9 @@ class MainListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoin(final PlayerJoinEvent event) {
+		/**
+		 * When a player joins, we want the boss bar to be displayed for them if an Ancient Soulweaver exists.
+		 */
 		BendingBossBar.fromPlayer(event.getPlayer()).ifPresent(bar -> {
 			bar.bossBar().addPlayer(event.getPlayer());
 		});
@@ -648,6 +727,9 @@ class MainListener implements Listener {
 			Block block = event.getClickedBlock();
 
 			if (block.getType() == Material.CHEST) {
+				/**
+				 * If the player is in an ancient city, then they will have a chance to find a Soulless Atrium in any chest.
+				 */
 				if (ThreadLocalRandom.current().nextInt(100) <= Spirits.instance.getConfig().getInt("Spirecite.FindSoullessAtriumChance")) {
 					if (player.getWorld().getBiome(player.getLocation()) == Biome.DEEP_DARK) {
 						StructureSearchResult result = player.getWorld().locateNearestStructure(player.getLocation(), Structure.ANCIENT_CITY, 2, false);
@@ -669,7 +751,12 @@ class MainListener implements Listener {
 			if (item == null) {
 				return;
 			}
-			if (Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
+			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+			/**
+			 * If the player is a light spirit and holding a Totem of Undying, we will stack
+			 * the totems through shift right-click.
+			 */
+			if (bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && Spirits.instance.getConfig().getBoolean("Light.CanStackTotems")) {
 				if (item.getType() == Material.TOTEM_OF_UNDYING) {
 					int stack = StorageCache.totemStackCache().containsKey(player.getUniqueId()) ? StorageCache.totemStackCache().get(player.getUniqueId()) + 1 : 1;
 
