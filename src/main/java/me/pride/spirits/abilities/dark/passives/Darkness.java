@@ -1,20 +1,36 @@
 package me.pride.spirits.abilities.dark.passives;
 
 import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.ability.PassiveAbility;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
+import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.Tools;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 public class Darkness extends DarkSpiritAbility implements AddonAbility, PassiveAbility {
 	public Darkness(Player player) {
 		super(player);
+
+		if (CoreAbility.hasAbility(player, Darkness.class)) {
+			return;
+		}
+		start();
 	}
 	
 	@Override
 	public void progress() {
-	
+		/**
+		 * Apply withering deterioration to nearby non-dark entities.
+		 */
+		Tools.trackEntitySpirit(player.getLocation(), 1.25, e -> Filter.filterGeneralEntity(e, player, this), (entity, light, dark, neutral) -> {
+			if (!dark) {
+				PotionEffectType.WITHER.createEffect(30, 0).apply(entity);
+			}
+		});
 	}
 	
 	@Override
@@ -24,16 +40,6 @@ public class Darkness extends DarkSpiritAbility implements AddonAbility, Passive
 	
 	@Override
 	public boolean isHarmlessAbility() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIgniteAbility() {
-		return false;
-	}
-	
-	@Override
-	public boolean isExplosiveAbility() {
 		return false;
 	}
 	
@@ -70,11 +76,11 @@ public class Darkness extends DarkSpiritAbility implements AddonAbility, Passive
 	
 	@Override
 	public boolean isInstantiable() {
-		return false;
+		return true;
 	}
 	
 	@Override
 	public boolean isProgressable() {
-		return false;
+		return true;
 	}
 }

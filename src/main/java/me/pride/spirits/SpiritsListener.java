@@ -62,6 +62,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -268,7 +270,7 @@ public class SpiritsListener implements Listener {
 			Player player = (Player) entity;
 			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 
-			if (bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Enabled")) {
+			if (bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && !bPlayer.hasElement(SpiritElement.DARK_SPIRIT) && Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Enabled")) {
 				/**
 				 * We will check if the player is a light spirit and has the Lightborn passive, and if so, we will apply vulnerability.
 				 */
@@ -292,6 +294,22 @@ public class SpiritsListener implements Listener {
 
 						player.getWorld().playSound(player.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 1, 2);
 						Lightborn.setHit(player, 0);
+					}
+				}
+			} else if (bPlayer.hasElement(SpiritElement.DARK_SPIRIT) && !bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && Spirits.instance.getConfig().getBoolean("Dark.Passives.Darkness.Enabled")) {
+				/**
+				 * If the player is a dark spirit and has the Darkness passive, we will apply damage resistance at night.
+				 */
+				if (Spirits.instance.getConfig().getBoolean("Dark.Passives.Darkness.NightResistance")) {
+					// is night check
+					if (player.getWorld().getTime() < 23500 || player.getWorld().getTime() > 12500) {
+						double resistance = Spirits.instance.getConfig().getDouble("Dark.Passives.Darkness.NightResistanceMultiplier");
+						double offset = damage;
+
+						if (resistance > 1) {
+							offset = damage * resistance;
+						}
+						event.setDamage(offset - damage);
 					}
 				}
 			}
@@ -423,6 +441,37 @@ public class SpiritsListener implements Listener {
 				CoreAbility.getAbility(player, Commandeer.class).remove();
 			}
 		}
+	}
+
+	@EventHandler
+	public void onEntityHealEvent(final EntityRegainHealthEvent event) {
+		Entity entity = event.getEntity();
+		double amount = event.getAmount();
+
+		if (entity.getType() == EntityType.PLAYER) {
+			Player player = (Player) entity;
+			BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+			/**
+			 * If the player is a dark spirit and has the Darkness passive, we will invert healing from Regeneration or Instant Healing
+			 * to damage the player instead.
+			 */
+			if (bPlayer.hasElement(SpiritElement.DARK_SPIRIT) && !bPlayer.hasElement(SpiritElement.LIGHT_SPIRIT) && Spirits.instance.getConfig().getBoolean("Dark.Passives.Darkness.Enabled")) {
+				if (event.getRegainReason() == RegainReason.MAGIC_REGEN || event.getRegainReason() == RegainReason.MAGIC) {
+					event.setCancelled(true);
+					player.damage(amount);
+				} else if (event.getRegainReason() == RegainReason.WITHER) {
+					event.setCancelled(true);
+
+					double health = player.getHealth() + amount;
+					if (health > player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
+						health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+					}
+					player.setHealth(health);
+				}
+			}
+		}
+
 	}
 }
 
