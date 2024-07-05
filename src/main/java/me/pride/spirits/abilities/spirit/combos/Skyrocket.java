@@ -145,16 +145,6 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 	}
 	
 	@Override
-	public boolean isIgniteAbility() {
-		return false;
-	}
-	
-	@Override
-	public boolean isExplosiveAbility() {
-		return false;
-	}
-	
-	@Override
 	public long getCooldown() {
 		return cooldown;
 	}

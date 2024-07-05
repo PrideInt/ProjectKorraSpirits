@@ -18,8 +18,10 @@ import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -178,7 +180,8 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 		private double size;
 		private boolean single;
 		private CoreAbility ability;
-		
+
+		private BlockData quartz;
 		private Location origin, location, destination;
 		private Vector vector;
 		private Stack<Set<TempBlock>> tower;
@@ -189,7 +192,8 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 			this.single = single;
 			this.origin = origin.clone();
 			this.ability = ability;
-			
+
+			this.quartz = Material.QUARTZ_BLOCK.createBlockData();
 			this.location = this.origin.clone();
 			this.destination = this.origin.clone().add(0, height, 0);
 			this.vector = GeneralMethods.getDirection(this.location, this.destination).normalize();
@@ -205,10 +209,12 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 
 			Set<TempBlock> blocks = new HashSet<>();
 			if (single) {
-				blocks.add(new TempBlock(this.location.getBlock(), Material.QUARTZ_BLOCK.createBlockData()));
+				blocks.add(new TempBlock(this.location.getBlock(), this.quartz));
+				this.location.getWorld().spawnParticle(Particle.BLOCK_CRACK, this.location, 3, 0.1, 0.1, 0.1, 0.1, this.quartz);
 			} else {
 				for (Block block : GeneralMethods.getBlocksAroundPoint(this.location, this.size)) {
 					blocks.add(new TempBlock(block, Material.QUARTZ_BLOCK.createBlockData()));
+					block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().clone().add(0.5, 0.5, 0.5), 1, 0.1, 0.1, 0.1, 0.1, this.quartz);
 				}
 			}
 			this.tower.push(blocks);

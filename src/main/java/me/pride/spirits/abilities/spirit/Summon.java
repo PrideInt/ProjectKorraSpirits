@@ -150,7 +150,7 @@ public class Summon extends SpiritAbility implements AddonAbility, MultiAbility 
 								type = pair.getRight().defaultDarkEntityType();
 							}
 
-							pair.getRight().spawnEntity(player.getWorld(), player.getLocation(), type, pair.getRight().defaultSpiritType(), 10000, e -> {
+							pair.getRight().spawnEntity(player.getWorld(), player.getLocation(), type, playerSpiritType, 10000, e -> {
 								new Pathfollower(player, e);
 
 								e.setCustomName(pair.getRight().getSpiritName(playerSpiritType));

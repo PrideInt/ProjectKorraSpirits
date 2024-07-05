@@ -165,8 +165,6 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WARDEN_SONIC_BOOM, 0.5F, 1.75F);
 
-		player.sendMessage("test");
-
 		applyCollisions();
 
 		start();
