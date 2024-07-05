@@ -12,7 +12,9 @@ import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -20,12 +22,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -33,19 +38,21 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	private final String path = Tools.path(this, Path.ABILITIES);
 
 	private enum RestoreForm {
-		SELF, TARGET, SOURCING, SOURCED
+		NONE, SELF, TARGET, SOURCING, SOURCED, ITEMS
 	}
 	private RestoreForm restoreForm;
 
 	@Attribute(Attribute.COOLDOWN)
-	private long cooldown;
+	private long cooldown, maxCooldown;
 	@Attribute(Attribute.SELECT_RANGE)
 	private double selectRange;
 	@Attribute("Heal")
 	private double restore;
 	@Attribute("Rate")
 	private int restoreRate;
+	private int restoreDurability;
 	private boolean healthFlashAnimation;
+	private boolean enhanceItems;
 
 	private int rate;
 
@@ -54,6 +61,10 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 
 	private LivingEntity target;
 	private Set<RestoreParticles> particles;
+	private static final Map<Material, Material> RESTORABLES = Map.of(
+			Material.APPLE, Material.GOLDEN_APPLE,
+			Material.CARROT, Material.GOLDEN_CARROT
+	);
 
 	public Restore(Player player) {
 		super(player);
@@ -65,36 +76,56 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
-		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
+		this.maxCooldown = Spirits.instance.getConfig().getLong(path + "MaxCooldown");
 		this.selectRange = Spirits.instance.getConfig().getDouble(path + "SelectRange");
 		this.restore = Spirits.instance.getConfig().getDouble(path + "Restore");
 		this.restoreRate = Spirits.instance.getConfig().getInt(path + "RestoreRate");
+		this.restoreDurability = Spirits.instance.getConfig().getInt(path + "RestoreDurability");
 		this.healthFlashAnimation = Spirits.instance.getConfig().getBoolean(path + "HealthFlashAnimation");
+		this.enhanceItems = Spirits.instance.getConfig().getBoolean(path + "EnhanceItems");
 
 		this.target = player;
-		this.restoreForm = RestoreForm.SELF;
+		this.restoreForm = RestoreForm.NONE;
 
 		this.particles = new HashSet<>();
 
-		Entity entity = Tools.rayTraceEntity(player, this.selectRange);
-		if (entity != null) {
-			if (entity instanceof LivingEntity && Filter.filterGeneralEntity(entity, player, this)) {
-				this.restoreForm = RestoreForm.TARGET;
-				this.target = (LivingEntity) entity;
+		if (player.getInventory().getItemInMainHand() != null || player.getInventory().getItemInOffHand() != null) {
+			ItemStack item = player.getInventory().getItemInMainHand();
+			if (item == null) {
+				item = player.getInventory().getItemInOffHand();
+			}
+			if (item.getItemMeta() instanceof Damageable && ((Damageable) item.getItemMeta()).hasDamage()) {
+				this.restoreForm = RestoreForm.ITEMS;
+			} else if (this.enhanceItems && RESTORABLES.containsKey(item.getType())) {
+				this.restoreForm = RestoreForm.ITEMS;
 			}
 		}
-		Block block = Tools.rayTraceBlock(player, this.selectRange);
-		if (block != null) {
-			if (block.hasMetadata(Spirit.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
-				this.restoreForm = RestoreForm.SOURCING;
-				for (int i = 0; i < 5; i++) {
-					double x, z;
-					x = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
-					z = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
-
-					this.particles.add(new RestoreParticles(block.getLocation().clone().add(x, 0.5, z), player.getLocation().clone().add(0, 1, 0)));
+		if (this.restoreForm == RestoreForm.NONE) {
+			Entity entity = Tools.rayTraceEntity(player, this.selectRange);
+			if (entity != null) {
+				if (entity instanceof LivingEntity && Filter.filterGeneralEntity(entity, player, this)) {
+					this.restoreForm = RestoreForm.TARGET;
+					this.target = (LivingEntity) entity;
 				}
 			}
+		}
+		if (this.restoreForm == RestoreForm.NONE) {
+			Block block = Tools.rayTraceBlock(player, this.selectRange);
+			if (block != null) {
+				if (block.hasMetadata(Spirit.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
+					this.restoreForm = RestoreForm.SOURCING;
+					for (int i = 0; i < 5; i++) {
+						double x, z;
+						x = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
+						z = ThreadLocalRandom.current().nextDouble(-0.5, 0.5);
+
+						this.particles.add(new RestoreParticles(block.getLocation().clone().add(x, 0.5, z), player.getLocation().clone().add(0, 1, 0)));
+					}
+				}
+			}
+		}
+		if (this.restoreForm == RestoreForm.NONE) {
+			this.restoreForm = RestoreForm.SELF;
 		}
 		player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RETURN, 1, 1);
 
@@ -117,6 +148,9 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 			case SOURCING, SOURCED:
 				restoreSource();
 				break;
+			case ITEMS:
+				restoreItems();
+				break;
 		}
 	}
 
@@ -136,6 +170,18 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 			}
 		}
 		particles.removeIf(particle -> !particle.handle());
+	}
+
+	private void rateIntervals() {
+		rate = rate > restoreRate ? 0 : rate + 1;
+
+		if (rate == 0) {
+			if (cooldown + 500 > maxCooldown) {
+				cooldown = maxCooldown;
+			} else {
+				cooldown += 500;
+			}
+		}
 	}
 
 	private void restore(double restore) {
@@ -163,7 +209,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	}
 
 	private void restoreSelf(double restore) {
-		rate = rate > restoreRate ? 0 : rate + 1;
+		rateIntervals();
 		if (rate == 0) {
 			restore(restore);
 		}
@@ -175,7 +221,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	}
 
 	private void restoreTarget() {
-		rate = rate > restoreRate ? 0 : rate + 1;
+		rateIntervals();
 		if (rate == 0) {
 			if (DarkSpirit.isDarkSpirit(target)) {
 				DamageHandler.damageEntity(target, restore, this);
@@ -204,6 +250,40 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		}
 	}
 
+	private void restoreItems() {
+		playEffects();
+
+		rateIntervals();
+		if (rate == 0) {
+			ItemStack item = player.getInventory().getItemInMainHand();
+			if (item == null) {
+				item = player.getInventory().getItemInOffHand();
+			}
+			if (item != null) {
+				if (item.getItemMeta() instanceof Damageable) {
+					Damageable damageable = (Damageable) item.getItemMeta();
+
+					if (damageable.hasDamage()) {
+						if (damageable.getDamage() - restoreDurability < 0) {
+							damageable.setDamage(0);
+						} else {
+							damageable.setDamage(damageable.getDamage() - restoreDurability);
+						}
+						item.setItemMeta(damageable);
+					}
+				} else if (RESTORABLES.containsKey(item.getType())) {
+					item.setType(RESTORABLES.get(item.getType()));
+				} else {
+					remove();
+					return;
+				}
+			} else {
+				remove();
+				return;
+			}
+		}
+	}
+
 	@Override
 	public boolean isEnabled() {
 		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Restore.Enabled");
@@ -227,6 +307,12 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	@Override
 	public String getName() {
 		return "Restore";
+	}
+
+	@Override
+	public void remove() {
+		bPlayer.addCooldown(this);
+		super.remove();
 	}
 
 	@Override

@@ -83,11 +83,13 @@ public class Config {
 
 		/* Restore */
 		config.addDefault("Light.Abilities.Restore.Enabled", true);
-		config.addDefault("Light.Abilities.Restore.Cooldown", 8000);
+		config.addDefault("Light.Abilities.Restore.MaxCooldown", 20000);
 		config.addDefault("Light.Abilities.Restore.SelectRange", 6);
 		config.addDefault("Light.Abilities.Restore.Restore", 1);
 		config.addDefault("Light.Abilities.Restore.RestoreRate", 30);
+		config.addDefault("Light.Abilities.Restore.RestoreDurability", 3);
 		config.addDefault("Light.Abilities.Restore.HealthFlashAnimation", true);
+		config.addDefault("Light.Abilities.Restore.EnhanceItems", true);
 
 		/* Sanctuary */
 		config.addDefault("Light.Combos.Sanctuary.Enabled", true);
