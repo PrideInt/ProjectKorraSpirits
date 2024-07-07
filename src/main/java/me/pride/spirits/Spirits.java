@@ -14,6 +14,7 @@ import me.pride.spirits.storage.SQLite;
 import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.ChatUtil;
+import me.pride.spirits.util.GhostFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -39,6 +40,7 @@ public class Spirits extends JavaPlugin {
     private FileConfiguration config;
     private Listener listener;
     private SQLite database;
+    private GhostFactory ghostFactory;
 
     @Override
     public void onEnable() {
@@ -49,6 +51,10 @@ public class Spirits extends JavaPlugin {
         database.init();
 
         Config.setup();
+
+        if (getConfig().getBoolean("Spirit.Ghosts")) {
+            ghostFactory = new GhostFactory();
+        }
         if (getConfig().getBoolean("Spirecite.Enabled")) {
             Spirecite.setup();
             Station.setup();
@@ -141,5 +147,8 @@ public class Spirits extends JavaPlugin {
     
     public FileConfiguration configuration() {
         return this.config;
+    }
+    public GhostFactory getGhostFactory() {
+        return this.ghostFactory;
     }
 }

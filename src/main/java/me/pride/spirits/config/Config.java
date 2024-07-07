@@ -13,6 +13,7 @@ public class Config {
 		config.addDefault("Spirecite.FindSoullessAtriumChance", 5);
 
 		config.addDefault("Light.CanStackTotems", true);
+		config.addDefault("Spirit.Ghosts", true);
 		
 		/*
 		 *   	- Dark -

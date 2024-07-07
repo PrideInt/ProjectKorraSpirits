@@ -1,12 +1,24 @@
 package me.pride.spirits.abilities.spirit.passives;
 
+import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.ability.PassiveAbility;
+import com.projectkorra.projectkorra.util.ActionBar;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
+import me.pride.spirits.util.GhostFactory;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Transient extends SpiritAbility implements AddonAbility, PassiveAbility {
 	public Transient(Player player) {
@@ -16,6 +28,56 @@ public class Transient extends SpiritAbility implements AddonAbility, PassiveAbi
 	@Override
 	public void progress() {
 	
+	}
+
+	public void sendTransientEffects() {
+		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
+		ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
+	}
+
+	/**
+	 * Sends the transient effects to the player and attacker.
+	 *
+	 * @param attacker
+	 */
+	@Deprecated
+	public void sendTransientEffects(Player attacker) {
+		sendTransientEffects();
+		if (GhostFactory.isGhostEnabled()) {
+			Spirits.instance.getGhostFactory().setGhostTime(player, attacker, 1000);
+		}
+	}
+
+	public void sendTransientEffectsAround(double radius) {
+		sendTransientEffects();
+		Set<Player> viewers = new HashSet<>();
+		for (Entity entity : GeneralMethods.getEntitiesAroundPoint(player.getLocation(), radius)) {
+			if (entity.getType() != EntityType.PLAYER) {
+				continue;
+			}
+			Player viewer = (Player) entity;
+			viewers.add(viewer);
+		}
+		Spirits.instance.getGhostFactory().setGhostTime(player, viewers, 1000);
+	}
+
+	public static void sendTransience(Player player) {
+		if (hasAbility(player, Transient.class)) {
+			getAbility(player, Transient.class).sendTransientEffects();
+		}
+	}
+
+	@Deprecated
+	public static void sendTransience(Player player, Player attacker) {
+		if (hasAbility(player, Transient.class)) {
+			getAbility(player, Transient.class).sendTransientEffects(attacker);
+		}
+	}
+
+	public static void sendTransience(Player player, double radius) {
+		if (hasAbility(player, Transient.class)) {
+			getAbility(player, Transient.class).sendTransientEffectsAround(radius);
+		}
 	}
 	
 	@Override
@@ -60,12 +122,12 @@ public class Transient extends SpiritAbility implements AddonAbility, PassiveAbi
 	
 	@Override
 	public boolean isInstantiable() {
-		return false;
+		return true;
 	}
 	
 	@Override
 	public boolean isProgressable() {
-		return false;
+		return true;
 	}
 
 	@Override

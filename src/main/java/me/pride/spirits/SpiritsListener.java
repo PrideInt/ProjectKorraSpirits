@@ -20,6 +20,7 @@ import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.abilities.spirit.Rematerialize;
 import me.pride.spirits.abilities.spirit.Summon;
 import me.pride.spirits.abilities.spirit.combos.Possess;
+import me.pride.spirits.abilities.spirit.passives.Transient;
 import me.pride.spirits.abilities.spirit.summoner.util.Pathfollower;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
@@ -35,6 +36,7 @@ import me.pride.spirits.game.Station;
 import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.GhostFactory;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -70,6 +72,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.CraftingInventory;
@@ -343,14 +346,12 @@ public class SpiritsListener implements Listener {
 					if (ThreadLocalRandom.current().nextInt(100) <= chance) {
 						if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 							event.setDamage(0);
-							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
-							ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
+							Transient.sendTransience(player, 32);
 						}
 					}
 					if (event.getCause() == DamageCause.FALLING_BLOCK || event.getCause() == DamageCause.CRAMMING || event.getCause() == DamageCause.SUFFOCATION) {
 						event.setDamage(0);
-						player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 0.5F);
-						ActionBar.sendActionBar(SpiritElement.SPIRIT.getSubColor() + "* Transience phased the damage away. *", player);
+						Transient.sendTransience(player, 32);
 					} else if (event.getCause() == DamageCause.DROWNING) {
 						event.setCancelled(true);
 					}
@@ -757,6 +758,13 @@ class MainListener implements Listener {
 				}
 			}
 		});
+	}
+
+	@EventHandler
+	public void onPlayerLeave(final PlayerQuitEvent event) {
+		if (GhostFactory.isGhostEnabled()) {
+			Spirits.instance.getGhostFactory().unghost(event.getPlayer());
+		}
 	}
 
 	@EventHandler
