@@ -388,7 +388,9 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	}
 	
 	@Override
-	public void load() { }
+	public void load() {
+		applyCollisions();
+	}
 	
 	@Override
 	public void stop() { }
