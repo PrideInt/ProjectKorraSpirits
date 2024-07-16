@@ -19,14 +19,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public class StorageCache {
 	private static final Set<UUID> UUID_CACHE = ConcurrentHashMap.newKeySet();
 	private static final Map<UUID, Integer> TOTEM_STACK_CACHE = new ConcurrentHashMap<>();
 	private static final Map<String, List<int[]>> LOCATIONS = new ConcurrentHashMap<>();
+	private static final List<String> SPIRIT_WORLDS = new CopyOnWriteArrayList<>();
 	
 	protected static final File STATION = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "stations.json");
+	protected static final File WORLDS = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "spirit_worlds.json");
 	protected static final File STORAGE = new File(Spirits.instance.getDataFolder().getAbsolutePath() + File.separator + "storage.db");
 
 	public static void queryTotemStacks(SQLite sql) {
@@ -174,8 +177,35 @@ public class StorageCache {
 			writer.close();
 		} catch (IOException e) { }
 	}
+	public static void queryWorlds() {
+		Gson gson = new Gson();
+
+		try {
+			Reader reader = new FileReader(WORLDS);
+			List<String> list = gson.fromJson(reader, List.class);
+
+			SPIRIT_WORLDS.addAll(list);
+		} catch (Exception e) {
+			try {
+				WORLDS.createNewFile();
+			} catch (IOException ioe) { }
+		}
+	}
+	public static void updateWorlds() {
+		Gson gson = new Gson();
+
+		try {
+			Writer writer = new FileWriter(WORLDS, false);
+			gson.toJson(SPIRIT_WORLDS, writer);
+			writer.flush();
+			writer.close();
+		} catch (IOException e) { }
+	}
 	public static Map<String, List<int[]>> locations() {
 		return LOCATIONS;
+	}
+	public static List<String> spiritWorlds() {
+		return SPIRIT_WORLDS;
 	}
 	public static void removeLocationsFromCache(World world, int[] coordinates) {
 		LOCATIONS.computeIfPresent(world.getName(), (wrld, list) -> { list.remove(coordinates); return list; });
@@ -185,6 +215,14 @@ public class StorageCache {
 			LOCATIONS.get(world.getName()).add(coordinates);
 		} else {
 			LOCATIONS.put(world.getName(), new ArrayList<int[]>(List.of(coordinates)));
+		}
+	}
+	public static void removeWorldFromCache(String world) {
+		SPIRIT_WORLDS.remove(world);
+	}
+	public static void addWorldToCache(String world) {
+		if (!SPIRIT_WORLDS.contains(world)) {
+			SPIRIT_WORLDS.add(world);
 		}
 	}
 }

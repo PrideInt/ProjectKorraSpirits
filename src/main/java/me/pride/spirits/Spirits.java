@@ -67,6 +67,7 @@ public class Spirits extends JavaPlugin {
         StorageCache.queryUUIDs(database);
         StorageCache.querySpirits(database);
         StorageCache.queryLocations();
+        StorageCache.queryWorlds();
         if (getConfig().getBoolean("Light.CanStackTotems")) {
             StorageCache.queryTotemStacks(database);
         }
