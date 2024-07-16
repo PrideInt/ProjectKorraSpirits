@@ -1,9 +1,11 @@
 package me.pride.spirits.abilities.spirit.summoner.util;
 
+import com.projectkorra.projectkorra.GeneralMethods;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,6 +45,11 @@ public class Pathfollower {
 			if (path.peek() != null) {
 				Location location = path.poll();
 				location.setPitch(-10);
+
+				Vector vector = GeneralMethods.getDirection(follower.getLocation(), maker.getLocation()).normalize();
+				float yaw = (float) (Math.toDegrees(Math.atan2(vector.getZ(), vector.getX())) - 90);
+
+				location.setYaw(yaw);
 
 				follower.teleport(location);
 			} else {
