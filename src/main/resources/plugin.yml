@@ -5,3 +5,8 @@ version: ${project.version}
 main: me.pride.spirits.Spirits
 description: Spirits but better
 depend: [ProjectKorra]
+commands:
+  spiritworld:
+    description: Creates or removes a spirit world.
+    usage: /spiritworld <create/remove> <world>
+    permission: spiritworld.command

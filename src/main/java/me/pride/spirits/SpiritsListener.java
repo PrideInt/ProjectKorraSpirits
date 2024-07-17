@@ -29,6 +29,7 @@ import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.api.ability.SpiritAbility;
 import me.pride.spirits.api.ability.SpiritElement;
 import me.pride.spirits.api.event.EntitySpiritDestroyEvent;
+import me.pride.spirits.commands.VersionCommand;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Atrium;
 import me.pride.spirits.game.Spirecite;
@@ -37,6 +38,7 @@ import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.GhostFactory;
+import me.pride.spirits.world.SpiritWorld;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -44,6 +46,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -67,6 +70,8 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -84,6 +89,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 
@@ -758,6 +764,9 @@ class MainListener implements Listener {
 				}
 			}
 		});
+		if (SpiritWorld.isSpiritWorld(event.getPlayer().getWorld())) {
+			SpiritWorld.of(event.getPlayer().getWorld()).getBossBar().addPlayer(event.getPlayer());
+		}
 	}
 
 	@EventHandler
@@ -834,6 +843,42 @@ class MainListener implements Listener {
 						ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getSubColor() + "* Totem Stack: " + (stack - 1) + " *", player);
 					}
 				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerChangedWorlds(final PlayerChangedWorldEvent event) {
+		Player player = event.getPlayer();
+
+		/**
+		 * When a player changes worlds to a Spirit World, we want to add a new boss bar for the player.
+		 */
+		World from = event.getFrom(), to = player.getWorld();
+
+		if (SpiritWorld.isSpiritWorld(to)) {
+			SpiritWorld.of(to).getBossBar().addPlayer(player);
+		} else if (SpiritWorld.isSpiritWorld(from)) {
+			SpiritWorld.of(from).getBossBar().removePlayer(player);
+		}
+	}
+
+	@EventHandler
+	public void onCommand(final PlayerCommandPreprocessEvent event) {
+		String command = event.getMessage().toLowerCase();
+		String[] args = command.split("\\s+");
+
+		String[] bAliases = {"/bending", "/bend", "/b", "/pk", "/projectkorra", "/korra", "/mtla", "/tla"};
+		String[] versionAliases = {"v", "version"};
+
+		if (Arrays.asList(bAliases).contains(args[0]) && args.length >= 2) {
+			if (Arrays.asList(versionAliases).contains(args[1].toLowerCase()) && event.getPlayer().hasPermission("bending.command.version")) {
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						VersionCommand.info(event.getPlayer());
+					}
+				}.runTaskLater(Spirits.instance, 2);
 			}
 		}
 	}

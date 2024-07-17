@@ -5,6 +5,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.builder.SpiritBuilder;
+import me.pride.spirits.commands.SpiritWorldCommand;
 import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Atrium;
@@ -15,6 +16,7 @@ import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.ChatUtil;
 import me.pride.spirits.util.GhostFactory;
+import me.pride.spirits.world.SpiritWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -81,6 +83,10 @@ public class Spirits extends JavaPlugin {
                 new Location(world, x, y, z).getBlock().setMetadata("station:ancient", new FixedMetadataValue(Spirits.instance, 0));
             }
         }
+
+        for (String world : StorageCache.spiritWorlds()) {
+            SpiritWorld.create(Bukkit.getWorld(world));
+        }
         
         BossBar bar = Bukkit.getBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY);
         BendingBossBar bendingBossBar = null;
@@ -122,6 +128,7 @@ public class Spirits extends JavaPlugin {
         getServer().getPluginManager().registerEvents(listener, this);
         getServer().getPluginManager().registerEvents(((SpiritsListener) listener).mainListener(), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);
+        getCommand("spiritworld").setExecutor(new SpiritWorldCommand());
     }
 
     @Override
@@ -130,6 +137,7 @@ public class Spirits extends JavaPlugin {
         HandlerList.unregisterAll(listener);
         Spirit.cleanup();
         StorageCache.updateLocations();
+        StorageCache.updateWorlds();
         StorageCache.updateUUIDs(database);
         StorageCache.updateSpirits(database);
         if (getConfig().getBoolean("Light.CanStackTotems")) {
