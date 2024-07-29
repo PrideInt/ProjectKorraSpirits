@@ -107,6 +107,10 @@ public class SpiritsListener implements Listener {
 		Player player = event.getPlayer();
 		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
 
+		if (Possess.isPossessed(player)) {
+			event.setCancelled(true);
+			return;
+		}
 		if (CoreAbility.hasAbility(player, Possess.class)) {
 			Possess.getPossessedFrom(player).ifPresent(possessed -> possessed.swingMainHand());
 		}

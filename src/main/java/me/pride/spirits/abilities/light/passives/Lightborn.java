@@ -197,12 +197,6 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	}
 	
 	@Override
-	public void load() { }
-	
-	@Override
-	public void stop() { }
-	
-	@Override
 	public String getAuthor() {
 		return Spirits.getAuthor(this.getElement());
 	}
@@ -226,4 +220,10 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 	public boolean isProgressable() {
 		return true;
 	}
+
+	@Override
+	public void load() { }
+
+	@Override
+	public void stop() { }
 }

@@ -90,7 +90,7 @@ public class Rematerialize extends SpiritAbility implements AddonAbility {
 		if (teleportLocation != null) {
 			if (!teleported) {
 				if (delay > 0) {
-					PotionEffectType.BLINDNESS.createEffect(delay, 1).apply(player);
+					PotionEffectType.DARKNESS.createEffect(delay, 1).apply(player);
 					PotionEffectType.NIGHT_VISION.createEffect(delay, 1).apply(player);
 					PotionEffectType.INVISIBILITY.createEffect(delay, 1).apply(player);
 				}
