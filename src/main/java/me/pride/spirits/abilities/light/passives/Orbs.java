@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.ability.PassiveAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
+import me.pride.spirits.util.SpecialThanks;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
@@ -147,7 +148,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			e.setVisible(false);
 			e.setGravity(false);
 			e.setSmall(true);
-			e.getEquipment().setHelmet(new ItemStack(Material.SEA_LANTERN));
+			e.getEquipment().setHelmet(new ItemStack(SpecialThanks.getOrbType(player)));
 		});
 	}
 
