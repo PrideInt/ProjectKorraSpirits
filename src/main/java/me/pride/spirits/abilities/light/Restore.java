@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.abilities.light.passives.Orbs;
 import me.pride.spirits.api.DarkSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
@@ -126,6 +127,8 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		}
 		if (this.restoreForm == RestoreForm.NONE) {
 			this.restoreForm = RestoreForm.SELF;
+
+			Orbs.absorb(player);
 		}
 		player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RETURN, 1, 1);
 
@@ -135,6 +138,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	@Override
 	public void progress() {
 		if (!player.isSneaking()) {
+			Orbs.unabsorb(player);
 			remove();
 			return;
 		}

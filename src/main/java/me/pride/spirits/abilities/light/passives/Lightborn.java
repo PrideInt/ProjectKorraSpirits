@@ -170,6 +170,11 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 			CoreAbility.getAbility(player, Lightborn.class).setLights(lights);
 		}
 	}
+
+	@Override
+	public boolean isEnabled() {
+		return Spirits.instance.getConfig().getBoolean("Light.Passives.Lightborn.Enabled");
+	}
 	
 	@Override
 	public boolean isSneakAbility() {

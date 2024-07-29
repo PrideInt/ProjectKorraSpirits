@@ -126,6 +126,11 @@ public class Config {
 		config.addDefault("Light.Passives.Lightborn.Bleed.Duration", 20000);
 		config.addDefault("Light.Passives.Lightborn.Bleed.Damage", 3);
 		config.addDefault("Light.Passives.Lightborn.Bleed.Heal", 3);
+
+		/* Orbs */
+		config.addDefault("Light.Passives.Orbs.Enabled", true);
+		config.addDefault("Light.Passives.Orbs.Cooldown", 250);
+		config.addDefault("Light.Passives.Orbs.Orbs", 3);
 		
 		/*
 		 *    	- Neutral -

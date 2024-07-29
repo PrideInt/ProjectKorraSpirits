@@ -23,6 +23,7 @@ import com.projectkorra.projectkorra.waterbending.ice.IceSpikeBlast;
 import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArmsFreeze;
 import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArmsWhip;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.abilities.light.passives.Orbs;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
@@ -117,7 +118,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			this.direction = this.location.getDirection();
 
-			applyCollisions();
+			Orbs.shoot(player, this.range);
 		} else if (type == ProtectType.PROTECT) {
 			this.cooldown = Spirits.instance.getConfig().getLong(path + "Protect.Cooldown");
 			this.slowAmplifier = Spirits.instance.getConfig().getInt(path + "Protect.SlowAmplifier");
@@ -327,7 +328,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 	@Override
 	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Protect.Enabled", true);
+		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Protect.Enabled");
 	}
 	
 	@Override
