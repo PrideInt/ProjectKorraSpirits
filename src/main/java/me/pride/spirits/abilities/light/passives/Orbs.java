@@ -8,12 +8,10 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
-import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.SpecialThanks;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -24,7 +22,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -231,6 +228,9 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					orb = orbs[i];
 				}
 			}
+			if (System.currentTimeMillis() < orb.getCooldown()) {
+				return;
+			}
 			RayTraceResult result = Tools.rayTrace(player, shootRange, e -> e.getUniqueId() != player.getUniqueId() && !e.hasMetadata(Spirit.ORB_KEY));
 
 			shotOrbs.add(orb);
@@ -350,6 +350,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		private ArmorStand orb;
 		private int pos;
 
+		private long cooldown;
 		private boolean reverting;
 		private boolean inOriginalState;
 
@@ -361,6 +362,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			this.pos = pos;
 			this.location = this.orb.getLocation();
 
+			this.cooldown = System.currentTimeMillis();
 			this.reverting = false;
 			this.inOriginalState = true;
 		}
@@ -372,6 +374,9 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 		public Vector getDirection() {
 			return direction;
+		}
+		public long getCooldown() {
+			return cooldown;
 		}
 		public boolean isReverting() {
 			return reverting;
@@ -421,6 +426,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 				inOriginalState = true;
 				reverting = false;
 				direction = null;
+				cooldown = System.currentTimeMillis() + Orbs.this.cooldown;
 			}
 		}
 		public void shoot(Vector direction, double speed) {
