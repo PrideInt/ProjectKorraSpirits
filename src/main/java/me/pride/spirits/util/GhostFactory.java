@@ -1,5 +1,6 @@
 package me.pride.spirits.util;
 
+import com.projectkorra.projectkorra.board.BendingBoardManager;
 import me.pride.spirits.Spirits;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,6 +36,16 @@ public class GhostFactory {
 		player.removePotionEffect(PotionEffectType.INVISIBILITY);
 	}
 	public void addToTeam(Player player) {
+		Scoreboard board = player.getScoreboard();
+
+		if (board.getTeam(GHOSTS_KEY) == null) {
+			board.registerNewTeam(GHOSTS_KEY).setCanSeeFriendlyInvisibles(true);
+		}
+		Team team = this.team;
+
+		if (!player.getScoreboard().equals(scoreboard)) {
+			team = board.getTeam(GHOSTS_KEY);
+		}
 		if (team.hasEntry(player.getName())) {
 			return;
 		}
@@ -43,6 +54,16 @@ public class GhostFactory {
 		VIEWERS.add(player);
 	}
 	public void removeFromTeam(Player player) {
+		Scoreboard board = player.getScoreboard();
+
+		if (board.getTeam(GHOSTS_KEY) == null) {
+			board.registerNewTeam(GHOSTS_KEY).setCanSeeFriendlyInvisibles(true);
+		}
+		Team team = this.team;
+
+		if (!player.getScoreboard().equals(scoreboard)) {
+			team = board.getTeam(GHOSTS_KEY);
+		}
 		if (VIEWERS.contains(player)) {
 			VIEWERS.remove(player);
 		}
@@ -89,9 +110,16 @@ public class GhostFactory {
 		// return GHOSTS.contains(player.getUniqueId()) || team.hasEntry(player.getUniqueId().toString());
 		return team.hasEntry(player.getName());
 	}
+
+	/*
+	 * For servers with multiple scoreboards, like ones that use ProjectKorra,
+	 * they are relative for each player, so no use really in storing this sort of data.
+	 */
+	@Deprecated
 	public Scoreboard getScoreboard() {
 		return scoreboard;
 	}
+	@Deprecated
 	public Team getTeam() {
 		return team;
 	}
