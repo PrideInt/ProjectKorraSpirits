@@ -299,4 +299,5 @@ public abstract class Spirit {
 	public static final String BLESSED_SOURCE = "spirits:blessed_source";
 	public static final String BLESSED_ENTITY = "spirits:blessed_entity";
 	public static final String CORRUPTED_SOURCE = "spirits:corrupted_source";
+	public static final String ORB_KEY = "spirits:orb";
 }

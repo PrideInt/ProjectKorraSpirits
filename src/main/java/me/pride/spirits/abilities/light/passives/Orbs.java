@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.ability.PassiveAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
+import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.SpecialThanks;
@@ -13,11 +14,13 @@ import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -75,6 +78,13 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 			switch (state) {
 				case ACTIVE -> {
+					for (int i = 0; i < angles.length; i++) {
+						angles[i] += 2;
+
+						if (angles[i] >= 360) {
+							angles[i] = 0;
+						}
+					}
 					for (Orb orb : orbs) {
 						if (!shotOrbs.contains(orb)) {
 							orb.rotate();
@@ -172,6 +182,8 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			e.setGravity(false);
 			e.setSmall(true);
 			e.getEquipment().setHelmet(new ItemStack(SpecialThanks.getOrbType(player)));
+
+			e.setMetadata(Spirit.ORB_KEY, new FixedMetadataValue(Spirits.instance, 0));
 		});
 	}
 
@@ -223,6 +235,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), entity.getLocation()).normalize(), 1.25);
 				}
 			}
+			player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RETURN, 1, 1);
 		}
 	}
 
@@ -368,7 +381,6 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			loc.add(x, 0, z);
 
 			orb.teleport(loc);
-			angles[pos] += 2;
 		}
 		public void revert() {
 			reverting = true;
@@ -387,7 +399,6 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 				reverting = false;
 				direction = null;
 			}
-			angles[pos] += 2;
 		}
 		public void shoot(Vector direction, double speed) {
 			inOriginalState = false;
