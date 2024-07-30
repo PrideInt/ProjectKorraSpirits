@@ -42,6 +42,13 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 	private long cooldown;
 	@Attribute("Orbs")
 	private int orbNumber;
+	@Attribute(Attribute.RANGE)
+	private double shootRange;
+	@Attribute(Attribute.RADIUS)
+	private double hitRadius;
+	@Attribute(Attribute.DAMAGE)
+	private double damage;
+	private boolean altForm;
 
 	private double distance;
 
@@ -57,6 +64,10 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 		this.cooldown = Spirits.instance.getConfig().getLong(path + "Cooldown");
 		this.orbNumber = Spirits.instance.getConfig().getInt(path + "Orbs");
+		this.hitRadius = Spirits.instance.getConfig().getDouble(path + "HitRadius");
+		this.shootRange = Spirits.instance.getConfig().getDouble(path + "ShootRange");
+		this.damage = Spirits.instance.getConfig().getDouble(path + "Damage");
+		this.altForm = Spirits.instance.getConfig().getBoolean(path + "AltForm");
 
 		this.state = OrbState.ACTIVE;
 		this.orbs = new Orb[this.orbNumber];
@@ -91,11 +102,11 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 						}
 					}
 					for (Orb shot : shotOrbs) {
-						if (shot.getLocation().distanceSquared(player.getLocation()) >= 15 * 15 || shot.isReverting()) {
+						if (shot.getLocation().distanceSquared(player.getLocation()) >= shootRange * shootRange || shot.isReverting()) {
 							shot.revert();
 						} else {
 							if (shot.getDirection() != null) {
-								shot.shoot(shot.getDirection(), 1.5);
+								shot.shoot(shot.getDirection(), 1.25);
 							}
 						}
 						if (shot.isInOriginalState()) {
@@ -220,17 +231,17 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					orb = orbs[i];
 				}
 			}
-			RayTraceResult result = Tools.rayTrace(player, 15, e -> e.getUniqueId() != player.getUniqueId() && !(e instanceof ArmorStand));
+			RayTraceResult result = Tools.rayTrace(player, shootRange, e -> e.getUniqueId() != player.getUniqueId() && !e.hasMetadata(Spirit.ORB_KEY));
 
 			shotOrbs.add(orb);
 
 			if (result == null) {
-				orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, 15)).normalize(), 1.25);
+				orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, shootRange)).normalize(), 1.25);
 			} else {
 				Entity entity = result.getHitEntity();
 
 				if (entity == null) {
-					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, 15)).normalize(), 1.25);
+					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, shootRange)).normalize(), 1.25);
 				} else {
 					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), entity.getLocation()).normalize(), 1.25);
 				}
@@ -374,24 +385,36 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		public void rotate() {
 			Location loc = player.getLocation().clone();
 
-			double angle = angles[pos];
-			double x = 1.5 * Math.cos(Math.toRadians(angle));
-			double z = 1.5 * Math.sin(Math.toRadians(angle));
+			if (altForm) {
+				loc = player.getLocation().clone().add(0, 0.8, 0).add(player.getLocation().getDirection().normalize().multiply(-1));
+				Vector circle = GeneralMethods.getOrthogonalVector(player.getEyeLocation().getDirection(), angles[pos], 1);
 
-			loc.add(x, 0, z);
+				loc.add(circle);
+			} else {
+				double angle = angles[pos];
+				double x = 1.5 * Math.cos(Math.toRadians(angle));
+				double z = 1.5 * Math.sin(Math.toRadians(angle));
 
+				loc.add(x, 0, z);
+			}
 			orb.teleport(loc);
 		}
 		public void revert() {
 			reverting = true;
 			Location loc = player.getLocation().clone();
 
-			double angle = angles[pos];
-			double x = 1.5 * Math.cos(Math.toRadians(angle));
-			double z = 1.5 * Math.sin(Math.toRadians(angle));
+			if (altForm) {
+				loc = player.getLocation().clone().add(0, 0.8, 0).add(player.getLocation().getDirection().normalize().multiply(-1));
+				Vector circle = GeneralMethods.getOrthogonalVector(player.getEyeLocation().getDirection(), angles[pos], 1);
 
-			loc.add(x, 0, z);
+				loc.add(circle);
+			} else {
+				double angle = angles[pos];
+				double x = 1.5 * Math.cos(Math.toRadians(angle));
+				double z = 1.5 * Math.sin(Math.toRadians(angle));
 
+				loc.add(x, 0, z);
+			}
 			orb.teleport(orb.getLocation().add(GeneralMethods.getDirection(orb.getLocation(), loc).normalize().multiply(1)));
 
 			if (orb.getLocation().distanceSquared(loc) <= 0.5 * 0.5) {
@@ -405,9 +428,9 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			if (this.direction == null) {
 				this.direction = direction;
 			}
-			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(orb.getLocation(), 1.25)) {
+			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(orb.getLocation(), Orbs.this.hitRadius)) {
 				if (entity.getUniqueId() != player.getUniqueId() && entity instanceof LivingEntity) {
-					DamageHandler.damageEntity(entity, 2, Orbs.this);
+					DamageHandler.damageEntity(entity, Orbs.this.damage, Orbs.this);
 				}
 			}
 			orb.teleport(orb.getLocation().add(direction.multiply(speed)));
