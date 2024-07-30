@@ -118,7 +118,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			this.direction = this.location.getDirection();
 
-			Orbs.shoot(player, this.range);
+			Orbs.shootAll(player, this.range);
 		} else if (type == ProtectType.PROTECT) {
 			this.cooldown = Spirits.instance.getConfig().getLong(path + "Protect.Cooldown");
 			this.slowAmplifier = Spirits.instance.getConfig().getInt(path + "Protect.SlowAmplifier");

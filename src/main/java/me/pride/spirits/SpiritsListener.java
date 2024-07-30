@@ -15,6 +15,7 @@ import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.light.Protect.ProtectType;
 import me.pride.spirits.abilities.light.Restore;
 import me.pride.spirits.abilities.light.passives.Lightborn;
+import me.pride.spirits.abilities.light.passives.Orbs;
 import me.pride.spirits.abilities.light.passives.other.LightBlood;
 import me.pride.spirits.abilities.spirit.Disappear;
 import me.pride.spirits.abilities.spirit.Rematerialize;
@@ -142,6 +143,9 @@ public class SpiritsListener implements Listener {
 					}
 					case "Blessing" -> { new Blessing(player, BlessType.CLICK);
 						break;
+					}
+					case "Restore" -> {
+						Orbs.shoot(player);
 					}
 				}
 			} else if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {

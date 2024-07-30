@@ -4,25 +4,34 @@ import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.PassiveAbility;
 import com.projectkorra.projectkorra.attribute.Attribute;
+import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.ability.LightSpiritAbility;
+import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.SpecialThanks;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbility {
 	private final String path = Tools.path(this, Path.PASSIVES);
 
 	private enum OrbState {
-		ACTIVE, INACTIVE, ABSORBING, ABSORBED, SHOT, REVERTING_ABSORB, REVERTING_SHOT
+		ACTIVE, INACTIVE, ABSORBING, ABSORBED, SHOT_ALL, REVERTING_ABSORB, REVERTING_SHOT, REVERTING_SHOT_ALL
 	}
 	private OrbState state;
 
@@ -33,8 +42,9 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 	private double distance;
 
-	private ArmorStand[] orbs;
+	private Orb[] orbs;
 	private int[] angles;
+	private List<Orb> shotOrbs;
 
 	public Orbs(Player player) {
 		super(player);
@@ -46,11 +56,13 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		this.orbNumber = Spirits.instance.getConfig().getInt(path + "Orbs");
 
 		this.state = OrbState.ACTIVE;
-		this.orbs = new ArmorStand[this.orbNumber];
+		this.orbs = new Orb[this.orbNumber];
 		this.angles = new int[this.orbNumber];
 
+		this.shotOrbs = new CopyOnWriteArrayList<>();
+
 		for (int i = 0; i < this.orbNumber; i++) {
-			this.orbs[i] = orb();
+			this.orbs[i] = new Orb(orb(), i);
 			this.angles[i] = i * (360 / this.orbNumber);
 		}
 		start();
@@ -63,73 +75,84 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 			switch (state) {
 				case ACTIVE -> {
-					for (int i = 0; i < orbNumber; i++) {
-						Location loc = player.getLocation().clone();
-
-						double angle = angles[i];
-						double x = 1.5 * Math.cos(Math.toRadians(angle));
-						double z = 1.5 * Math.sin(Math.toRadians(angle));
-
-						loc.add(x, 0, z);
-
-						orbs[i].teleport(loc);
-						angles[i] += 2;
+					for (Orb orb : orbs) {
+						if (!shotOrbs.contains(orb)) {
+							orb.rotate();
+						}
+					}
+					for (Orb shot : shotOrbs) {
+						if (shot.getLocation().distanceSquared(player.getLocation()) >= 15 * 15 || shot.isReverting()) {
+							shot.revert();
+						} else {
+							if (shot.getDirection() != null) {
+								shot.shoot(shot.getDirection(), 1.5);
+							}
+						}
+						if (shot.isInOriginalState()) {
+							shotOrbs.remove(shot);
+						}
 					}
 				}
 				case ABSORBING -> {
-					for (ArmorStand orb : orbs) {
-						orb.teleport(orb.getLocation().add(GeneralMethods.getDirection(orb.getLocation(), player.getLocation()).normalize().multiply(1.5)));
+					boolean allAbsorbed = true;
 
-						if (orb.getLocation().distanceSquared(player.getLocation()) <= 0.5 * 0.5) {
-							state = OrbState.ABSORBED;
+					for (Orb orb : orbs) {
+						orb.shoot(GeneralMethods.getDirection(orb.getLocation(), player.getLocation()).normalize(), 1.5);
+
+						if (orb.getLocation().distanceSquared(player.getLocation()) > 0.5 * 0.5) {
+							allAbsorbed = false;
 						}
+					}
+					if (allAbsorbed) {
+						state = OrbState.ABSORBED;
 					}
 				}
 				case ABSORBED -> {
-					for (ArmorStand orb : orbs) {
-						orb.teleport(player.getLocation());
+					for (Orb orb : orbs) {
+						orb.getOrb().teleport(player.getLocation());
 					}
 				}
-				case SHOT -> {
-					for (ArmorStand orb : orbs) {
-						orb.teleport(orb.getLocation().add(player.getEyeLocation().getDirection().multiply(1.5)));
+				case SHOT_ALL -> {
+					boolean allShot = true;
 
-						if (orb.getLocation().distanceSquared(player.getLocation()) >= distance * distance) {
-							state = OrbState.REVERTING_SHOT;
+					for (Orb orb : orbs) {
+						orb.shoot();
+
+						if (orb.getLocation().distanceSquared(player.getLocation()) < distance * distance) {
+							allShot = false;
 						}
+					}
+					if (allShot) {
+						state = OrbState.REVERTING_SHOT_ALL;
 					}
 				}
 				case REVERTING_ABSORB -> {
-					for (int i = 0; i < orbNumber; i++) {
-						Location loc = player.getLocation().clone();
+					boolean allReverted = true;
 
-						double angle = angles[i];
-						double x = 1.5 * Math.cos(Math.toRadians(angle));
-						double z = 1.5 * Math.sin(Math.toRadians(angle));
+					for (Orb orb : orbs) {
+						orb.revert();
 
-						loc.add(x, 0, z);
-
-						orbs[i].teleport(orbs[i].getLocation().add(GeneralMethods.getDirection(orbs[i].getLocation(), loc).normalize().multiply(1)));
-
-						if (orbs[i].getLocation().distanceSquared(loc) <= 0.5 * 0.5) {
-							state = OrbState.ACTIVE;
+						if (!orb.isInOriginalState()) {
+							allReverted = false;
 						}
-						angles[i] += 2;
+					}
+					if (allReverted) {
+						state = OrbState.ACTIVE;
 					}
 				}
-				case REVERTING_SHOT -> {
-					for (ArmorStand orb : orbs) {
+				case REVERTING_SHOT_ALL -> {
+					for (Orb orb : orbs) {
 						if (orb.getLocation().distanceSquared(player.getLocation()) <= 0.5 * 0.5) {
 							state = OrbState.ACTIVE;
 						}
-						orb.teleport(orb.getLocation().add(GeneralMethods.getDirection(orb.getLocation(), player.getLocation()).normalize().multiply(1.5)));
+						orb.shoot(GeneralMethods.getDirection(orb.getLocation(), player.getLocation()).normalize(), 1.5);
 					}
 				}
 			}
 		} else {
-			for (ArmorStand orb : orbs) {
+			for (Orb orb : orbs) {
 				if (orb != null) {
-					orb.remove();
+					orb.getOrb().remove();
 				}
 			}
 		}
@@ -137,8 +160,8 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 	private void addOrbs() {
 		for (int i = 0; i < orbNumber; i++) {
-			if (orbs[i] == null || orbs[i].isDead()) {
-				orbs[i] = orb();
+			if (orbs[i] == null || orbs[i].getOrb().isDead()) {
+				orbs[i] = new Orb(orb(), i);
 			}
 		}
 	}
@@ -172,14 +195,51 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 	}
 
-	public void shoot(double distance) {
-		this.state = OrbState.SHOT;
+	public void shoot() {
+		if (shotOrbs.size() != orbNumber) {
+			Orb orb = orbs[ThreadLocalRandom.current().nextInt(orbNumber)];
+
+			if (shotOrbs.contains(orb)) {
+				int i = ThreadLocalRandom.current().nextInt(orbNumber);
+				orb = orbs[i];
+
+				while (shotOrbs.contains(orb)) {
+					i = ThreadLocalRandom.current().nextInt(orbNumber);
+					orb = orbs[i];
+				}
+			}
+			RayTraceResult result = Tools.rayTrace(player, 15, e -> e.getUniqueId() != player.getUniqueId() && !(e instanceof ArmorStand));
+
+			shotOrbs.add(orb);
+
+			if (result == null) {
+				orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, 15)).normalize(), 1.25);
+			} else {
+				Entity entity = result.getHitEntity();
+
+				if (entity == null) {
+					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), GeneralMethods.getTargetedLocation(player, 15)).normalize(), 1.25);
+				} else {
+					orb.shoot(GeneralMethods.getDirection(orb.getLocation(), entity.getLocation()).normalize(), 1.25);
+				}
+			}
+		}
+	}
+
+	public static void shoot(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			getAbility(player, Orbs.class).shoot();
+		}
+	}
+
+	public void shootAll(double distance) {
+		this.state = OrbState.SHOT_ALL;
 		this.distance = distance;
 	}
 
-	public static void shoot(Player player, double distance) {
+	public static void shootAll(Player player, double distance) {
 		if (hasAbility(player, Orbs.class)) {
-			getAbility(player, Orbs.class).shoot(distance);
+			getAbility(player, Orbs.class).shootAll(distance);
 		}
 	}
 
@@ -223,18 +283,15 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 	@Override
 	public List<Location> getLocations() {
-		if (orbs == null) {
-			return null;
-		}
-		return Arrays.stream(orbs).map(ArmorStand::getLocation).toList();
+		return Arrays.stream(orbs).map(Orb::getLocation).toList();
 	}
 
 	@Override
 	public void remove() {
 		super.remove();
-		for (ArmorStand orb : orbs) {
+		for (Orb orb : orbs) {
 			if (orb != null) {
-				orb.remove();
+				orb.getOrb().remove();
 			}
 		}
 	}
@@ -264,4 +321,91 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 
 	@Override
 	public void stop() { }
+
+	class Orb {
+		private ArmorStand orb;
+		private int pos;
+
+		private boolean reverting;
+		private boolean inOriginalState;
+
+		private Location location;
+		private Vector direction;
+
+		public Orb(ArmorStand orb, int pos) {
+			this.orb = orb;
+			this.pos = pos;
+			this.location = this.orb.getLocation();
+
+			this.reverting = false;
+			this.inOriginalState = true;
+		}
+		public ArmorStand getOrb() {
+			return orb;
+		}
+		public Location getLocation() {
+			return orb.getLocation();
+		}
+		public Vector getDirection() {
+			return direction;
+		}
+		public boolean isReverting() {
+			return reverting;
+		}
+		public boolean isInOriginalState() {
+			return inOriginalState;
+		}
+		public int getPos() {
+			return pos;
+		}
+		public void rotate() {
+			Location loc = player.getLocation().clone();
+
+			double angle = angles[pos];
+			double x = 1.5 * Math.cos(Math.toRadians(angle));
+			double z = 1.5 * Math.sin(Math.toRadians(angle));
+
+			loc.add(x, 0, z);
+
+			orb.teleport(loc);
+			angles[pos] += 2;
+		}
+		public void revert() {
+			reverting = true;
+			Location loc = player.getLocation().clone();
+
+			double angle = angles[pos];
+			double x = 1.5 * Math.cos(Math.toRadians(angle));
+			double z = 1.5 * Math.sin(Math.toRadians(angle));
+
+			loc.add(x, 0, z);
+
+			orb.teleport(orb.getLocation().add(GeneralMethods.getDirection(orb.getLocation(), loc).normalize().multiply(1)));
+
+			if (orb.getLocation().distanceSquared(loc) <= 0.5 * 0.5) {
+				inOriginalState = true;
+				reverting = false;
+				direction = null;
+			}
+			angles[pos] += 2;
+		}
+		public void shoot(Vector direction, double speed) {
+			inOriginalState = false;
+			if (this.direction == null) {
+				this.direction = direction;
+			}
+			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(orb.getLocation(), 1.25)) {
+				if (entity.getUniqueId() != player.getUniqueId() && entity instanceof LivingEntity) {
+					DamageHandler.damageEntity(entity, 2, Orbs.this);
+				}
+			}
+			orb.teleport(orb.getLocation().add(direction.multiply(speed)));
+		}
+		public void shoot(Vector direction) {
+			shoot(direction, 1.5);
+		}
+		public void shoot() {
+			shoot(player.getEyeLocation().getDirection(), 1.5);
+		}
+	}
 }
