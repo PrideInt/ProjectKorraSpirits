@@ -129,7 +129,7 @@ public class Config {
 
 		/* Orbs */
 		config.addDefault("Light.Passives.Orbs.Enabled", true);
-		config.addDefault("Light.Passives.Orbs.Cooldown", 250);
+		config.addDefault("Light.Passives.Orbs.Cooldown", 1000);
 		config.addDefault("Light.Passives.Orbs.Orbs", 3);
 		config.addDefault("Light.Passives.Orbs.HitRadius", 1.3);
 		config.addDefault("Light.Passives.Orbs.ShootRange", 15);

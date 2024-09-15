@@ -254,7 +254,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 
 					if (!entity.hasMetadata(Spirit.BLESSED_ENTITY)) {
 						entity.getWorld().spawnParticle(Particle.SONIC_BOOM, entity.getLocation().clone().add(0, 1, 0), 1, 0.25, 0.25, 0.25, 0);
-						BLESSINGS.add(new Bless(this, entity, duration));
+						new Bless(this, entity, duration);
 						entity.setMetadata(Spirit.BLESSED_ENTITY, new FixedMetadataValue(Spirits.instance, 0));
 					}
 				} else if (dark) {
@@ -370,6 +370,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 			this.duration = System.currentTimeMillis() + duration;
 
 			this.size = 3.6;
+			BLESSINGS.add(this);
 		}
 		public boolean handle() {
 			if (System.currentTimeMillis() > duration) {

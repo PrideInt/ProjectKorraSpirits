@@ -26,7 +26,7 @@ public class VersionCommand extends PKCommand {
 	}
 
 	public static void info(CommandSender commandSender) {
-		commandSender.sendMessage(ChatColor.of("#A3A3A3") + "Running ProjectKorraSpirits Build: " + ChatColor.BLUE + Spirits.instance.getDescription().getVersion());
+		commandSender.sendMessage(ChatColor.of("#A3A3A3") + "Running ProjectKorraSpirits Build: " + ChatColor.BLUE + Spirits.instance.getVersion());
 		commandSender.sendMessage(ChatColor.of("#A3A3A3") + "Developed by: " + ChatColor.BLUE + "Prride");
 	}
 }
