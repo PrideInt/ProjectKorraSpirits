@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.io.File;
 import java.io.FileReader;
@@ -224,5 +225,10 @@ public class StorageCache {
 		if (!SPIRIT_WORLDS.contains(world)) {
 			SPIRIT_WORLDS.add(world);
 		}
+	}
+
+	// TODO: Implement this method
+	public static boolean divinedBlockAlreadyMined(Block block) {
+		return false;
 	}
 }

@@ -11,6 +11,7 @@ import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Blessing;
 import me.pride.spirits.abilities.light.Blessing.BlessType;
+import me.pride.spirits.abilities.light.Divination;
 import me.pride.spirits.abilities.light.Protect;
 import me.pride.spirits.abilities.light.Protect.ProtectType;
 import me.pride.spirits.abilities.light.Restore;
@@ -196,6 +197,9 @@ public class SpiritsListener implements Listener {
 						break;
 					}
 					case "Restore" -> { new Restore(player);
+						break;
+					}
+					case "Divination" -> { new Divination(player);
 						break;
 					}
 				}

@@ -66,6 +66,13 @@ public class Config {
 		config.addDefault("Light.Abilities.Blessing.GrowTrees", true);
 		config.addDefault("Light.Abilities.Blessing.ShriekParticles", false);
 
+		/* Divination */
+		config.addDefault("Light.Abilities.Divination.Enabled", true);
+		config.addDefault("Light.Abilities.Divination.Cooldown", 12000);
+		config.addDefault("Light.Abilities.Divination.Radius", 20);
+		config.addDefault("Light.Abilities.Divination.ChimeraAmplifier", 1);
+		config.addDefault("Light.Abilities.Divination.ChimeraDuration", 120);
+
 		/* Protect */
 		config.addDefault("Light.Abilities.Protect.Enabled", true);
 		config.addDefault("Light.Abilities.Protect.Deflect.Cooldown", 1000);

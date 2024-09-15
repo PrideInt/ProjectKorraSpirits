@@ -296,7 +296,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 
 	@Override
 	public boolean isEnabled() {
-		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Blessing.Enabled", true);
+		return Spirits.instance.getConfig().getBoolean("Light.Abilities.Blessing.Enabled");
 	}
 	
 	@Override
