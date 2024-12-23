@@ -47,6 +47,11 @@ public class Config {
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Enabled", true);
 		config.addDefault("Dark.Combos.Corruption.SpawnDarkSpirit.Speed", 0.05);
 
+		/* Rancor */
+		config.addDefault("Dark.Passives.Rancor.Enabled", true);
+		config.addDefault("Dark.Passives.Rancor.Radius", 1.25);
+		config.addDefault("Dark.Passives.Rancor.LossRange", 3);
+
 		/*
 		 *   	- Light -
 		 */
