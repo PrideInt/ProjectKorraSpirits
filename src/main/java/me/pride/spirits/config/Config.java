@@ -6,6 +6,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class Config {
 	public static void setup() {
 		FileConfiguration config = Spirits.instance.getConfig();
+
+		config.addDefault("CanAddSpiritElementAsBender", false);
 		
 		config.addDefault("Spirecite.Enabled", true);
 		config.addDefault("Spirecite.WardenDrops", true);

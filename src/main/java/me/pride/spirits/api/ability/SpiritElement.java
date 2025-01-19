@@ -24,4 +24,7 @@ public class SpiritElement {
 		@Override
 		public ChatColor getSubColor() { return ChatColor.of("#555555"); }
 	};
+	public static boolean isSpiritElement(Element element) {
+		return element.equals(SPIRIT) || element.equals(LIGHT_SPIRIT) || element.equals(DARK_SPIRIT);
+	}
 }

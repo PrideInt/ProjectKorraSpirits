@@ -1,12 +1,16 @@
 package me.pride.spirits;
 
 import com.projectkorra.projectkorra.BendingPlayer;
+import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.event.AbilityDamageEntityEvent;
 import com.projectkorra.projectkorra.event.AbilityStartEvent;
+import com.projectkorra.projectkorra.event.PlayerChangeElementEvent;
+import com.projectkorra.projectkorra.event.PlayerChangeElementEvent.Result;
 import com.projectkorra.projectkorra.event.PlayerSwingEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
+import com.projectkorra.projectkorra.util.ChatUtil;
 import me.pride.spirits.abilities.dark.Commandeer;
 import me.pride.spirits.abilities.dark.Obelisk;
 import me.pride.spirits.abilities.light.Blessing;
@@ -891,6 +895,39 @@ class MainListener implements Listener {
 						VersionCommand.info(event.getPlayer());
 					}
 				}.runTaskLater(Spirits.instance, 2);
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerElementChange(final PlayerChangeElementEvent event) {
+		if (Spirits.instance.getConfig().getBoolean("CanAddSpiritElementAsBender")) {
+			return;
+		}
+		Player player = event.getTarget();
+		Element element = event.getElement();
+
+		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+		if (event.getResult() == Result.ADD) {
+			if (SpiritElement.isSpiritElement(element)) {
+				for (Element e : bPlayer.getElements()) {
+					if (!SpiritElement.isSpiritElement(e)) {
+						// event.setCancelled(true);    To add when this event becomes cancellable in the future.
+
+						/**
+						 * Hacky way to "deny" the player from adding a Spirit element to their elements.
+						 */
+						new BukkitRunnable() {
+							@Override
+							public void run() {
+								ChatUtil.sendBrandingMessage(player, "Ignore previous message. You cannot add a Spirit element to your elements.");
+								bPlayer.getElements().remove(element);
+							}
+						}.runTaskLater(Spirits.instance, 2);
+						break;
+					}
+				}
 			}
 		}
 	}
