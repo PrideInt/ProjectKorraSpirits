@@ -125,8 +125,13 @@ public class SpiritsListener implements Listener {
 		if (bPlayer == null) return;
 		
 		CoreAbility coreAbil = bPlayer.getBoundAbility();
-		
-		if (coreAbil == null) return;
+
+		if (coreAbil == null) {
+			if (bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT) && !bPlayer.hasElement(SpiritElement.DARK_SPIRIT)) {
+				Orbs.shoot(player);
+			}
+			return;
+		}
 		
 		if (bPlayer.canBendIgnoreCooldowns(coreAbil)) {
 			if (coreAbil instanceof LightSpiritAbility && bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT)) {
