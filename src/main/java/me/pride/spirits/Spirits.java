@@ -5,7 +5,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.SpiritType;
 import me.pride.spirits.api.builder.SpiritBuilder;
-import me.pride.spirits.commands.SpiritWorldCommand;
+import me.pride.spirits.commands.SpiritsCommand;
 import me.pride.spirits.config.Config;
 import me.pride.spirits.game.AncientSoulweaver;
 import me.pride.spirits.game.Atrium;
@@ -128,7 +128,10 @@ public class Spirits extends JavaPlugin {
         getServer().getPluginManager().registerEvents(listener, this);
         getServer().getPluginManager().registerEvents(((SpiritsListener) listener).mainListener(), this);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new SpiritsManager(), 0, 1);
-        getCommand("spiritworld").setExecutor(new SpiritWorldCommand());
+
+        SpiritsCommand.commandManager.registerCommand(new SpiritsCommand());
+        SpiritsCommand.commandManager.getCommandCompletions().registerCompletion("worlds", (worlds) -> Bukkit.getWorlds().stream().map(World::getName).toList());
+        SpiritsCommand.commandManager.getCommandCompletions().registerCompletion("spiritWorlds", (spiritWorld) -> StorageCache.spiritWorlds());
     }
 
     @Override

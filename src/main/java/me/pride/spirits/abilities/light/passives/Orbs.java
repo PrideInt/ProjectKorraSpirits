@@ -275,6 +275,16 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		this.distance = distance;
 	}
 
+	public void changeForm() {
+		this.altForm = this.altForm ? false : true;
+	}
+
+	public static void changeForm(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			getAbility(player, Orbs.class).changeForm();
+		}
+	}
+
 	@Override
 	public boolean isEnabled() {
 		return Spirits.instance.getConfig().getBoolean("Light.Passives.Orbs.Enabled");
