@@ -4,7 +4,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
 public class EntityTouchPlantEvent extends Event {
 	public static final HandlerList HANDLER_LIST = new HandlerList();
@@ -22,7 +21,6 @@ public class EntityTouchPlantEvent extends Event {
 	public Block getPlant() {
 		return this.plant;
 	}
-	@NotNull
 	@Override
 	public HandlerList getHandlers() {
 		return HANDLER_LIST;

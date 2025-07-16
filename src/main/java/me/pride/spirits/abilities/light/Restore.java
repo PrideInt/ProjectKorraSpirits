@@ -191,9 +191,9 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 	private void restore(double restore) {
 		double health = target.getHealth();
 
-		if (target.getHealth() + 1 <= target.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue()) {
+		if (target.getHealth() + 1 <= target.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue()) {
 			if (healthFlashAnimation && target.getType() == EntityType.PLAYER) {
-				PotionEffectType.HEAL.createEffect(1, 0).apply(target);
+				PotionEffectType.INSTANT_HEALTH.createEffect(1, 0).apply(target);
 
 				new BukkitRunnable() {
 					@Override

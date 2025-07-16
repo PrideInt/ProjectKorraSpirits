@@ -70,7 +70,7 @@ public class Rancor extends DarkSpiritAbility implements AddonAbility, PassiveAb
 
 						timers.put(entity, task);
 					}
-					entity.getWorld().spawnParticle(Particle.SMOKE_NORMAL, entity.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
+					entity.getWorld().spawnParticle(Particle.SMOKE, entity.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
 				}
 			}
 		});

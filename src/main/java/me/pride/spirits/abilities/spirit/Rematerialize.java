@@ -102,7 +102,7 @@ public class Rematerialize extends SpiritAbility implements AddonAbility {
 			bPlayer.blockChi();
 
 			for (int i = 0; i < 2; i++) {
-				player.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, player.getLocation().clone().add(0, i, 0), 3, 0.5, 0.5, 0.5, 0.1);
+				player.getWorld().spawnParticle(Particle.ENCHANT, player.getLocation().clone().add(0, i, 0), 3, 0.5, 0.5, 0.5, 0.1);
 			}
 			if (delayInterval < delay) {
 				player.teleport(teleportLocation);

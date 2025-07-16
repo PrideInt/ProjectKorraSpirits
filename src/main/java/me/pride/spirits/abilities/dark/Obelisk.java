@@ -126,7 +126,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 				obelisk(location, radius, block -> {
 					if (!Filter.filterIndestructible(block) && !RegionProtection.isRegionProtected(player, block.getLocation(), this)) {
 						if (GeneralMethods.isSolid(block)) {
-							player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.125, 0.125, 0.125, 0, block.getBlockData());
+							player.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, block.getLocation(), 3, 0.125, 0.125, 0.125, 0, block.getBlockData());
 						}
 						new TempBlock(block, Material.OBSIDIAN.createBlockData(), 10000, this);
 					}

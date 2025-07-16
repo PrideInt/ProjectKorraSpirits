@@ -88,7 +88,7 @@ public class Skyrocket extends SpiritAbility implements AddonAbility, ComboAbili
 					if (isAir(block.getType()) || block.isLiquid() || RegionProtection.isRegionProtected(this, block.getLocation())) {
 						continue;
 					}
-					player.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation(), 3, 0.25, 0.25, 0.25, 0, block.getBlockData());
+					player.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, block.getLocation(), 3, 0.25, 0.25, 0.25, 0, block.getBlockData());
 					
 					ThreadLocalRandom random = ThreadLocalRandom.current();
 					double x = random.nextDouble() * 3.0;

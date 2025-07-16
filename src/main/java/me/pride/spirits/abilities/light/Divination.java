@@ -96,7 +96,7 @@ public class Divination extends LightSpiritAbility implements AddonAbility {
 			} else {
 				ActionBar.sendActionBar(SpiritElement.LIGHT_SPIRIT.getColor() + "* You just had a chimera. Follow it. *", player);
 
-				PotionEffectType.CONFUSION.createEffect(effectDuration, effectAmplifier).apply(player);
+				PotionEffectType.NAUSEA.createEffect(effectDuration, effectAmplifier).apply(player);
 
 				Block divined = divinate();
 				// TODO: Implement the divination trail effect

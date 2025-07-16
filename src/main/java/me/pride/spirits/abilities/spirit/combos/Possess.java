@@ -161,7 +161,7 @@ public class Possess extends SpiritAbility implements AddonAbility, ComboAbility
 		if (!(entity instanceof LivingEntity)) {
 			this.duration = Long.MAX_VALUE;
 		}
-		if (entity.getType() == EntityType.DROPPED_ITEM) {
+		if (entity.getType() == EntityType.ITEM) {
 			Item item = (Item) entity;
 
 			item.setInvulnerable(true);
@@ -236,7 +236,7 @@ public class Possess extends SpiritAbility implements AddonAbility, ComboAbility
 
 		player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 1, 1);
 
-		if (target.getType() == EntityType.DROPPED_ITEM) {
+		if (target.getType() == EntityType.ITEM) {
 			Item item = (Item) target;
 
 			item.setInvulnerable(false);

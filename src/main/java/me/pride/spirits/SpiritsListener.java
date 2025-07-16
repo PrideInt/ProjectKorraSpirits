@@ -50,6 +50,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -252,8 +253,8 @@ public class SpiritsListener implements Listener {
 			if (replaced instanceof LivingEntity && entity instanceof LivingEntity) {
 				LivingEntity oldEntity = (LivingEntity) replaced, newEntity = (LivingEntity) entity;
 				
-				double newMaxHealth = newEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-				double oldMaxHealth = oldEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+				double newMaxHealth = newEntity.getAttribute(Attribute.MAX_HEALTH).getValue();
+				double oldMaxHealth = oldEntity.getAttribute(Attribute.MAX_HEALTH).getValue();
 				
 				double ratio = newEntity.getHealth() / newMaxHealth;
 				
@@ -272,9 +273,9 @@ public class SpiritsListener implements Listener {
 		if (Spirit.exists(entity)) {
 			Spirit.of(entity).ifPresent(spirit -> {
 				if (Filter.filterEntityLight(entity)) {
-					entity.getWorld().spawnParticle(Particle.SPELL_INSTANT, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+					entity.getWorld().spawnParticle(Particle.INSTANT_EFFECT, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				} else if (Filter.filterEntityDark(entity)) {
-					entity.getWorld().spawnParticle(Particle.SPELL_WITCH, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+					entity.getWorld().spawnParticle(Particle.WITCH, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				} else {
 					entity.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, entity.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 				}
@@ -487,8 +488,8 @@ public class SpiritsListener implements Listener {
 					event.setCancelled(true);
 
 					double health = player.getHealth() + amount;
-					if (health > player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
-						health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+					if (health > player.getAttribute(Attribute.MAX_HEALTH).getValue()) {
+						health = player.getAttribute(Attribute.MAX_HEALTH).getValue();
 					}
 					player.setHealth(health);
 				}
@@ -665,7 +666,7 @@ class MainListener implements Listener {
 				 */
 				if (soulweaver.hasMetadata("healingstasis")) {
 					double health = soulweaver.getHealth() + event.getDamage();
-					health = health > soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ? soulweaver.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() : health;
+					health = health > soulweaver.getAttribute(Attribute.MAX_HEALTH).getValue() ? soulweaver.getAttribute(Attribute.MAX_HEALTH).getValue() : health;
 					soulweaver.setHealth(health);
 					
 					event.setCancelled(true);
@@ -700,7 +701,7 @@ class MainListener implements Listener {
 						PotionEffectType.FIRE_RESISTANCE.createEffect(200, 0).apply(player);
 						PotionEffectType.ABSORPTION.createEffect(100, 1).apply(player);
 
-						player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() / 4);
+						player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue() / 4);
 						player.setFireTicks(0);
 						player.setFallDistance(0);
 						player.setExhaustion(0);
@@ -904,7 +905,8 @@ class MainListener implements Listener {
 		if (Spirits.instance.getConfig().getBoolean("CanAddSpiritElementAsBender")) {
 			return;
 		}
-		Player player = event.getTarget();
+		OfflinePlayer offlinePlayer = event.getTarget();
+		Player player = (Player) offlinePlayer;
 		Element element = event.getElement();
 
 		BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);

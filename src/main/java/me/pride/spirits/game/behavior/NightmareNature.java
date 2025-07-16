@@ -46,10 +46,10 @@ public class NightmareNature extends Behavior {
 							break;
 					}
 					this.attributes = new Pair[]{
-							Pair.of(Attribute.GENERIC_ATTACK_DAMAGE, soulweaver.entity().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue()),
-							Pair.of(Attribute.GENERIC_FOLLOW_RANGE, soulweaver.entity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue()),
-							Pair.of(Attribute.GENERIC_KNOCKBACK_RESISTANCE, soulweaver.entity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).getValue()),
-							Pair.of(Attribute.GENERIC_MOVEMENT_SPEED, soulweaver.entity().getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue())
+							Pair.of(Attribute.ATTACK_DAMAGE, soulweaver.entity().getAttribute(Attribute.ATTACK_DAMAGE).getValue()),
+							Pair.of(Attribute.FOLLOW_RANGE, soulweaver.entity().getAttribute(Attribute.FOLLOW_RANGE).getValue()),
+							Pair.of(Attribute.KNOCKBACK_RESISTANCE, soulweaver.entity().getAttribute(Attribute.KNOCKBACK_RESISTANCE).getValue()),
+							Pair.of(Attribute.MOVEMENT_SPEED, soulweaver.entity().getAttribute(Attribute.MOVEMENT_SPEED).getValue())
 					};
 					soulweaver.entity().getWorld().playSound(soulweaver.entity().getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, 0.5F, 0.75F);
 					
@@ -77,20 +77,15 @@ public class NightmareNature extends Behavior {
 				Attribute attribute = couple.getLeft();
 				AttributeInstance instance = soulweaver.entity().getAttribute(attribute);
 				double value = instance.getValue();
-				
-				switch (couple.getLeft()) {
-					case GENERIC_ATTACK_DAMAGE -> { value = value * 1.5 > 2048.0 ? 2048.0 : value * 1.5;
-						break;
-					}
-					case GENERIC_FOLLOW_RANGE -> { value = value * 3 > 2048.0 ? 2048.0 : value * 3;
-						break;
-					}
-					case GENERIC_KNOCKBACK_RESISTANCE -> { value = 0.85;
-						break;
-					}
-					case GENERIC_MOVEMENT_SPEED -> { value = value * 1.5 > 1024.0 ? 1024.0 : value * 1.5;
-						break;
-					}
+
+				if (attribute == Attribute.ATTACK_DAMAGE) {
+					value = value * 1.5 > 2048.0 ? 2048.0 : value * 1.5;
+				} else if (attribute == Attribute.FOLLOW_RANGE) {
+					value = value * 3 > 2048.0 ? 2048.0 : value * 3;
+				} else if (attribute == Attribute.KNOCKBACK_RESISTANCE) {
+					value = 0.85;
+				} else if (attribute == Attribute.MOVEMENT_SPEED) {
+					value = value * 1.5 > 1024.0 ? 1024.0 : value * 1.5;
 				}
 				instance.setBaseValue(value);
 			}

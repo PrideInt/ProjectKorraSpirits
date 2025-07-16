@@ -210,11 +210,11 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 			Set<TempBlock> blocks = new HashSet<>();
 			if (single) {
 				blocks.add(new TempBlock(this.location.getBlock(), this.quartz));
-				this.location.getWorld().spawnParticle(Particle.BLOCK_CRACK, this.location, 3, 0.1, 0.1, 0.1, 0.1, this.quartz);
+				this.location.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, this.location, 3, 0.1, 0.1, 0.1, 0.1, this.quartz);
 			} else {
 				for (Block block : GeneralMethods.getBlocksAroundPoint(this.location, this.size)) {
 					blocks.add(new TempBlock(block, Material.QUARTZ_BLOCK.createBlockData()));
-					block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().clone().add(0.5, 0.5, 0.5), 1, 0.1, 0.1, 0.1, 0.1, this.quartz);
+					block.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, block.getLocation().clone().add(0.5, 0.5, 0.5), 1, 0.1, 0.1, 0.1, 0.1, this.quartz);
 				}
 			}
 			this.tower.push(blocks);

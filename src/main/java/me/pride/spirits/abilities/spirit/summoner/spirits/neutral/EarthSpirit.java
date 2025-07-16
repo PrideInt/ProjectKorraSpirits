@@ -31,7 +31,7 @@ public class EarthSpirit extends SummonedSpirit {
 	}
 	@Override
 	public EntityType defaultLightEntityType() {
-		return EntityType.MUSHROOM_COW;
+		return EntityType.MOOSHROOM;
 	}
 	@Override
 	public EntityType defaultDarkEntityType() {

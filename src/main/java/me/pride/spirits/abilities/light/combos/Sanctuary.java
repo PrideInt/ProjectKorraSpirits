@@ -102,7 +102,7 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 				if (ThreadLocalRandom.current().nextInt(60) == 0) {
 					player.getWorld().spawnParticle(Particle.GLOW, l, 2, 0.2, 0.2, 0.2, 0.02);
 				}
-				player.getWorld().spawnParticle(Particle.CRIT_MAGIC, l, 2, 0.2, 0.2, 0.2, 0);
+				player.getWorld().spawnParticle(Particle.ENCHANTED_HIT, l, 2, 0.2, 0.2, 0.2, 0);
 				locations.add(l);
 				
 				Tools.trackEntitySpirit(l, 1, e -> Filter.filterEntityFromAbility(e, player, this), (entity, light, dark, neutral) -> {
@@ -110,7 +110,7 @@ public class Sanctuary extends LightSpiritAbility implements AddonAbility, Combo
 						return;
 					}
 					if (light) {
-						new TempPotionEffect(entity, new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, resDuration, resAmplifier));
+						new TempPotionEffect(entity, new PotionEffect(PotionEffectType.RESISTANCE, resDuration, resAmplifier));
 					} else if (dark) {
 						DamageHandler.damageEntity(entity, damage, this);
 						GeneralMethods.setVelocity(this, entity, entity.getVelocity().add(GeneralMethods.getDirection(l, entity.getLocation()).multiply(repel)).setY(0.5));

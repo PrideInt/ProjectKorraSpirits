@@ -237,7 +237,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			player.getWorld().spawnParticle(Particle.SONIC_BOOM, player.getLocation().clone().add(x, y, z), 1, 0.25, 0.25, 0.25, 0);
 		}
-		PotionEffectType.SLOW.createEffect(10, slowAmplifier).apply(player);
+		PotionEffectType.SLOWNESS.createEffect(10, slowAmplifier).apply(player);
 	}
 
 	public static void removeWithoutCooldown(Player player) {

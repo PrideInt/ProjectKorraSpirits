@@ -112,7 +112,7 @@ public class Spirits extends JavaPlugin {
                     if (entity.getPersistentDataContainer().has(AncientSoulweaver.ANCIENT_SOULWEAVER_KEY, PersistentDataType.BYTE)) {
                         Warden warden = (Warden) entity;
                     
-                        bendingBossBar = new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000.0).setProgress(warden.getHealth() / warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                        bendingBossBar = new BendingBossBar(AncientSoulweaver.ANCIENT_SOULWEAVER_BAR_KEY, AncientSoulweaver.NAME, BarColor.BLUE, 1000.0).setProgress(warden.getHealth() / warden.getAttribute(Attribute.MAX_HEALTH).getValue());
                         AncientSoulweaver.addExistingSoulweaver(warden);
                         exists = true;
                     }

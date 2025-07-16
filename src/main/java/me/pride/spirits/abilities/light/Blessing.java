@@ -183,7 +183,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 					progressing = false;
 				}
 			}
-			target.getWorld().spawnParticle(Particle.SPELL_INSTANT, target, 3, radius / 1.5, radius / 1.5, radius / 1.5, 0);
+			target.getWorld().spawnParticle(Particle.INSTANT_EFFECT, target, 3, radius / 1.5, radius / 1.5, radius / 1.5, 0);
 
 			rate = rate > blessRate ? 0 : rate + 1;
 			if (rate == 0) {
@@ -385,6 +385,8 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 				interval = interval > 35 ? 0 : interval + 1;
 			}
 			if (interval == 0) {
+				location.getWorld().spawnParticle(Particle.FLASH, location, 1, 0, 0, 0, 0);
+
 				if (size >= 3) {
 					size = 0;
 				}
@@ -405,7 +407,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 							DamageHandler.damageEntity(e, damage, blessing);
 						}
 						if (ThreadLocalRandom.current().nextInt(10) == 0) {
-							location.getWorld().spawnParticle(Particle.CRIT_MAGIC, location, 1, 0, 0, 0, 0);
+							location.getWorld().spawnParticle(Particle.ENCHANTED_HIT, location, 1, 0, 0, 0, 0);
 						}
 
 						location.subtract(x, y, z);

@@ -97,9 +97,9 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 	
 	private double health(boolean add, double health, LivingEntity entity) {
 		double change = add ? entity.getHealth() + health : entity.getHealth() - health;
-		double value = entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
+		double value = entity.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue();
 		
-		return value > entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue() ? value : change;
+		return value > entity.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue() ? value : change;
 	}
 	
 	private void stealHealth() {
@@ -136,8 +136,8 @@ public class Commandeer extends DarkSpiritAbility implements AddonAbility {
 		} else {
 			player.getInventory().setItemInMainHand(heldItem);
 		}
-		player.getWorld().spawnParticle(Particle.SPELL_WITCH, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
-		player.getWorld().spawnParticle(Particle.SPELL_WITCH, GeneralMethods.getRightSide(target.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
+		player.getWorld().spawnParticle(Particle.WITCH, GeneralMethods.getRightSide(player.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
+		player.getWorld().spawnParticle(Particle.WITCH, GeneralMethods.getRightSide(target.getLocation().clone().add(0, 1.2, 0), 0.55), 6, 0.125, 0.125, 0.125, 0.05);
 	}
 	
 	public void take() {

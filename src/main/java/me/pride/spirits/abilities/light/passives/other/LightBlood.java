@@ -49,7 +49,7 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 			remove();
 			return;
 		}
-		location.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, location, 1, 1, 1, 1, 0);
+		location.getWorld().spawnParticle(Particle.ENCHANT, location, 1, 1, 1, 1, 0);
 		// location.getWorld().spawnParticle(Particle.SPELL_INSTANT, location, 1, 0, 0, 0, 0);
 		location.getWorld().spawnParticle(Particle.GLOW, location, 1, 0, 0, 0, 0);
 
@@ -57,7 +57,7 @@ public class LightBlood extends LightSpiritAbility implements AddonAbility {
 			if (light || neutral) {
 				double heal = entity.getHealth() + this.heal;
 
-				if (heal <= entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue()) {
+				if (heal <= entity.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue()) {
 					entity.setHealth(heal);
 				}
 				entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_PORTAL_TRAVEL, 1, 1);

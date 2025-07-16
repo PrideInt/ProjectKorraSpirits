@@ -214,17 +214,17 @@ public class Tools {
 	
 	public static PotionEffectType[] getPositiveEffects() {
 		return new PotionEffectType[] {
-				PotionEffectType.ABSORPTION, PotionEffectType.CONDUIT_POWER, PotionEffectType.DAMAGE_RESISTANCE,
-				PotionEffectType.DOLPHINS_GRACE, PotionEffectType.FAST_DIGGING, PotionEffectType.FIRE_RESISTANCE, PotionEffectType.HEALTH_BOOST,
-				PotionEffectType.HERO_OF_THE_VILLAGE, PotionEffectType.INVISIBILITY, PotionEffectType.INCREASE_DAMAGE, PotionEffectType.JUMP,
+				PotionEffectType.ABSORPTION, PotionEffectType.CONDUIT_POWER, PotionEffectType.RESISTANCE,
+				PotionEffectType.DOLPHINS_GRACE, PotionEffectType.HASTE, PotionEffectType.FIRE_RESISTANCE, PotionEffectType.HEALTH_BOOST,
+				PotionEffectType.HERO_OF_THE_VILLAGE, PotionEffectType.INVISIBILITY, PotionEffectType.STRENGTH, PotionEffectType.JUMP_BOOST,
 				PotionEffectType.LUCK, PotionEffectType.NIGHT_VISION, PotionEffectType.REGENERATION, PotionEffectType.SPEED, PotionEffectType.WATER_BREATHING
 		};
 	}
 	
 	public static PotionEffectType[] getNegativeEffects() {
 		return new PotionEffectType[] {
-				PotionEffectType.BAD_OMEN, PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HUNGER,
-				PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS,
+				PotionEffectType.BAD_OMEN, PotionEffectType.BLINDNESS, PotionEffectType.NAUSEA, PotionEffectType.HUNGER,
+				PotionEffectType.POISON, PotionEffectType.SLOWNESS, PotionEffectType.MINING_FATIGUE, PotionEffectType.UNLUCK, PotionEffectType.WEAKNESS,
 				PotionEffectType.WITHER
 		};
 	}

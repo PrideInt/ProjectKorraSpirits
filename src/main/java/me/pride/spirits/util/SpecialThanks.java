@@ -20,7 +20,6 @@ import java.util.UUID;
 public class SpecialThanks {
 
 	public static final String ME = "5e7db6d3-add9-4aab-b1fc-3dda8f5713f4";
-	public static final String NYSSEUS = "383764b8-5473-43c7-8255-a7304c55746a";
 
 	public static final String MIST = "8621211e-283b-46f5-87bc-95a66d68880e";
 	public static final String OMNICYPHER = "a197291a-cd78-43bb-aa38-52b7c82bc68c";
@@ -28,9 +27,9 @@ public class SpecialThanks {
 	public static final String ALEX = "a47a4d04-9f51-44ba-9d35-8de6053e9289";
 	public static final String SIMPLICITEE = "5031c4e3-8103-49ea-b531-0d6ae71bad69";
 	public static final String VAHAGN = "592fb564-701a-4a5e-9d65-13f7ed0acf59";
-	public static final String TYSON = "f6c4aac7-9cc2-4da2-9038-e26bb808461d";
 	public static final String JUSTAHUMAN = "476ca51b-ec04-431b-87da-dd22b20aa8bf";
 	public static final String DREIG = "71d42b35-dd94-408e-941d-88d4a61031c7";
+	public static final String DOODER = "b6bd2ceb-4922-4707-9173-8a02044e9069";
 
 	public static final String AZTL = "e98a2f7d-d571-4900-a625-483cbe6774fe";
 	public static final String SOBKI = "dd578a4f-d35e-4fed-94db-9d5a627ff962";
@@ -47,7 +46,6 @@ public class SpecialThanks {
 	public static final String VIDCOM = "929b14fc-aaf1-4f0f-84c2-f20c55493f53";
 	public static final String BIT = "dbd59467-7307-4981-8e3e-7dcf36dd569c";
 	public static final String DOMI = "5e30a511-c9eb-4326-be40-ba4dfc5cd7c1";
-	public static final String DOODER = "b6bd2ceb-4922-4707-9173-8a02044e9069";
 	public static final String JED = "4eb6315e-9dd1-49f7-b582-c1170e497ab0";
 	public static final String KWILSON = "524f1fdb-28dd-456b-a005-7f61d71fe836";
 
@@ -58,9 +56,9 @@ public class SpecialThanks {
 		ALEX,
 		SIMPLICITEE,
 		VAHAGN,
-		TYSON,
 		JUSTAHUMAN,
-		DREIG
+		DREIG,
+		DOODER
 	};
 
 	public static final String[] CONTRIBUTORS = {
@@ -86,7 +84,6 @@ public class SpecialThanks {
 
 	public static final String[] THANKS = {
 		ME,
-		NYSSEUS
 	};
 
 	public static Material getOrbType(Player player) {
@@ -94,8 +91,6 @@ public class SpecialThanks {
 
 		if (uuid.toString().equals(ME)) {
 			return Material.BLUE_ICE;
-		} else if (uuid.toString().equals(NYSSEUS)) {
-			return Material.CRYING_OBSIDIAN;
 		}
 		for (String developer : DEVELOPERS) {
 			if (uuid.toString().equals(developer)) {
@@ -115,8 +110,6 @@ public class SpecialThanks {
 
 		if (uuid.toString().equals(ME)) {
 			return Particle.GLOW;
-		} else if (uuid.toString().equals(NYSSEUS)) {
-			return Particle.SPELL_WITCH;
 		}
 		return SpiritType.SPIRIT.particles();
 	}

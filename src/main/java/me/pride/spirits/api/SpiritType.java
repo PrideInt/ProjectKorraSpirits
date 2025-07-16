@@ -7,8 +7,8 @@ import org.bukkit.entity.EntityType;
 
 public enum SpiritType {
 	LIGHT(Particle.ELECTRIC_SPARK, EntityType.SHEEP, Pair.of("lightspirit", Spirit.LIGHT_SPIRIT_KEY), Spirit.LIGHT_SPIRIT_NAME),
-	DARK(Particle.SPELL_WITCH, EntityType.SPIDER, Pair.of("darkspirit", Spirit.DARK_SPIRIT_KEY), Spirit.DARK_SPIRIT_NAME),
-	SPIRIT(Particle.CRIT_MAGIC, EntityType.COW, Pair.of("spirit", Spirit.SPIRIT_KEY), Spirit.SPIRIT_NAME);
+	DARK(Particle.WITCH, EntityType.SPIDER, Pair.of("darkspirit", Spirit.DARK_SPIRIT_KEY), Spirit.DARK_SPIRIT_NAME),
+	SPIRIT(Particle.ENCHANTED_HIT, EntityType.COW, Pair.of("spirit", Spirit.SPIRIT_KEY), Spirit.SPIRIT_NAME);
 	
 	private Particle particle;
 	private EntityType entityType;

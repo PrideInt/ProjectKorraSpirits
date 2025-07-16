@@ -64,8 +64,9 @@ public class Lightborn extends LightSpiritAbility implements AddonAbility, Passi
 				if (lights < 100.0) {
 					lights += 0.1;
 				}
+
 				/**
-				 * Every rate, a light spirit will have a chance to shed their negative potion effects.
+				 * Every x rate (shedRate), a light spirit will have a chance to shed their negative potion effects.
 				 */
 				if (shed) {
 					for (PotionEffect active : player.getActivePotionEffects()) {

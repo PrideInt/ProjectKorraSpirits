@@ -48,9 +48,9 @@ public class AncientSoulweaver {
 	}
 	public AncientSoulweaver(Warden entity) {
 		this(entity, warden -> {
-			double max = warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-			warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(max * 2);
-			warden.setHealth(warden.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+			double max = warden.getAttribute(Attribute.MAX_HEALTH).getValue();
+			warden.getAttribute(Attribute.MAX_HEALTH).setBaseValue(max * 2);
+			warden.setHealth(warden.getAttribute(Attribute.MAX_HEALTH).getValue());
 		});
 	}
 	public Phase phase() {
@@ -82,7 +82,7 @@ public class AncientSoulweaver {
 		return entity.getHealth() >= 0 && entity.getHealth() < healthPartition(3);
 	}
 	public double maxHealth() {
-		return entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+		return entity.getAttribute(Attribute.MAX_HEALTH).getValue();
 	}
 	public Warden entity() {
 		return this.entity;

@@ -65,7 +65,7 @@ public class ProtectorNature extends Behavior {
 						e.damage(2);
 					});
 					if (ThreadLocalRandom.current().nextInt(10) == 0) {
-						location.getWorld().spawnParticle(Particle.CRIT_MAGIC, location, 1, 0, 0, 0, 0);
+						location.getWorld().spawnParticle(Particle.ENCHANTED_HIT, location, 1, 0, 0, 0, 0);
 					}
 					location.subtract(x, y, z);
 				}

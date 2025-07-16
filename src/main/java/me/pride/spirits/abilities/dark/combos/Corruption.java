@@ -135,7 +135,7 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata(Spirit.CORRUPTED_SOURCE, Spirits.instance));
 
 			spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
-			player.getWorld().spawnParticle(Particle.SPELL_WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
+			player.getWorld().spawnParticle(Particle.WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 
 			if (block.hasMetadata(Spirit.BLESSED_SOURCE)) {
 				block.removeMetadata(Spirit.BLESSED_SOURCE, Spirits.instance);

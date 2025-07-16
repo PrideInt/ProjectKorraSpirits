@@ -5,7 +5,6 @@ import me.pride.spirits.api.SpiritType;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
 public class EntitySpiritRevertEvent extends Event {
 	public static final HandlerList HANDLER_LIST = new HandlerList();
@@ -28,7 +27,6 @@ public class EntitySpiritRevertEvent extends Event {
 	public long getTimeAtRevert() {
 		return this.time;
 	}
-	@NotNull
 	@Override
 	public HandlerList getHandlers() {
 		return HANDLER_LIST;
