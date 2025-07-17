@@ -8,6 +8,7 @@ import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.util.SpecialThanks;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
@@ -191,7 +192,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			e.setSmall(true);
 			e.getEquipment().setHelmet(new ItemStack(SpecialThanks.getOrbType(player)));
 
-			e.setMetadata(Spirit.ORB_KEY, new FixedMetadataValue(Spirits.instance, 0));
+			e.setMetadata(Keys.ORB_KEY, new FixedMetadataValue(Spirits.instance, 0));
 		});
 	}
 
@@ -231,7 +232,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			if (System.currentTimeMillis() < orb.getCooldown()) {
 				return;
 			}
-			RayTraceResult result = Tools.rayTrace(player, shootRange, e -> e.getUniqueId() != player.getUniqueId() && !e.hasMetadata(Spirit.ORB_KEY));
+			RayTraceResult result = Tools.rayTrace(player, shootRange, e -> e.getUniqueId() != player.getUniqueId() && !e.hasMetadata(Keys.ORB_KEY));
 
 			shotOrbs.add(orb);
 

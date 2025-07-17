@@ -14,6 +14,7 @@ import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.builder.SpiritBuilder;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
@@ -132,15 +133,15 @@ public class Corruption extends DarkSpiritAbility implements AddonAbility, Combo
 			BlockData blockData = isPlant(block) ? Material.DEAD_BUSH.createBlockData() : Material.MYCELIUM.createBlockData();
 
 			Block block_ = block;
-			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata(Spirit.CORRUPTED_SOURCE, Spirits.instance));
+			new TempBlock(block, blockData, revertTime).setRevertTask(() -> block_.removeMetadata(Keys.CORRUPTED_SOURCE, Spirits.instance));
 
 			spawnDarkSpirit(block.getLocation().clone().add(0.5, 1.5, 0.5));
 			player.getWorld().spawnParticle(Particle.WITCH, block.getLocation().clone().add(0.5, 0.5, 0.5), 3, 0.25, 0.25, 0.25);
 
-			if (block.hasMetadata(Spirit.BLESSED_SOURCE)) {
-				block.removeMetadata(Spirit.BLESSED_SOURCE, Spirits.instance);
+			if (block.hasMetadata(Keys.BLESSED_SOURCE)) {
+				block.removeMetadata(Keys.BLESSED_SOURCE, Spirits.instance);
 			}
-			block.setMetadata(Spirit.CORRUPTED_SOURCE, new FixedMetadataValue(Spirits.instance, 0));
+			block.setMetadata(Keys.CORRUPTED_SOURCE, new FixedMetadataValue(Spirits.instance, 0));
 		}
 	}
 	

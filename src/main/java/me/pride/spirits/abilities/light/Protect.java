@@ -200,7 +200,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 				l.getWorld().spawnParticle(Particle.GLOW, l, 1, 0.05, 0.05, 0.05, 0);
 			}
 		});
-		location.getWorld().spawnParticle(Particle.SONIC_BOOM, location, 1, 0.25, 0.25, 0.25, 0);
+		location.getWorld().spawnParticle(Particle.FLASH, location, 1, 0.25, 0.25, 0.25, 0);
 
 		Tools.trackEntitySpirit(location, size / 1.5, e -> e.getUniqueId() != player.getUniqueId(), (entity, light, dark, neutral) -> {
 			if (dark || neutral) {

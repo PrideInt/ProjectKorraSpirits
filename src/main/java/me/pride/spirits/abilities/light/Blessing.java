@@ -11,6 +11,7 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
@@ -232,10 +233,10 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 						}
 					}
 					if (!blessedBlocks.contains(block)) {
-						if (block.hasMetadata(Spirit.CORRUPTED_SOURCE)) {
-							block.removeMetadata(Spirit.CORRUPTED_SOURCE, Spirits.instance);
+						if (block.hasMetadata(Keys.CORRUPTED_SOURCE)) {
+							block.removeMetadata(Keys.CORRUPTED_SOURCE, Spirits.instance);
 						}
-						block.setMetadata(Spirit.BLESSED_SOURCE, new FixedMetadataValue(Spirits.instance, 0));
+						block.setMetadata(Keys.BLESSED_SOURCE, new FixedMetadataValue(Spirits.instance, 0));
 						// block.getWorld().spawnParticle(Particle.SPELL_INSTANT, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						// block.getWorld().spawnParticle(Particle.GLOW, block.getLocation().clone().add(0.5, 0.85, 0.5), 3, 0.25, 0.25, 0.25, 0.05);
 						if (shriekParticles) {
@@ -244,7 +245,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 						blessedBlocks.add(block);
 
 						BlockData data = GeneralMethods.isSolid(block) ? quartz : flowers.get(ThreadLocalRandom.current().nextInt(flowers.size()));
-						new TempBlock(block, data, duration, this).setRevertTask(() -> block.removeMetadata(Spirit.BLESSED_SOURCE, Spirits.instance));
+						new TempBlock(block, data, duration, this).setRevertTask(() -> block.removeMetadata(Keys.BLESSED_SOURCE, Spirits.instance));
 					}
 				}
 			}
@@ -252,10 +253,10 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 				if (light || (neutral && blessRegularSpirits)) {
 					PotionEffectType.REGENERATION.createEffect(20, 1).apply(entity);
 
-					if (!entity.hasMetadata(Spirit.BLESSED_ENTITY)) {
+					if (!entity.hasMetadata(Keys.BLESSED_ENTITY)) {
 						entity.getWorld().spawnParticle(Particle.SONIC_BOOM, entity.getLocation().clone().add(0, 1, 0), 1, 0.25, 0.25, 0.25, 0);
 						new Bless(this, entity, duration);
-						entity.setMetadata(Spirit.BLESSED_ENTITY, new FixedMetadataValue(Spirits.instance, 0));
+						entity.setMetadata(Keys.BLESSED_ENTITY, new FixedMetadataValue(Spirits.instance, 0));
 					}
 				} else if (dark) {
 					DamageHandler.damageEntity(entity, damage, this);
@@ -337,7 +338,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 	@Override
 	public void remove() {
 		super.remove();
-		blessedEntities.iterator().forEachRemaining(e -> e.removeMetadata(Spirit.BLESSED_ENTITY, Spirits.instance));
+		blessedEntities.iterator().forEachRemaining(e -> e.removeMetadata(Keys.BLESSED_ENTITY, Spirits.instance));
 	}
 	
 	@Override

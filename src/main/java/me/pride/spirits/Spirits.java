@@ -16,6 +16,7 @@ import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.ChatUtil;
 import me.pride.spirits.util.GhostFactory;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.world.SpiritWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -96,9 +97,9 @@ public class Spirits extends JavaPlugin {
             for (Entity entity : world.getEntities()) {
                 if (Spirit.exists(entity)) {
                     SpiritType spiritType = SpiritType.SPIRIT;
-                    if (entity.getPersistentDataContainer().has(Spirit.LIGHT_SPIRIT_KEY, PersistentDataType.STRING)) {
+                    if (entity.getPersistentDataContainer().has(Keys.LIGHT_SPIRIT_KEY, PersistentDataType.STRING)) {
                         spiritType = SpiritType.LIGHT;
-                    } else if (entity.getPersistentDataContainer().has(Spirit.DARK_SPIRIT_KEY, PersistentDataType.STRING)) {
+                    } else if (entity.getPersistentDataContainer().has(Keys.DARK_SPIRIT_KEY, PersistentDataType.STRING)) {
                         spiritType = SpiritType.DARK;
                     }
                     SpiritBuilder

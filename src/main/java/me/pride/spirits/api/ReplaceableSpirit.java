@@ -4,6 +4,7 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.event.EntityReplacedBySpiritEvent;
 import me.pride.spirits.api.event.EntitySpiritReplaceEvent;
 import me.pride.spirits.api.record.SpiritRecord;
+import me.pride.spirits.util.Keys;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -95,7 +96,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		this.definitions = Optional.of(new ReplacedDefinitions(true, entity.isInvulnerable(), Pair.of(entity, entity.getEntityId())));
 		
 		entity.setInvulnerable(true);
-		entity.getPersistentDataContainer().set(REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
+		entity.getPersistentDataContainer().set(Keys.REPLACED_KEY, PersistentDataType.STRING, "replacedentity");
 
 		// hide original Entity
 		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
@@ -134,7 +135,7 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 	}
 	
 	public static boolean isReplacedEntity(Entity entity) {
-		return entity.getPersistentDataContainer().has(REPLACED_KEY, PersistentDataType.STRING);
+		return entity.getPersistentDataContainer().has(Keys.REPLACED_KEY, PersistentDataType.STRING);
 	}
 	public static ReplaceableSpirit fromEntity(Entity entity) {
 		return REPLACED.get(entity);
@@ -143,13 +144,13 @@ public class ReplaceableSpirit extends Spirit implements Replaceable {
 		return REPLACED.containsKey(entity);
 	}
 	public static boolean remove(Entity entity, ReplaceableSpirit spirit) {
-		REPLACED.get(entity).getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
+		REPLACED.get(entity).getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(Keys.REPLACED_KEY);
 		return REPLACED.remove(entity, spirit);
 	}
 	public void remove() {
 		REPLACED.entrySet().removeIf(entry -> {
 			if (entry.getValue().equals(this)) {
-				entry.getValue().getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(REPLACED_KEY);
+				entry.getValue().getReplacedDefinitions().getReplaced().getPersistentDataContainer().remove(Keys.REPLACED_KEY);
 				return true;
 			}
 			return false;

@@ -52,8 +52,7 @@ public class Possess extends SpiritAbility implements AddonAbility, ComboAbility
 			return gameMode;
 		}
 	}
-
-
+	
 	private final String path = Tools.path(this, Path.COMBOS);
 
 	public static final Map<UUID, Set<UUID>> POSSESSORS = new HashMap<>();

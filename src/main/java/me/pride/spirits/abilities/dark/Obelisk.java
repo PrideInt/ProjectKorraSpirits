@@ -10,6 +10,7 @@ import me.pride.spirits.Spirits;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
 import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
@@ -77,7 +78,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 		} else if (RegionProtection.isRegionProtected(player, player.getLocation(), this)) {
 			return;
 		}
-		if (!target.hasMetadata(Spirit.CORRUPTED_SOURCE)) {
+		if (!target.hasMetadata(Keys.CORRUPTED_SOURCE)) {
 			return;
 		}
 		this.state = ObeliskState.FOUND_SOURCE;

@@ -11,6 +11,7 @@ import me.pride.spirits.api.DarkSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Filter;
+import me.pride.spirits.util.Keys;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.apache.commons.lang3.tuple.Pair;
@@ -113,7 +114,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		if (this.restoreForm == RestoreForm.NONE) {
 			Block block = Tools.rayTraceBlock(player, this.selectRange);
 			if (block != null) {
-				if (block.hasMetadata(Spirit.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
+				if (block.hasMetadata(Keys.BLESSED_SOURCE) || Filter.filterFlowers(block)) {
 					this.restoreForm = RestoreForm.SOURCING;
 					for (int i = 0; i < 5; i++) {
 						double x, z;
