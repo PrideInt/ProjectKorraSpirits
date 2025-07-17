@@ -13,6 +13,7 @@ import me.pride.spirits.util.SpecialThanks;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -27,12 +28,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbility {
 	private final String path = Tools.path(this, Path.PASSIVES);
 
 	private enum OrbState {
-		ACTIVE, INACTIVE, ABSORBING, ABSORBED, SHOT_ALL, REVERTING_ABSORB, REVERTING_SHOT, REVERTING_SHOT_ALL
+		ACTIVE, INACTIVE,
+		ABSORBING, ABSORBED,
+		SHOT_ALL,
+		REVERTING_ABSORB, REVERTING_SHOT, REVERTING_SHOT_ALL
 	}
 	private OrbState state;
 
@@ -53,6 +58,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 	private Orb[] orbs;
 	private int[] angles;
 	private List<Orb> shotOrbs;
+	private Entity absorbTarget;
 
 	public Orbs(Player player) {
 		super(player);
@@ -72,6 +78,8 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		this.angles = new int[this.orbNumber];
 
 		this.shotOrbs = new CopyOnWriteArrayList<>();
+
+		this.absorbTarget = player;
 
 		for (int i = 0; i < this.orbNumber; i++) {
 			this.orbs[i] = new Orb(orb(), i);
@@ -113,13 +121,26 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					}
 				}
 				case ABSORBING -> {
-					boolean allAbsorbed = true;
+					boolean allAbsorbed = false;
 
-					for (Orb orb : orbs) {
-						orb.shoot(GeneralMethods.getDirection(orb.getLocation(), player.getLocation()).normalize(), 1.5);
+					int i = 0;
 
-						if (orb.getLocation().distanceSquared(player.getLocation()) > 0.5 * 0.5) {
-							allAbsorbed = false;
+					while (i < orbs.length) {
+						int j = 0;
+
+						Orb orb = orbs[i];
+
+						if (orb.getLocation().distanceSquared(absorbTarget.getLocation()) <= 0.25 * 0.25) {
+							orb.getOrb().teleport(absorbTarget.getLocation());
+							orb.getOrb().getEquipment().setHelmet(new ItemStack(Material.AIR));
+							j++;
+						} else {
+							orb.shoot(GeneralMethods.getDirection(orb.getLocation(), absorbTarget.getLocation().clone()).normalize(), 0.5);
+						}
+						i++;
+
+						if (j >= orbs.length - 1) {
+							allAbsorbed = true;
 						}
 					}
 					if (allAbsorbed) {
@@ -128,7 +149,12 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 				}
 				case ABSORBED -> {
 					for (Orb orb : orbs) {
-						orb.getOrb().teleport(player.getLocation());
+						ItemStack orbHelm = orb.getOrb().getEquipment().getHelmet();
+
+						if (orbHelm != null && orbHelm.getType() == SpecialThanks.getOrbType(player)) {
+							orb.getOrb().getEquipment().setHelmet(new ItemStack(Material.AIR));
+						}
+						orb.getOrb().teleport(absorbTarget.getLocation());
 					}
 				}
 				case SHOT_ALL -> {
@@ -149,6 +175,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					boolean allReverted = true;
 
 					for (Orb orb : orbs) {
+						orb.getOrb().getEquipment().setHelmet(new ItemStack(SpecialThanks.getOrbType(player)));
 						orb.revert();
 
 						if (!orb.isInOriginalState()) {
@@ -196,13 +223,17 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		});
 	}
 
-	public void absorb() {
+	public void absorb(Entity entity) {
+		this.absorbTarget = entity;
+		if (entity == null) {
+			this.absorbTarget = player;
+		}
 		this.state = OrbState.ABSORBING;
 	}
 
-	public static void absorb(Player player) {
+	public static void absorb(Player player, Entity entity) {
 		if (hasAbility(player, Orbs.class)) {
-			getAbility(player, Orbs.class).absorb();
+			getAbility(player, Orbs.class).absorb(entity);
 		}
 	}
 
@@ -216,7 +247,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 	}
 
-	public void shoot() {
+	public void shoot(boolean doesDamage) {
 		if (shotOrbs.size() != orbNumber) {
 			Orb orb = orbs[ThreadLocalRandom.current().nextInt(orbNumber)];
 
@@ -228,6 +259,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 					i = ThreadLocalRandom.current().nextInt(orbNumber);
 					orb = orbs[i];
 				}
+				orb.setDoesDamage(doesDamage);
 			}
 			if (System.currentTimeMillis() < orb.getCooldown()) {
 				return;
@@ -251,10 +283,18 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 	}
 
-	public static void shoot(Player player) {
+	public void shoot() {
+		shoot(true);
+	}
+
+	public static void shoot(Player player, boolean doesDamage) {
 		if (hasAbility(player, Orbs.class)) {
-			getAbility(player, Orbs.class).shoot();
+			getAbility(player, Orbs.class).shoot(doesDamage);
 		}
+	}
+
+	public static void shoot(Player player) {
+		shoot(player, true);
 	}
 
 	public void shootAll(double distance) {
@@ -266,6 +306,80 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		if (hasAbility(player, Orbs.class)) {
 			getAbility(player, Orbs.class).shootAll(distance);
 		}
+	}
+
+	public Orb[] getOrbs() {
+		return orbs;
+	}
+
+	public boolean isActive() {
+		return this.state == OrbState.ACTIVE;
+	}
+
+	public static boolean isActive(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isActive();
+		}
+		return false;
+	}
+
+	public boolean isAbsorbing() {
+		return this.state == OrbState.ABSORBING;
+	}
+
+	public static boolean isAbsorbing(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isAbsorbing();
+		}
+		return false;
+	}
+
+	public boolean isAbsorbed() {
+		return this.state == OrbState.ABSORBED;
+	}
+
+	public static boolean isAbsorbed(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isAbsorbed();
+		}
+		return false;
+	}
+
+	public boolean isShotAll() {
+		return this.state == OrbState.SHOT_ALL;
+	}
+
+	public static boolean isShotAll(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isShotAll();
+		}
+		return false;
+	}
+
+	public boolean isRevertingAbsorb() {
+		return this.state == OrbState.REVERTING_ABSORB;
+	}
+
+	public static boolean isRevertingAbsorb(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isRevertingAbsorb();
+		}
+		return false;
+	}
+
+	public boolean isRevertingShotAll() {
+		return this.state == OrbState.REVERTING_SHOT_ALL;
+	}
+
+	public static boolean isRevertingShotAll(Player player) {
+		if (hasAbility(player, Orbs.class)) {
+			return getAbility(player, Orbs.class).isRevertingShotAll();
+		}
+		return false;
+	}
+
+	public OrbState getState() {
+		return state;
 	}
 
 	public void setState(OrbState state) {
@@ -357,13 +471,14 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 	@Override
 	public void stop() { }
 
-	class Orb {
+	public class Orb {
 		private ArmorStand orb;
 		private int pos;
 
 		private long cooldown;
 		private boolean reverting;
 		private boolean inOriginalState;
+		private boolean doesDamage;
 
 		private Location location;
 		private Vector direction;
@@ -376,6 +491,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			this.cooldown = System.currentTimeMillis();
 			this.reverting = false;
 			this.inOriginalState = true;
+			this.doesDamage = true;
 		}
 		public ArmorStand getOrb() {
 			return orb;
@@ -397,6 +513,12 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 		}
 		public int getPos() {
 			return pos;
+		}
+		public boolean doesDamage() {
+			return doesDamage;
+		}
+		public void setDoesDamage(boolean doesDamage) {
+			this.doesDamage = doesDamage;
 		}
 		public void rotate() {
 			Location loc = player.getLocation().clone();
@@ -447,7 +569,9 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 			}
 			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(orb.getLocation(), Orbs.this.hitRadius)) {
 				if (entity.getUniqueId() != player.getUniqueId() && entity instanceof LivingEntity && entity.getUniqueId() != orb.getUniqueId()) {
-					DamageHandler.damageEntity(entity, Orbs.this.damage, Orbs.this);
+					if (this.doesDamage) {
+						DamageHandler.damageEntity(entity, Orbs.this.damage, Orbs.this);
+					}
 				}
 			}
 			orb.teleport(orb.getLocation().add(direction.multiply(speed)));

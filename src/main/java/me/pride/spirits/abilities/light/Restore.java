@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.region.RegionProtection;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import me.pride.spirits.Spirits;
 import me.pride.spirits.abilities.light.passives.Orbs;
+import me.pride.spirits.abilities.light.passives.Orbs.Orb;
 import me.pride.spirits.api.DarkSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.LightSpiritAbility;
@@ -108,6 +109,8 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 				if (entity instanceof LivingEntity && Filter.filterGeneralEntity(entity, player, this)) {
 					this.restoreForm = RestoreForm.TARGET;
 					this.target = (LivingEntity) entity;
+
+					Orbs.absorb(player, this.target);
 				}
 			}
 		}
@@ -129,7 +132,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 		if (this.restoreForm == RestoreForm.NONE) {
 			this.restoreForm = RestoreForm.SELF;
 
-			Orbs.absorb(player);
+			Orbs.absorb(player, player);
 		}
 		player.getWorld().playSound(player.getLocation(), Sound.ITEM_TRIDENT_RETURN, 1, 1);
 
@@ -138,7 +141,7 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 
 	@Override
 	public void progress() {
-		if (!player.isSneaking()) {
+		if (!player.isSneaking() || (target != null && (target.isDead() || target instanceof Player playerTarget && !playerTarget.isOnline()))) {
 			Orbs.unabsorb(player);
 			remove();
 			return;
@@ -360,6 +363,8 @@ public class Restore extends LightSpiritAbility implements AddonAbility {
 			this.delta = this.origin.distanceSquared(this.destination);
 
 			this.location = this.origin.clone();
+
+			this.location.getWorld().spawnParticle(Particle.SCULK_CHARGE_POP, location, 1, 0, 0, 0, 0);
 		}
 		public RestoreParticles(Location destination, Particle particle) {
 			this(destination.clone().add(ThreadLocalRandom.current().nextDouble(-1.0, 1.0), ThreadLocalRandom.current().nextDouble(-1.0, 2.0), ThreadLocalRandom.current().nextDouble(-1.0, 1.0)), destination, particle);

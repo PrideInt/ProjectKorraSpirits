@@ -28,6 +28,7 @@ import me.pride.spirits.api.ability.LightSpiritAbility;
 import me.pride.spirits.util.Tools;
 import me.pride.spirits.util.Tools.Path;
 import me.pride.spirits.util.objects.TetraConsumer;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -118,7 +119,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 			this.direction = this.location.getDirection();
 
-			Orbs.shootAll(player, this.range);
+			// Orbs.shootAll(player, this.range);
 		} else if (type == ProtectType.PROTECT) {
 			this.cooldown = Spirits.instance.getConfig().getLong(path + "Protect.Cooldown");
 			this.slowAmplifier = Spirits.instance.getConfig().getInt(path + "Protect.SlowAmplifier");
@@ -197,7 +198,7 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 
 		Tools.generateDirectionalCircle(location, location.getDirection(), size, 8, l -> {
 			if (ThreadLocalRandom.current().nextInt(5) == 0) {
-				l.getWorld().spawnParticle(Particle.GLOW, l, 1, 0.05, 0.05, 0.05, 0);
+				// l.getWorld().spawnParticle(Particle.FLASH, l, 1, 0.05, 0.05, 0.05, 0);
 			}
 		});
 		location.getWorld().spawnParticle(Particle.FLASH, location, 1, 0.25, 0.25, 0.25, 0);
@@ -221,10 +222,14 @@ public class Protect extends LightSpiritAbility implements AddonAbility {
 	}
 
 	private void protect() {
+		Orbs.absorb(player, player);
+
 		if (!player.isSneaking()) {
+			Orbs.unabsorb(player);
 			remove();
 			return;
 		} else if (!bPlayer.canBendIgnoreBinds(this)) {
+			Orbs.unabsorb(player);
 			remove();
 			return;
 		}

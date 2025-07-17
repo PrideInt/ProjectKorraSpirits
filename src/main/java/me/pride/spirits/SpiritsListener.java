@@ -28,6 +28,7 @@ import me.pride.spirits.abilities.spirit.Summon;
 import me.pride.spirits.abilities.spirit.combos.Possess;
 import me.pride.spirits.abilities.spirit.passives.Transient;
 import me.pride.spirits.abilities.spirit.summoner.util.Pathfollower;
+import me.pride.spirits.api.DarkSpirit;
 import me.pride.spirits.api.ReplaceableSpirit;
 import me.pride.spirits.api.Spirit;
 import me.pride.spirits.api.ability.DarkSpiritAbility;
@@ -44,6 +45,7 @@ import me.pride.spirits.storage.StorageCache;
 import me.pride.spirits.util.BendingBossBar;
 import me.pride.spirits.util.Filter;
 import me.pride.spirits.util.GhostFactory;
+import me.pride.spirits.util.Tools;
 import me.pride.spirits.world.SpiritWorld;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.GameMode;
@@ -128,6 +130,9 @@ public class SpiritsListener implements Listener {
 
 		if (coreAbil == null) {
 			if (bPlayer.isElementToggled(SpiritElement.LIGHT_SPIRIT) && !bPlayer.hasElement(SpiritElement.DARK_SPIRIT)) {
+				if (Orbs.isAbsorbed(player) || Orbs.isAbsorbing(player)) {
+					return;
+				}
 				Orbs.shoot(player);
 			}
 			return;
@@ -156,7 +161,11 @@ public class SpiritsListener implements Listener {
 						break;
 					}
 					case "Restore" -> {
-						Orbs.shoot(player);
+						if (Orbs.isAbsorbing(player) || Orbs.isAbsorbed(player)) {
+							break;
+						}
+						/* TODO: Gotta set up some kind of OrbEffect (builder?) so developers can send certain effects with orbs */
+						Orbs.shoot(player, false);
 					}
 				}
 			} else if (coreAbil instanceof DarkSpiritAbility && bPlayer.isElementToggled(SpiritElement.DARK_SPIRIT)) {
