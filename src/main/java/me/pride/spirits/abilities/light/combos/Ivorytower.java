@@ -222,7 +222,7 @@ public class Ivorytower extends LightSpiritAbility implements AddonAbility, Comb
 
 			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(this.location, this.size)) {
 				if (entity instanceof LivingEntity && entity.getUniqueId() != player.getUniqueId()) {
-					if (Commands.invincible.contains(entity)) continue;
+					if (Commands.invincible.contains(entity) || entity.hasMetadata(Keys.ORB_KEY)) continue;
 					
 					entity.setVelocity(this.vector.clone().multiply(1.5));
 					DamageHandler.damageEntity(entity, 2, this.ability);

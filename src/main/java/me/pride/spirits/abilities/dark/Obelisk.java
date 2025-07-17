@@ -150,7 +150,7 @@ public class Obelisk extends DarkSpiritAbility implements AddonAbility {
 			if (location == null) continue;
 			
 			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(location, 1.25)) {
-				if (entity instanceof LivingEntity && entity.getUniqueId() != player.getUniqueId()) {
+				if (entity instanceof LivingEntity && entity.getUniqueId() != player.getUniqueId() && !entity.hasMetadata(Keys.ORB_KEY)) {
 					return entity.getLocation().clone().add(0, 1, 0);
 				}
 			}

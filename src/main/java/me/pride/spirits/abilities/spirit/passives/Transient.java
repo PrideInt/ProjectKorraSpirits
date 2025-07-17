@@ -117,7 +117,7 @@ public class Transient extends SpiritAbility implements AddonAbility, PassiveAbi
 
 	@Override
 	public String getDescription() {
-		return SpiritElement.SPIRIT.getSubColor() + "Spirits experience transience within their physical bodies which allow them to naturally phase through certain attacks at times. Additionally, they are immune to falling block damage, suffocation, cramming and drowning.";
+		return SpiritElement.SPIRIT.getSubColor() + "Spirits experience transience within their physical bodies, allowing them to naturally phase through certain attacks at times. Additionally, they are immune to falling block damage, suffocation, cramming and drowning.";
 	}
 	
 	@Override

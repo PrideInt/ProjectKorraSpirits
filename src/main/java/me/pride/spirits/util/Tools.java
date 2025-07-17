@@ -63,7 +63,7 @@ public class Tools {
 	
 	public static void trackEntitySpirit(Location location, double radius, Predicate<Entity> filter, TetraConsumer<LivingEntity, Boolean, Boolean, Boolean> tetra) {
 		for (Entity entity : GeneralMethods.getEntitiesAroundPoint(location, radius)) {
-			if (!filter.test(entity)) continue;
+			if (!filter.test(entity) || entity.hasMetadata(Keys.ORB_KEY)) continue;
 			
 			boolean light = false, dark = false, neutral = true;
 			boolean lightAccept = false, darkAccept = false, neutralAccept = false;
@@ -111,7 +111,7 @@ public class Tools {
 	}
 
 	public static Entity rayTraceEntity(World world, Player player, Location start, Vector direction, double range, double radius) {
-		RayTraceResult result = world.rayTraceEntities(start.clone(), direction, range, radius, e -> e.getUniqueId() != player.getUniqueId());
+		RayTraceResult result = world.rayTraceEntities(start.clone(), direction, range, radius, e -> e.getUniqueId() != player.getUniqueId() && !e.hasMetadata(Keys.ORB_KEY));
 		if (result != null) {
 			return result.getHitEntity();
 		}

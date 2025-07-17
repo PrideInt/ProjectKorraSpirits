@@ -446,7 +446,7 @@ public class Orbs extends LightSpiritAbility implements AddonAbility, PassiveAbi
 				this.direction = direction;
 			}
 			for (Entity entity : GeneralMethods.getEntitiesAroundPoint(orb.getLocation(), Orbs.this.hitRadius)) {
-				if (entity.getUniqueId() != player.getUniqueId() && entity instanceof LivingEntity) {
+				if (entity.getUniqueId() != player.getUniqueId() && entity instanceof LivingEntity && entity.getUniqueId() != orb.getUniqueId()) {
 					DamageHandler.damageEntity(entity, Orbs.this.damage, Orbs.this);
 				}
 			}

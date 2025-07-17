@@ -402,7 +402,7 @@ public class Blessing extends LightSpiritAbility implements AddonAbility {
 						location.add(x, y, z);
 
 						for (Entity e : GeneralMethods.getEntitiesAroundPoint(entity.getLocation(), 1.25)) {
-							if (e.getUniqueId() == entity.getUniqueId() || !(e instanceof LivingEntity)) continue;
+							if (e.getUniqueId() == entity.getUniqueId() || !(e instanceof LivingEntity) || e.hasMetadata(Keys.ORB_KEY)) continue;
 
 							e.setVelocity(location.getDirection().setY(0.5).multiply(0.5));
 							DamageHandler.damageEntity(e, damage, blessing);
